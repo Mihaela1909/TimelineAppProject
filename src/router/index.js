@@ -2,6 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import PublicLayout from '../layouts/PublicLayout.vue'
 import AdminLayout from '../layouts/AdminLayout.vue'
 import HomeView from '../views/HomeView.vue'
+import CoursesView from '../views/CoursesView.vue'
+import CourseDetailView from '../views/CourseDetailView.vue'
+import LessonView from '../views/LessonView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import PlaceholderView from '../views/PlaceholderView.vue'
@@ -21,8 +24,9 @@ const routes = [
     component: PublicLayout,
     children: [
       { path: '', name: 'home', component: HomeView },
-      { path: 'courses', name: 'courses', component: PlaceholderView, props: { title: 'All Courses' } },
-      { path: 'courses/:id', name: 'course-detail', component: PlaceholderView, props: { title: 'Course Detail' } },
+      { path: 'courses', name: 'courses', component: CoursesView },
+      { path: 'courses/:id', name: 'course-detail', component: CourseDetailView },
+      { path: 'courses/:id/lessons/:lessonId', name: 'lesson-view', component: LessonView },
       { path: 'quizzes', name: 'quizzes', component: PlaceholderView, props: { title: 'Quizzes' } },
       { path: 'event-of-the-day', name: 'event-of-the-day', component: PlaceholderView, props: { title: 'Event of the Day' } },
       { path: 'about', name: 'about', component: PlaceholderView, props: { title: 'About Us' } },

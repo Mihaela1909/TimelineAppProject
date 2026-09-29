@@ -24,5 +24,18 @@ export function useCourses() {
     }
   }
 
-  return { courses, loading, error, fetchPopularCourses }
+  async function fetchAllPublished() {
+    loading.value = true
+    error.value = null
+    try {
+      courses.value = await getPublishedCourses()
+    } catch (err) {
+      error.value = 'Could not load courses. Please try again.'
+      console.error(err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  return { courses, loading, error, fetchPopularCourses, fetchAllPublished }
 }
