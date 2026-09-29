@@ -2,8 +2,14 @@ import { createRouter, createWebHistory } from 'vue-router'
 import PublicLayout from '../layouts/PublicLayout.vue'
 import AdminLayout from '../layouts/AdminLayout.vue'
 import HomeView from '../views/HomeView.vue'
+import LoginView from '../views/LoginView.vue'
+import RegisterView from '../views/RegisterView.vue'
 import PlaceholderView from '../views/PlaceholderView.vue'
+import AdminCoursesView from '../views/admin/AdminCoursesView.vue'
+import AdminCourseFormView from '../views/admin/AdminCourseFormView.vue'
+import AdminLessonFormView from '../views/admin/AdminLessonFormView.vue'
 import { ROLES, STAFF_ROLES } from '../constants/roles'
+import { useAuth } from '../composables/useAuth'
 
 // Every route lives under one of two layouts. Public pages share the
 // header/footer; admin pages share the sidebar. Auth pages (login/register)
@@ -22,8 +28,8 @@ const routes = [
       { path: 'about', name: 'about', component: PlaceholderView, props: { title: 'About Us' } },
       { path: 'blog', name: 'blog', component: PlaceholderView, props: { title: 'Blog' } },
       { path: 'blog/:id', name: 'blog-post', component: PlaceholderView, props: { title: 'Blog Post' } },
-      { path: 'login', name: 'login', component: PlaceholderView, props: { title: 'Log In' } },
-      { path: 'register', name: 'register', component: PlaceholderView, props: { title: 'Sign Up' } },
+      { path: 'login', name: 'login', component: LoginView },
+      { path: 'register', name: 'register', component: RegisterView },
       {
         path: 'profile',
         name: 'profile',
@@ -39,7 +45,11 @@ const routes = [
     meta: { requiresAuth: true, requiresRole: STAFF_ROLES },
     children: [
       { path: '', name: 'admin-dashboard', component: PlaceholderView, props: { title: 'Admin Dashboard' } },
-      { path: 'courses', name: 'admin-courses', component: PlaceholderView, props: { title: 'Manage Courses' } },
+      { path: 'courses', name: 'admin-courses', component: AdminCoursesView },
+      { path: 'courses/new', name: 'admin-course-new', component: AdminCourseFormView },
+      { path: 'courses/:id/edit', name: 'admin-course-edit', component: AdminCourseFormView },
+      { path: 'courses/:id/lessons/new', name: 'admin-lesson-new', component: AdminLessonFormView },
+      { path: 'courses/:id/lessons/:lessonId/edit', name: 'admin-lesson-edit', component: AdminLessonFormView },
       { path: 'quizzes', name: 'admin-quizzes', component: PlaceholderView, props: { title: 'Manage Quizzes' } },
       { path: 'blog-posts', name: 'admin-blog-posts', component: PlaceholderView, props: { title: 'Manage Blog Posts' } },
       { path: 'stats', name: 'admin-stats', component: PlaceholderView, props: { title: 'Statistics' } },
@@ -71,19 +81,23 @@ const router = createRouter({
 // grades. It currently checks nothing real yet (no auth wired up), but the
 // structure is here so wiring in useAuth() later is a small, obvious change,
 // not a redesign. See the TODOs below.
-router.beforeEach((to) => {
-  // TODO: replace with `const { currentUser } = useAuth()` once auth exists
-  const currentUser = null // e.g. { id: '...', role: 'user' }
+router.beforeEach(async (to) => {
+  const { currentUser, authChecked, refreshCurrentUser } = useAuth()
 
-  if (to.meta.requiresAuth && !currentUser) {
+  // On first navigation after a page load, we haven't asked Appwrite
+  // who's logged in yet — do that once before deciding anything.
+  if (!authChecked.value) {
+    await refreshCurrentUser()
+  }
+
+  if (to.meta.requiresAuth && !currentUser.value) {
     return { name: 'login', query: { redirect: to.fullPath } }
   }
 
-  if (to.meta.requiresRole && !to.meta.requiresRole.includes(currentUser?.role)) {
-    // IMPORTANT: this check is a UX convenience only. The real security
-    // boundary MUST also exist in Appwrite's collection permissions —
-    // see the security checklist from earlier in the project. A blocked
-    // route here means nothing if the API underneath still accepts the request.
+  if (to.meta.requiresRole && !to.meta.requiresRole.includes(currentUser.value?.role)) {
+    // IMPORTANT: this is a UX convenience only. The real security boundary
+    // MUST also exist in Appwrite's table permissions — a blocked route
+    // here means nothing if the API underneath still accepts the request.
     return { name: 'not-found' }
   }
 

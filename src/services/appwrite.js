@@ -1,20 +1,21 @@
-// This file sets up the Appwrite client and exports ready-to-use service
-// instances. Nothing outside src/services/ should import 'appwrite'
-// directly — that keeps the SDK isolated to one layer of the app.
-//
-// TODO: once you have an Appwrite project, install the SDK:
-//   npm install appwrite
-// then uncomment the real client below and delete the placeholder.
+import { Client, Account, TablesDB, Storage } from 'appwrite'
 
-// import { Client, Account, Databases, Storage } from 'appwrite'
-//
-// const client = new Client()
-//   .setEndpoint(import.meta.env.VITE_APPWRITE_ENDPOINT)
-//   .setProject(import.meta.env.VITE_APPWRITE_PROJECT_ID)
-//
-// export const account = new Account(client)
-// export const databases = new Databases(client)
-// export const storage = new Storage(client)
-// export const DB_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID
+// This is the ONLY file that should import from 'appwrite'. Everything
+// else in the app goes through services/*.js, which import from here.
+const client = new Client()
+  .setEndpoint(import.meta.env.VITE_APPWRITE_ENDPOINT)
+  .setProject(import.meta.env.VITE_APPWRITE_PROJECT_ID)
 
-export const APPWRITE_NOT_CONFIGURED = true
+export const account = new Account(client)
+export const tablesDB = new TablesDB(client)
+export const storage = new Storage(client)
+
+export const DB_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID
+export const BUCKETS = {
+  MEDIA: import.meta.env.VITE_APPWRITE_MEDIA_BUCKET_ID,
+}
+export const TABLES = {
+  COURSES: import.meta.env.VITE_APPWRITE_COURSES_TABLE_ID,
+  PROFILES: import.meta.env.VITE_APPWRITE_PROFILES_TABLE_ID,
+  LESSONS: import.meta.env.VITE_APPWRITE_LESSONS_TABLE_ID,
+}

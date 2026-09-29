@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useCourses } from '../../composables/useCourses'
+import { getImagePreviewUrl } from '../../services/mediaService'
 
 const { courses, loading, error, fetchPopularCourses } = useCourses()
 
@@ -55,7 +56,13 @@ onMounted(() => {
         :to="`/courses/${course.$id}`"
         class="bg-white rounded-lg overflow-hidden hover:shadow-md transition-shadow"
       >
-        <div class="h-24 bg-olive-light flex items-center justify-center text-olive text-2xl font-voice">
+        <img
+          v-if="course.coverImageId"
+          :src="getImagePreviewUrl(course.coverImageId)"
+          :alt="course.title"
+          class="h-24 w-full object-cover"
+        />
+        <div v-else class="h-24 bg-olive-light flex items-center justify-center text-olive text-2xl font-voice">
           {{ course.title.charAt(0) }}
         </div>
         <div class="p-3">
