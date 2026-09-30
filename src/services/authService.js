@@ -30,3 +30,13 @@ export async function getCurrentUser() {
   // treat it as "no user", not as a real error.
   return account.get()
 }
+
+export async function updateDisplayName(name) {
+  return account.updateName(name)
+}
+
+export async function updateUserPassword(newPassword, oldPassword) {
+  // Appwrite requires the current password to confirm the change —
+  // a security measure so a stolen session alone can't hijack the account.
+  return account.updatePassword(newPassword, oldPassword)
+}

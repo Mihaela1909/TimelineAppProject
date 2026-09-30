@@ -48,7 +48,9 @@ async function handleLogout() {
 
     <div class="flex items-center gap-3">
       <template v-if="currentUser">
-        <span class="text-sm text-white/90 hidden sm:inline">{{ currentUser.name }}</span>
+        <RouterLink to="/profile" class="text-sm text-white/90 hidden sm:inline hover:underline">
+          {{ currentUser.name }}
+        </RouterLink>
         <button
           @click="handleLogout"
           class="text-sm px-4 py-2 rounded-md bg-white/10 text-white hover:bg-white/20 transition-colors"

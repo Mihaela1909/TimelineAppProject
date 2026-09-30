@@ -21,6 +21,15 @@ export async function createAttempt({ userId, quizId, score, totalQuestions }) {
   })
 }
 
+export async function getAllAttemptsForUser(userId) {
+  const res = await tablesDB.listRows({
+    databaseId: DB_ID,
+    tableId: TABLES.QUIZ_ATTEMPTS,
+    queries: [Query.equal('userId', userId), Query.orderDesc('$createdAt')],
+  })
+  return res.rows
+}
+
 export async function getAttemptsForUserAndQuiz(userId, quizId) {
   const res = await tablesDB.listRows({
     databaseId: DB_ID,

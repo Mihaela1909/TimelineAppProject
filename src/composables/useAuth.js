@@ -42,6 +42,37 @@ export function useAuth() {
     }
   }
 
+  async function updateName(name) {
+    loading.value = true
+    error.value = null
+    try {
+      await authService.updateDisplayName(name)
+      await refreshCurrentUser()
+      return true
+    } catch (err) {
+      error.value = 'Could not update your name.'
+      console.error(err)
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function updatePassword(newPassword, oldPassword) {
+    loading.value = true
+    error.value = null
+    try {
+      await authService.updateUserPassword(newPassword, oldPassword)
+      return true
+    } catch (err) {
+      error.value = 'Could not update password — check your current password is correct.'
+      console.error(err)
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
   async function logout() {
     await authService.logoutUser()
     currentUser.value = null
@@ -63,5 +94,16 @@ export function useAuth() {
     }
   }
 
-  return { currentUser, authChecked, loading, error, register, login, logout, refreshCurrentUser }
+  return {
+    currentUser,
+    authChecked,
+    loading,
+    error,
+    register,
+    login,
+    logout,
+    refreshCurrentUser,
+    updateName,
+    updatePassword,
+  }
 }

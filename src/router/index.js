@@ -9,6 +9,7 @@ import QuizzesView from '../views/QuizzesView.vue'
 import QuizTakingView from '../views/QuizTakingView.vue'
 import BlogView from '../views/BlogView.vue'
 import BlogPostDetailView from '../views/BlogPostDetailView.vue'
+import ProfileView from '../views/ProfileView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import PlaceholderView from '../views/PlaceholderView.vue'
@@ -47,8 +48,7 @@ const routes = [
       {
         path: 'profile',
         name: 'profile',
-        component: PlaceholderView,
-        props: { title: 'My Profile' },
+        component: ProfileView,
         meta: { requiresAuth: true },
       },
     ],
