@@ -7,6 +7,8 @@ import CourseDetailView from '../views/CourseDetailView.vue'
 import LessonView from '../views/LessonView.vue'
 import QuizzesView from '../views/QuizzesView.vue'
 import QuizTakingView from '../views/QuizTakingView.vue'
+import BlogView from '../views/BlogView.vue'
+import BlogPostDetailView from '../views/BlogPostDetailView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import PlaceholderView from '../views/PlaceholderView.vue'
@@ -16,6 +18,8 @@ import AdminLessonFormView from '../views/admin/AdminLessonFormView.vue'
 import AdminQuizzesView from '../views/admin/AdminQuizzesView.vue'
 import AdminQuizFormView from '../views/admin/AdminQuizFormView.vue'
 import AdminQuestionFormView from '../views/admin/AdminQuestionFormView.vue'
+import AdminBlogPostsView from '../views/admin/AdminBlogPostsView.vue'
+import AdminBlogPostFormView from '../views/admin/AdminBlogPostFormView.vue'
 import { ROLES, STAFF_ROLES } from '../constants/roles'
 import { useAuth } from '../composables/useAuth'
 
@@ -36,8 +40,8 @@ const routes = [
       { path: 'quizzes/:id', name: 'quiz-taking', component: QuizTakingView },
       { path: 'event-of-the-day', name: 'event-of-the-day', component: PlaceholderView, props: { title: 'Event of the Day' } },
       { path: 'about', name: 'about', component: PlaceholderView, props: { title: 'About Us' } },
-      { path: 'blog', name: 'blog', component: PlaceholderView, props: { title: 'Blog' } },
-      { path: 'blog/:id', name: 'blog-post', component: PlaceholderView, props: { title: 'Blog Post' } },
+      { path: 'blog', name: 'blog', component: BlogView },
+      { path: 'blog/:id', name: 'blog-post', component: BlogPostDetailView },
       { path: 'login', name: 'login', component: LoginView },
       { path: 'register', name: 'register', component: RegisterView },
       {
@@ -65,7 +69,9 @@ const routes = [
       { path: 'quizzes/:id/edit', name: 'admin-quiz-edit', component: AdminQuizFormView },
       { path: 'quizzes/:id/questions/new', name: 'admin-question-new', component: AdminQuestionFormView },
       { path: 'quizzes/:id/questions/:questionId/edit', name: 'admin-question-edit', component: AdminQuestionFormView },
-      { path: 'blog-posts', name: 'admin-blog-posts', component: PlaceholderView, props: { title: 'Manage Blog Posts' } },
+      { path: 'blog-posts', name: 'admin-blog-posts', component: AdminBlogPostsView },
+      { path: 'blog-posts/new', name: 'admin-blog-post-new', component: AdminBlogPostFormView },
+      { path: 'blog-posts/:id/edit', name: 'admin-blog-post-edit', component: AdminBlogPostFormView },
       { path: 'stats', name: 'admin-stats', component: PlaceholderView, props: { title: 'Statistics' } },
       {
         path: 'users',
