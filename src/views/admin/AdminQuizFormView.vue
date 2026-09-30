@@ -5,6 +5,7 @@ import { useAdminQuizzes } from '../../composables/useAdminQuizzes'
 import { useAdminQuizQuestions } from '../../composables/useAdminQuizQuestions'
 import { useAdminCourses } from '../../composables/useAdminCourses'
 import ConfirmModal from '../../components/admin/ConfirmModal.vue'
+import ImageUpload from '../../components/admin/ImageUpload.vue'
 import { useToast } from '../../composables/useToast'
 
 const route = useRoute()
@@ -27,6 +28,8 @@ const form = ref({
   title: '',
   courseId: '',
   passingScore: 70,
+  coverImageId: null,
+  headerImageId: null,
   published: false,
 })
 
@@ -124,6 +127,11 @@ async function confirmDeleteQuestion() {
               class="w-full px-3 py-2 border border-black/10 rounded-md text-sm"
             />
           </div>
+        </div>
+
+        <div class="mb-5 space-y-4">
+          <ImageUpload v-model="form.coverImageId" label="Cover image" />
+          <ImageUpload v-model="form.headerImageId" label="Quiz header image" />
         </div>
 
         <label class="flex items-center gap-2 text-sm mb-5">

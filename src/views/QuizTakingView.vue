@@ -3,6 +3,7 @@ import { onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
 import { useQuizTaking } from '../composables/useQuizTaking'
+import { getImagePreviewUrl } from '../services/mediaService'
 
 const route = useRoute()
 const { currentUser } = useAuth()
@@ -53,7 +54,16 @@ const bestScore = () =>
 
     <!-- START -->
     <div v-else-if="phase === 'start'" class="bg-white rounded-2xl p-8 text-center">
-      <div class="w-14 h-14 rounded-full bg-olive-light flex items-center justify-center text-olive text-xl font-voice mx-auto mb-4">
+      <img
+        v-if="quiz.headerImageId || quiz.coverImageId"
+        :src="getImagePreviewUrl(quiz.headerImageId || quiz.coverImageId)"
+        :alt="quiz.title"
+        class="w-20 h-20 rounded-2xl object-cover mx-auto mb-4"
+      />
+      <div
+        v-else
+        class="w-14 h-14 rounded-full bg-olive-light flex items-center justify-center text-olive text-xl font-voice mx-auto mb-4"
+      >
         ?
       </div>
       <h1 class="font-voice text-xl text-bark mb-1">{{ quiz.title }}</h1>

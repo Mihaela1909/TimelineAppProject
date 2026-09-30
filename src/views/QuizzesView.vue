@@ -2,6 +2,7 @@
 import { onMounted, ref, computed } from 'vue'
 import * as quizService from '../services/quizService'
 import { useAdminCourses } from '../composables/useAdminCourses'
+import { getImagePreviewUrl } from '../services/mediaService'
 
 const quizzes = ref([])
 const loading = ref(true)
@@ -51,7 +52,16 @@ const courseById = computed(() => {
         :to="`/quizzes/${quiz.$id}`"
         class="flex items-center gap-3 bg-white px-4 py-3.5 rounded-lg hover:shadow-sm transition-shadow"
       >
-        <div class="w-9 h-9 rounded-lg bg-olive-light flex items-center justify-center text-olive text-sm font-voice flex-shrink-0">
+        <img
+          v-if="quiz.coverImageId"
+          :src="getImagePreviewUrl(quiz.coverImageId)"
+          :alt="quiz.title"
+          class="w-9 h-9 rounded-lg object-cover flex-shrink-0"
+        />
+        <div
+          v-else
+          class="w-9 h-9 rounded-lg bg-olive-light flex items-center justify-center text-olive text-sm font-voice flex-shrink-0"
+        >
           ?
         </div>
         <div class="flex-1">
