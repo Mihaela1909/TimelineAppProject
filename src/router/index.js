@@ -23,6 +23,8 @@ import AdminBlogPostsView from '../views/admin/AdminBlogPostsView.vue'
 import AdminBlogPostFormView from '../views/admin/AdminBlogPostFormView.vue'
 import AdminImageApprovalsView from '../views/admin/AdminImageApprovalsView.vue'
 import AdminDashboardView from '../views/admin/AdminDashboardView.vue'
+import AdminUsersView from '../views/admin/AdminUsersView.vue'
+import AdminStatisticsView from '../views/admin/AdminStatisticsView.vue'
 import { ROLES, STAFF_ROLES } from '../constants/roles'
 import { useAuth } from '../composables/useAuth'
 
@@ -83,22 +85,20 @@ const routes = [
       {
         path: 'stats',
         name: 'admin-stats',
-        component: PlaceholderView,
-        props: { title: 'Statistics' },
+        component: AdminStatisticsView,
         meta: { requiresAuth: true, requiresRole: [ROLES.ADMIN] }, // Admin-only, NOT Editor
       },
       {
         path: 'users/inactive',
         name: 'admin-users-inactive',
-        component: PlaceholderView,
-        props: { title: 'Inactive Users' },
+        component: AdminUsersView,
+        props: { inactiveOnly: true },
         meta: { requiresAuth: true, requiresRole: [ROLES.ADMIN] }, // Admin-only, NOT Editor
       },
       {
         path: 'users',
         name: 'admin-users',
-        component: PlaceholderView,
-        props: { title: 'Manage Users' },
+        component: AdminUsersView,
         meta: { requiresAuth: true, requiresRole: [ROLES.ADMIN] }, // Admin-only, NOT Editor
       },
     ],

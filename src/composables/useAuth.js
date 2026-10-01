@@ -33,11 +33,19 @@ export function useAuth() {
     loading.value = true
     error.value = null
     try {
-      await authService.loginUser({ email, password })
+      try {
+        await authService.loginUser({ email, password })
+      } catch (err) {
+        error.value = 'Incorrect email or password.'
+        throw err
+      }
       await refreshCurrentUser()
-    } catch (err) {
-      error.value = 'Incorrect email or password.'
-      throw err
+      // Correct password but no user afterwards = the account is
+      // deactivated (refreshCurrentUser signed them straight back out).
+      if (!currentUser.value) {
+        error.value = 'This account has been deactivated. Please contact an admin.'
+        throw new Error('Account deactivated')
+      }
     } finally {
       loading.value = false
     }
@@ -111,13 +119,21 @@ export function useAuth() {
       let role = null
       let avatarImageId = null
       let headerImageId = null
+      let profile = null
       try {
-        const profile = await getProfileByUserId(account.$id)
+        profile = await getProfileByUserId(account.$id)
         role = profile?.role || null
         avatarImageId = profile?.avatarImageId || null
         headerImageId = profile?.headerImageId || null
       } catch (err) {
         console.error('Could not load profiles row:', err)
+      }
+
+      // Deactivated by an admin → end the session. Only an explicit
+      // `false` counts; rows from before the `active` column are null.
+      if (profile?.active === false) {
+        await authService.logoutUser().catch(() => {})
+        throw new Error('Account deactivated')
       }
 
       let pendingAvatarImageId = null

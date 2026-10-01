@@ -34,11 +34,24 @@ A user's upload does NOT go live until an admin approves it.
 - Recent Activity has no log table: it merges the newest rows of courses/quizzes/blog posts (by `$updatedAt`, "published" vs "Draft saved") and profiles (by `$createdAt`, "New user signed up").
 - `profiles.name` (String, optional) is written at registration so admin pages can show names. Older users have no name until backfilled.
 - `createProfile` sets explicit `Read → that user` permissions. Appwrite's default would grant the creator update/delete, letting users edit their own `role`.
-- Sidebar (`AdminLayout.vue`): the "Users" group (Statistic, Inactive, Users, Image Approvals) is admin-only and hidden for editors. Inactive/Users/Statistic are still `PlaceholderView`.
+- Sidebar (`AdminLayout.vue`): the "Users" group (Statistic, Inactive, Users, Image Approvals) is admin-only and hidden for editors. Statistic → `AdminStatisticsView.vue`.
+
+## Admin Users page
+- `/admin/users` and `/admin/users/inactive` both use `AdminUsersView.vue` (`inactiveOnly` prop) + `useAdminUsers.js`. Each "user" is a `profiles` row, because the client SDK can't list Auth accounts.
+- `profiles` columns used: `name`, `email` (copied at registration; NOT synced if the user later changes email), `role`, `active` (Boolean, default true; `null` = active), `avatarImageId`.
+- The ••• menu changes `role` or sets `active`. It's disabled on the admin's own row so they can't lock themselves out.
+- Deactivation is enforced in `useAuth.refreshCurrentUser`: `active === false` → session deleted, and login shows "account deactivated". This is client-side only: an open session lasts until the next page load, and the API still accepts the user's session. For a hard block use Appwrite console → Auth → user → Block (needs server SDK to automate).
+- Changing `role` to admin in the app does NOT add the Appwrite `admin` label (labels need the server SDK). A newly promoted admin can open admin pages but their writes fail until the label is added in the console.
 - Icons: `components/ui/AppIcon.vue` (inline SVG). No icon library is installed.
+
+## Admin Statistics page
+- `/admin/stats` → `AdminStatisticsView.vue` + `useAdminStatistics.js` (pure `buildStatistics()`) + `statsService.js` (`listAllRows` cursor-paginates).
+- Appwrite has no aggregate queries, so all stats are computed client-side from full reads of profiles, courses, published lessons, quizzes, progress, quiz_attempts. Move to an Appwrite Function if tables get large.
+- Admin needs table-level Read (label `admin`) on `progress` and `quiz_attempts` — their rows are otherwise owner-only.
+- Charts are plain HTML/Tailwind (no chart library), single-series in olive, values labelled directly.
 
 ## Known gaps / next priorities
 1. Users can't remove a live photo themselves (they can only replace it, or cancel a pending one). Needs an admin-side "remove" or a pending "remove" request.
 2. Rejected/replaced files stay in the bucket (orphaned). Cleanup would need bucket `Delete` for label `admin`, then `deleteImage()` on reject/replace.
 3. Approvals page shows user IDs, not names — could now look up `profiles.name`.
-4. Statistic, Inactive and Users admin pages are placeholders.
+4. Role/label sync and hard user blocking need an Appwrite Function (server SDK + API key).

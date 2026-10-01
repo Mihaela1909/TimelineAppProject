@@ -13,7 +13,7 @@ export async function registerUser({ email, password, name }) {
   const session = await account.createEmailPasswordSession(email, password)
   // Every user needs a profile row so the app has somewhere to store
   // their role. New accounts always start as a plain 'user'.
-  await createProfile(newUser.$id, name)
+  await createProfile(newUser.$id, name, email)
   return session
 }
 

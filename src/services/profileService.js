@@ -15,20 +15,42 @@ export async function getProfileByUserId(userId) {
   return res.rows[0] || null
 }
 
-export async function createProfile(userId, name) {
+export async function createProfile(userId, name, email) {
   return tablesDB.createRow({
     databaseId: DB_ID,
     tableId: TABLES.PROFILES,
     rowId: 'unique()',
-    // `name` is copied here because the client SDK can't look up other
-    // users' names — the admin dashboard/approvals read it from this row.
-    data: { userId, name, role: ROLES.USER },
+    // `name`/`email` are copied here because the client SDK can't look up
+    // other users' accounts — the admin Users page reads them from this row.
+    data: { userId, name, email, role: ROLES.USER, active: true },
     // Explicit READ-only for the owner. Without this, Appwrite's default
     // grants the creator read+update+delete, which would let a user change
     // their own role (or approved avatar) via the API.
     permissions: [Permission.read(Role.user(userId))],
   })
 }
+
+// ADMIN-only: every profile, newest first, for the admin Users page.
+export async function listProfiles() {
+  const res = await tablesDB.listRows({
+    databaseId: DB_ID,
+    tableId: TABLES.PROFILES,
+    queries: [Query.orderDesc('$createdAt'), Query.limit(500)],
+  })
+  return res.rows
+}
+
+// ADMIN-only: change role / active status. Requires table-level Update
+// for the admin label — regular users have no update permission here.
+export async function updateProfile(rowId, data) {
+  return tablesDB.updateRow({
+    databaseId: DB_ID,
+    tableId: TABLES.PROFILES,
+    rowId,
+    data,
+  })
+}
+
 // ADMIN-only write (via the image-approval flow). Users can read their own
 // profile row but never update it, which is what makes approval enforceable.
 export async function setProfileImage(userId, field, fileId) {
