@@ -21,6 +21,8 @@ import AdminQuizFormView from '../views/admin/AdminQuizFormView.vue'
 import AdminQuestionFormView from '../views/admin/AdminQuestionFormView.vue'
 import AdminBlogPostsView from '../views/admin/AdminBlogPostsView.vue'
 import AdminBlogPostFormView from '../views/admin/AdminBlogPostFormView.vue'
+import AdminImageApprovalsView from '../views/admin/AdminImageApprovalsView.vue'
+import AdminDashboardView from '../views/admin/AdminDashboardView.vue'
 import { ROLES, STAFF_ROLES } from '../constants/roles'
 import { useAuth } from '../composables/useAuth'
 
@@ -58,7 +60,7 @@ const routes = [
     component: AdminLayout,
     meta: { requiresAuth: true, requiresRole: STAFF_ROLES },
     children: [
-      { path: '', name: 'admin-dashboard', component: PlaceholderView, props: { title: 'Admin Dashboard' } },
+      { path: '', name: 'admin-dashboard', component: AdminDashboardView },
       { path: 'courses', name: 'admin-courses', component: AdminCoursesView },
       { path: 'courses/new', name: 'admin-course-new', component: AdminCourseFormView },
       { path: 'courses/:id/edit', name: 'admin-course-edit', component: AdminCourseFormView },
@@ -72,7 +74,26 @@ const routes = [
       { path: 'blog-posts', name: 'admin-blog-posts', component: AdminBlogPostsView },
       { path: 'blog-posts/new', name: 'admin-blog-post-new', component: AdminBlogPostFormView },
       { path: 'blog-posts/:id/edit', name: 'admin-blog-post-edit', component: AdminBlogPostFormView },
-      { path: 'stats', name: 'admin-stats', component: PlaceholderView, props: { title: 'Statistics' } },
+      {
+        path: 'image-approvals',
+        name: 'admin-image-approvals',
+        component: AdminImageApprovalsView,
+        meta: { requiresAuth: true, requiresRole: [ROLES.ADMIN] }, // Admin-only, NOT Editor
+      },
+      {
+        path: 'stats',
+        name: 'admin-stats',
+        component: PlaceholderView,
+        props: { title: 'Statistics' },
+        meta: { requiresAuth: true, requiresRole: [ROLES.ADMIN] }, // Admin-only, NOT Editor
+      },
+      {
+        path: 'users/inactive',
+        name: 'admin-users-inactive',
+        component: PlaceholderView,
+        props: { title: 'Inactive Users' },
+        meta: { requiresAuth: true, requiresRole: [ROLES.ADMIN] }, // Admin-only, NOT Editor
+      },
       {
         path: 'users',
         name: 'admin-users',

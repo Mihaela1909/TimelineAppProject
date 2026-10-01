@@ -2,7 +2,7 @@
 import { onMounted, ref, computed } from 'vue'
 import { useAdminQuizzes } from '../../composables/useAdminQuizzes'
 import { useAdminCourses } from '../../composables/useAdminCourses'
-import ConfirmModal from '../../components/admin/ConfirmModal.vue'
+import ConfirmModal from '../../components/ui/ConfirmModal.vue'
 import { useToast } from '../../composables/useToast'
 
 const { quizzes, loading, error, fetchAll, remove } = useAdminQuizzes()

@@ -3,8 +3,8 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAdminCourses } from '../../composables/useAdminCourses'
 import { useAdminLessons } from '../../composables/useAdminLessons'
-import ConfirmModal from '../../components/admin/ConfirmModal.vue'
-import ImageUpload from '../../components/admin/ImageUpload.vue'
+import ConfirmModal from '../../components/ui/ConfirmModal.vue'
+import ImageUpload from '../../components/ui/ImageUpload.vue'
 import { useToast } from '../../composables/useToast'
 
 const route = useRoute()

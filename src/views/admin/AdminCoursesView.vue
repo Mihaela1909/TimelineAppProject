@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useAdminCourses } from '../../composables/useAdminCourses'
-import ConfirmModal from '../../components/admin/ConfirmModal.vue'
+import ConfirmModal from '../../components/ui/ConfirmModal.vue'
 import { useToast } from '../../composables/useToast'
 
 const { courses, loading, error, fetchAll, remove } = useAdminCourses()

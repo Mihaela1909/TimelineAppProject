@@ -7,6 +7,7 @@ import { uploadImage, getImagePreviewUrl } from '../../services/mediaService'
 const props = defineProps({
   modelValue: { type: String, default: null },
   label: { type: String, default: 'Image' },
+  rounded: { type: Boolean, default: false }, // true = circular preview, for avatars
 })
 const emit = defineEmits(['update:modelValue'])
 
@@ -42,6 +43,7 @@ function onDrop(e) {
 
 function onFileInputChange(e) {
   handleFile(e.target.files[0])
+  e.target.value = ''
 }
 
 function clearImage() {
@@ -53,25 +55,31 @@ function clearImage() {
   <div>
     <label class="text-xs text-bark/70 block mb-1">{{ label }}</label>
 
-    <div
-      v-if="!modelValue"
-      class="border-2 border-dashed rounded-lg p-6 text-center text-xs text-bark/50 cursor-pointer transition-colors"
-      :class="isDragging ? 'border-olive bg-olive-light/40' : 'border-black/15 hover:border-olive/50'"
-      @dragover.prevent="isDragging = true"
-      @dragleave.prevent="isDragging = false"
-      @drop.prevent="onDrop"
-      @click="fileInput.click()"
-    >
-      <div v-if="uploading">Uploading…</div>
-      <div v-else>
-        Drag an image here, or
-        <span class="text-olive font-medium">browse</span>
+    <div v-if="!modelValue">
+      <div
+        class="border-2 border-dashed p-6 text-center text-xs text-bark/50 cursor-pointer transition-colors"
+        :class="[rounded ? 'rounded-full aspect-square flex items-center justify-center p-4' : 'rounded-lg', isDragging ? 'border-olive bg-olive-light/40' : 'border-black/15 hover:border-olive/50']"
+        @dragover.prevent="isDragging = true"
+        @dragleave.prevent="isDragging = false"
+        @drop.prevent="onDrop"
+        @click="fileInput.click()"
+      >
+        <div v-if="uploading">Uploading…</div>
+        <div v-else>
+          Drag an image here, or
+          <span class="text-olive font-medium">browse</span>
+        </div>
+        <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="onFileInputChange" />
       </div>
-      <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="onFileInputChange" />
     </div>
 
     <div v-else class="relative inline-block">
-      <img :src="previewUrl" alt="" class="h-24 rounded-lg object-cover" />
+      <img
+        :src="previewUrl"
+        alt=""
+        class="object-cover"
+        :class="rounded ? 'w-24 h-24 rounded-full' : 'h-24 rounded-lg'"
+      />
       <button
         type="button"
         class="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center"
@@ -79,6 +87,14 @@ function clearImage() {
       >
         ×
       </button>
+      <button
+        type="button"
+        class="block text-xs text-olive font-medium mt-1.5"
+        @click="fileInput.click()"
+      >
+        {{ uploading ? 'Uploading…' : 'Change' }}
+      </button>
+      <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="onFileInputChange" />
     </div>
 
     <p v-if="error" class="text-xs text-red-500 mt-1">{{ error }}</p>

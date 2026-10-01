@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import * as authService from '../services/authService'
 import { getProfileByUserId } from '../services/profileService'
+import { getSettingsByUserId } from '../services/profileSettingsService'
 
 // This state is intentionally declared OUTSIDE the function, at module
 // scope. That makes it a singleton — every component that calls useAuth()
@@ -58,6 +59,22 @@ export function useAuth() {
     }
   }
 
+  async function updateEmail(email, password) {
+    loading.value = true
+    error.value = null
+    try {
+      await authService.updateUserEmail(email, password)
+      await refreshCurrentUser()
+      return true
+    } catch (err) {
+      error.value = 'Could not update email — check your password is correct.'
+      console.error(err)
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
   async function updatePassword(newPassword, oldPassword) {
     loading.value = true
     error.value = null
@@ -80,13 +97,47 @@ export function useAuth() {
 
   async function refreshCurrentUser() {
     try {
+      // account.get() is the one call that MUST succeed for someone to be
+      // considered logged in. If this throws, they're genuinely not
+      // authenticated — currentUser correctly becomes null.
       const account = await authService.getCurrentUser()
-      // Appwrite's Account object has no `role` field — that lives in
-      // our own `profiles` table, so we fetch it separately and merge
-      // it in. Everything downstream (router guard, header, admin UI)
-      // just reads `currentUser.value.role` without knowing this happened.
-      const profile = await getProfileByUserId(account.$id)
-      currentUser.value = { ...account, role: profile?.role || null }
+
+      // Role and avatar are secondary enrichment, each fetched from our
+      // own tables. A problem with either one (missing table, bad env var,
+      // etc.) should NOT undo a successful login — so each gets its own
+      // try/catch and degrades to null instead of failing the whole thing.
+      // Live (admin-approved) images live on `profiles`; pending
+      // submissions awaiting approval live on `profile_settings`.
+      let role = null
+      let avatarImageId = null
+      let headerImageId = null
+      try {
+        const profile = await getProfileByUserId(account.$id)
+        role = profile?.role || null
+        avatarImageId = profile?.avatarImageId || null
+        headerImageId = profile?.headerImageId || null
+      } catch (err) {
+        console.error('Could not load profiles row:', err)
+      }
+
+      let pendingAvatarImageId = null
+      let pendingHeaderImageId = null
+      try {
+        const settings = await getSettingsByUserId(account.$id)
+        pendingAvatarImageId = settings?.pendingAvatarImageId || null
+        pendingHeaderImageId = settings?.pendingHeaderImageId || null
+      } catch (err) {
+        console.error('Could not load profile_settings row:', err)
+      }
+
+      currentUser.value = {
+        ...account,
+        role,
+        avatarImageId,
+        headerImageId,
+        pendingAvatarImageId,
+        pendingHeaderImageId,
+      }
     } catch {
       currentUser.value = null
     } finally {
@@ -104,6 +155,7 @@ export function useAuth() {
     logout,
     refreshCurrentUser,
     updateName,
+    updateEmail,
     updatePassword,
   }
 }

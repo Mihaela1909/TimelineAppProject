@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useAdminBlogPosts } from '../../composables/useAdminBlogPosts'
-import ConfirmModal from '../../components/admin/ConfirmModal.vue'
+import ConfirmModal from '../../components/ui/ConfirmModal.vue'
 import { useToast } from '../../composables/useToast'
 
 const { posts, loading, error, fetchAll, remove } = useAdminBlogPosts()

@@ -3,8 +3,8 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAdminLessons } from '../../composables/useAdminLessons'
 import { useAdminCourses } from '../../composables/useAdminCourses'
-import RichTextEditor from '../../components/admin/RichTextEditor.vue'
-import ImageUpload from '../../components/admin/ImageUpload.vue'
+import RichTextEditor from '../../components/ui/RichTextEditor.vue'
+import ImageUpload from '../../components/ui/ImageUpload.vue'
 import { useToast } from '../../composables/useToast'
 
 const route = useRoute()

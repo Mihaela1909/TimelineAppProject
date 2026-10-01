@@ -4,8 +4,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAdminQuizzes } from '../../composables/useAdminQuizzes'
 import { useAdminQuizQuestions } from '../../composables/useAdminQuizQuestions'
 import { useAdminCourses } from '../../composables/useAdminCourses'
-import ConfirmModal from '../../components/admin/ConfirmModal.vue'
-import ImageUpload from '../../components/admin/ImageUpload.vue'
+import ConfirmModal from '../../components/ui/ConfirmModal.vue'
+import ImageUpload from '../../components/ui/ImageUpload.vue'
 import { useToast } from '../../composables/useToast'
 
 const route = useRoute()
