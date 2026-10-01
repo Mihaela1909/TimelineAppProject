@@ -1,13 +1,30 @@
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCourseDetail } from '../composables/useCourseDetail'
+import { useAuth } from '../composables/useAuth'
 import { getImagePreviewUrl } from '../services/mediaService'
+import { getCompletedLessonIds } from '../services/progressService'
 
 const route = useRoute()
 const { course, lessons, loading, error, fetchCourseAndLessons } = useCourseDetail()
+const { currentUser } = useAuth()
 
-onMounted(() => fetchCourseAndLessons(route.params.id))
+const completedLessonIds = ref([])
+
+onMounted(async () => {
+  await fetchCourseAndLessons(route.params.id)
+  if (currentUser.value) {
+    completedLessonIds.value = await getCompletedLessonIds(currentUser.value.$id, route.params.id)
+  }
+})
+
+const progressPercent = computed(() => {
+  if (!lessons.value.length) return 0
+  return Math.round((completedLessonIds.value.length / lessons.value.length) * 100)
+})
+
+const nextIncompleteLesson = computed(() => lessons.value.find((l) => !completedLessonIds.value.includes(l.$id)))
 </script>
 
 <template>
@@ -49,7 +66,24 @@ onMounted(() => fetchCourseAndLessons(route.params.id))
         </div>
       </div>
 
-      <p class="text-sm text-bark/70 leading-relaxed mb-8">{{ course.description }}</p>
+      <p class="text-sm text-bark/70 leading-relaxed mb-6">{{ course.description }}</p>
+
+      <div v-if="currentUser && completedLessonIds.length > 0" class="mb-8">
+        <div class="flex items-center gap-3 mb-2">
+          <span class="text-xs text-bark/60 whitespace-nowrap">{{ completedLessonIds.length }}/{{ lessons.length }} complete</span>
+          <div class="flex-1 h-1.5 bg-black/5 rounded-full">
+            <div class="h-full bg-olive rounded-full transition-all" :style="{ width: `${progressPercent}%` }"></div>
+          </div>
+        </div>
+        <RouterLink
+          v-if="nextIncompleteLesson"
+          :to="`/courses/${course.$id}/lessons/${nextIncompleteLesson.$id}`"
+          class="text-sm px-5 py-2 rounded-md bg-olive text-white inline-block"
+        >
+          Continue · {{ nextIncompleteLesson.title }}
+        </RouterLink>
+        <div v-else class="text-sm text-olive font-medium">🎉 Course completed!</div>
+      </div>
 
       <div class="flex items-center gap-2 mb-3">
         <h2 class="text-sm font-semibold text-bark">Lessons</h2>
@@ -66,7 +100,8 @@ onMounted(() => fetchCourseAndLessons(route.params.id))
           :to="`/courses/${course.$id}/lessons/${lesson.$id}`"
           class="flex items-center gap-3 bg-white px-4 py-3 rounded-lg text-sm hover:shadow-sm transition-shadow"
         >
-          <span class="text-xs text-bark/40 w-5">{{ index + 1 }}</span>
+          <span v-if="completedLessonIds.includes(lesson.$id)" class="text-olive text-sm">✓</span>
+          <span v-else class="text-xs text-bark/40 w-5">{{ index + 1 }}</span>
           <span class="flex-1 text-bark">{{ lesson.title }}</span>
           <span class="text-olive text-xs">→</span>
         </RouterLink>

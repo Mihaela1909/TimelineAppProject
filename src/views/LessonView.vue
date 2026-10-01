@@ -1,14 +1,45 @@
 <script setup>
-import { onMounted, computed } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCourseDetail } from '../composables/useCourseDetail'
+import { useAuth } from '../composables/useAuth'
 import { getImagePreviewUrl } from '../services/mediaService'
+import { markLessonComplete, getCompletedLessonIds } from '../services/progressService'
+import { useToast } from '../composables/useToast'
 
 const route = useRoute()
 const router = useRouter()
 const { course, lessons, loading, error, fetchCourseAndLessons } = useCourseDetail()
+const { currentUser } = useAuth()
+const toast = useToast()
 
-onMounted(() => fetchCourseAndLessons(route.params.id))
+const completedLessonIds = ref([])
+const marking = ref(false)
+
+onMounted(async () => {
+  await fetchCourseAndLessons(route.params.id)
+  if (currentUser.value) {
+    completedLessonIds.value = await getCompletedLessonIds(currentUser.value.$id, route.params.id)
+  }
+})
+
+const isCurrentLessonComplete = computed(() => completedLessonIds.value.includes(route.params.lessonId))
+
+async function handleMarkComplete() {
+  if (!currentUser.value || isCurrentLessonComplete.value) return
+  marking.value = true
+  try {
+    await markLessonComplete({
+      userId: currentUser.value.$id,
+      courseId: route.params.id,
+      lessonId: route.params.lessonId,
+    })
+    completedLessonIds.value.push(route.params.lessonId)
+    toast.success('Marked as complete')
+  } finally {
+    marking.value = false
+  }
+}
 
 const currentIndex = computed(() => lessons.value.findIndex((l) => l.$id === route.params.lessonId))
 const currentLesson = computed(() => lessons.value[currentIndex.value])
@@ -56,6 +87,23 @@ function goTo(lessonId) {
       />
 
       <div class="lesson-editor-content bg-white rounded-lg p-5 mb-6" v-html="currentLesson.content"></div>
+
+      <div v-if="currentUser" class="mb-6">
+        <button
+          v-if="!isCurrentLessonComplete"
+          class="w-full py-2.5 bg-olive text-white rounded-lg text-sm font-medium disabled:opacity-60 flex items-center justify-center gap-2"
+          :disabled="marking"
+          @click="handleMarkComplete"
+        >
+          ✓ {{ marking ? 'Saving…' : 'Mark as complete' }}
+        </button>
+        <div v-else class="w-full py-2.5 bg-olive-light text-olive rounded-lg text-sm font-medium text-center">
+          ✓ Completed
+        </div>
+      </div>
+      <div v-else class="mb-6 text-xs text-bark/50 text-center">
+        <RouterLink to="/login" class="text-olive font-medium">Log in</RouterLink> to save your progress
+      </div>
 
       <div class="flex justify-between text-sm">
         <button
