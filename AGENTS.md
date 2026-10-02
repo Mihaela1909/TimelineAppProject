@@ -14,7 +14,7 @@ Each layer has ONE kind of job. Data flows one way: **view → composable → se
 | Application logic | `composables/use*.js` | State (`ref`s), loading/error handling, combining services, computing derived data | Render anything, call `tablesDB`/`storage` directly |
 | Pages | `views/`, `views/admin/` | Layout of one route, wiring user events to composable functions | Call services or Appwrite directly, contain business rules |
 | Reusable UI | `components/ui/`, `components/layout/` | Presentational pieces driven by props/emits | Fetch data or know which table they're for |
-| Structure | `layouts/`, `router/`, `constants/` | Page shells, routes + guards, shared constants | — |
+| Structure | `layouts/`, `router/`, `constants/`, `utils/` | Page shells, routes + guards, shared constants, small pure helpers (no Vue, no Appwrite) | — |
 
 **Prefer:** adding a function to the right existing service/composable over creating a new file.
 **Avoid:** a view importing from `services/` (only `getImagePreviewUrl` is allowed).
@@ -25,7 +25,13 @@ Each layer has ONE kind of job. Data flows one way: **view → composable → se
 - One function = one job. If a name needs "and" (`loadAndFormatAndSave`), split it.
 - Pure calculations go in plain functions (e.g. `buildStatistics()`), separate from the code that loads data, so they can be tested alone.
 - Components stay small. If a view passes ~250 lines or has a self-contained block (a modal, a table row with a menu), extract it to a component.
-- Shared helpers live in one place: pagination/bulk delete → `services/rowHelpers.js`; roles → `constants/roles.js`; icons → `components/ui/AppIcon.vue`. Don't re-implement them.
+- Shared helpers live in one place:
+  - pagination/bulk delete → `services/rowHelpers.js`
+  - required-field messages → `utils/formChecks.js`; each composable declares its own `REQUIRED_IMAGES`
+  - roles → `constants/roles.js`
+  - icons → `components/ui/AppIcon.vue`
+
+  Don't re-implement them.
 
 ## 3. Checks and resets (every user action)
 

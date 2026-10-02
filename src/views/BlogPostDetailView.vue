@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router'
 import { useBlog } from '../composables/useBlog'
 import { getImagePreviewUrl } from '../services/mediaService'
 import { useToast } from '../composables/useToast'
-import { CATEGORY_STYLES as categoryStyles } from '../constants/blogCategories'
+import { categoryStyle } from '../constants/blogCategories'
 
 const route = useRoute()
 const toast = useToast()
@@ -48,7 +48,7 @@ async function share() {
     <template v-else-if="post">
       <RouterLink to="/blog" class="text-xs text-bark/60 hover:text-bark mb-3 inline-block">← Blog</RouterLink>
 
-      <span class="text-xs px-3 py-1 rounded-full" :class="categoryStyles[post.category]">{{ post.category }}</span>
+      <span class="text-xs px-3 py-1 rounded-full" :class="categoryStyle(post.category)">{{ post.category }}</span>
       <h1 class="font-voice text-2xl text-bark mt-3 mb-2 leading-tight">{{ post.title }}</h1>
       <div class="text-xs text-bark/50 mb-5">{{ formattedDate }} · {{ post.readTime }}</div>
 

@@ -1,5 +1,10 @@
 import { ref } from 'vue'
 import * as lessonService from '../services/lessonService'
+import { missingFieldsMessage } from '../utils/formChecks'
+
+// Required in Appwrite — checked here first so the user gets a clear
+// message instead of a generic "could not save".
+export const REQUIRED_IMAGES = { imageId: 'lesson image' }
 
 export function useAdminLessons() {
   const lessons = ref([])
@@ -31,8 +36,9 @@ export function useAdminLessons() {
 
   async function save(id, data) {
     if (saving.value) return null // already saving — ignore double-clicks
+    error.value = missingFieldsMessage(data, REQUIRED_IMAGES)
+    if (error.value) return null
     saving.value = true
-    error.value = null
     try {
       // Return the saved row itself (not just true/false) so callers can
       // read its $id — needed when creating a lesson for the first time,

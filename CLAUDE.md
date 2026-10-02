@@ -54,6 +54,12 @@ A user's upload does NOT go live until an admin approves it.
 - Deletes cascade in the services: `deleteCourse` → its lessons (+ their progress), quizzes (+ questions, attempts), remaining progress; `deleteQuiz` → questions + attempts; `deleteLesson` → its progress. Children are deleted first, so a failure leaves the parent in place to retry.
 - Cascades need table-level `Delete` for label `admin` on lessons, quizzes, quiz_questions, quiz_attempts, progress.
 
+## Categories
+- Course and blog post categories are plain strings on each row. There's no categories table, so a new category exists once a row is saved with it.
+- Admin forms use `components/ui/CategoryPicker.vue`: pick an existing one or "+ Create". It matches case-insensitively, so "ancient" reuses "Ancient".
+- Options come from `useAdminCourses().categories` / `useAdminBlogPosts().categories` (blog also includes the built-in `CATEGORY_STYLES` names).
+- Blog badges use `categoryStyle(name)` from `constants/blogCategories.js`, with a grey fallback for new categories.
+
 ## Known gaps / next priorities
 1. Users can't remove a live photo themselves (they can only replace it, or cancel a pending one). Needs an admin-side "remove" or a pending "remove" request.
 2. Rejected/replaced files stay in the bucket (orphaned). Cleanup would need bucket `Delete` for label `admin`, then `deleteImage()` on reject/replace.

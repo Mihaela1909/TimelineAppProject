@@ -1,10 +1,20 @@
 <script setup>
+import { computed } from 'vue'
+
 // Tiny inline-SVG icon set (Tabler-style outline icons) so we don't need
 // an icon font/library just for the admin sidebar and dashboard.
 // Usage: <AppIcon name="home" class="w-5 h-5" />
-defineProps({
+// PATHS are outline (stroke) icons; FILLED are solid shapes.
+const props = defineProps({
   name: { type: String, required: true },
 })
+
+// Solid icons (fill instead of stroke) — used where the mockups show filled shapes.
+const FILLED = {
+  edit: ['M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z', 'M20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'],
+  trash: ['M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12z', 'M19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z'],
+  grip: ['M7.5 5a2 2 0 1 0 4 0a2 2 0 1 0-4 0', 'M12.5 5a2 2 0 1 0 4 0a2 2 0 1 0-4 0', 'M7.5 12a2 2 0 1 0 4 0a2 2 0 1 0-4 0', 'M12.5 12a2 2 0 1 0 4 0a2 2 0 1 0-4 0', 'M7.5 19a2 2 0 1 0 4 0a2 2 0 1 0-4 0', 'M12.5 19a2 2 0 1 0 4 0a2 2 0 1 0-4 0'],
+}
 
 const PATHS = {
   home: ['M5 12H3l9-9 9 9h-2', 'M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7', 'M9 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6'],
@@ -17,19 +27,32 @@ const PATHS = {
   chevron: ['M6 9l6 6 6-6'],
   logout: ['M14 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-2', 'M9 12h12l-3-3', 'M18 15l3-3'],
   plus: ['M12 5v14', 'M5 12h14'],
+  'arrow-left': ['M5 12h14', 'M5 12l6 6', 'M5 12l6-6'],
+  // Rich text editor toolbar
+  bold: ['M7 5h6a3.5 3.5 0 0 1 0 7h-6z', 'M13 12h1a3.5 3.5 0 0 1 0 7h-7v-7'],
+  italic: ['M11 5h6', 'M7 19h6', 'M14 5l-4 14'],
+  h2: ['M17 12a2 2 0 1 1 4 0c0 .591-.417 1.318-.816 1.858l-3.184 4.142h4', 'M4 6v12', 'M12 6v12', 'M11 18h2', 'M3 18h2', 'M4 12h8', 'M3 6h2', 'M11 6h2'],
+  h3: ['M19 14a2 2 0 1 0-2-2', 'M17 16a2 2 0 1 0 2-2', 'M4 6v12', 'M12 6v12', 'M11 18h2', 'M3 18h2', 'M4 12h8', 'M3 6h2', 'M11 6h2'],
+  list: ['M9 6h11', 'M9 12h11', 'M9 18h11', 'M5 6v.01', 'M5 12v.01', 'M5 18v.01'],
+  'list-numbers': ['M11 6h9', 'M11 12h9', 'M12 18h8', 'M4 16a2 2 0 1 1 4 0c0 .591-.5 1-1 1.5l-3 2.5h4', 'M6 10v-6l-2 2'],
+  link: ['M9 15l6-6', 'M11 6l.463-.536a5 5 0 0 1 7.071 7.072l-.534.464', 'M13 18l-.397.534a5.068 5.068 0 0 1-7.127 0a4.972 4.972 0 0 1 0-7.071l.524-.463'],
+  quote: ['M10 11h-4a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v6c0 2.667-1.333 4.333-4 5', 'M19 11h-4a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v6c0 2.667-1.333 4.333-4 5'],
 }
+
+const filled = computed(() => props.name in FILLED)
+const paths = computed(() => FILLED[props.name] || PATHS[props.name] || [])
 </script>
 
 <template>
   <svg
     viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
+    :fill="filled ? 'currentColor' : 'none'"
+    :stroke="filled ? 'none' : 'currentColor'"
     stroke-width="1.8"
     stroke-linecap="round"
     stroke-linejoin="round"
     aria-hidden="true"
   >
-    <path v-for="d in PATHS[name]" :key="d" :d="d" />
+    <path v-for="d in paths" :key="d" :d="d" />
   </svg>
 </template>

@@ -6,6 +6,7 @@ export function useAdminQuizQuestions() {
   const loading = ref(false)
   const error = ref(null)
   const saving = ref(false)
+  const reordering = ref(false)
 
   async function fetchForQuiz(quizId) {
     loading.value = true
@@ -57,5 +58,34 @@ export function useAdminQuizQuestions() {
     }
   }
 
-  return { questions, loading, error, saving, fetchForQuiz, fetchOne, save, remove }
+  // Move a question from one position to another and save the new order.
+  // The list updates immediately (so dragging feels instant); only rows
+  // whose position actually changed are written. Returns true/false.
+  async function reorder(fromIndex, toIndex) {
+    if (reordering.value) return false
+    if (fromIndex === toIndex || toIndex < 0 || toIndex >= questions.value.length) return true
+
+    const next = [...questions.value]
+    const [moved] = next.splice(fromIndex, 1)
+    next.splice(toIndex, 0, moved)
+    questions.value = next
+
+    reordering.value = true
+    try {
+      await Promise.all(
+        next.map((q, i) => (q.order === i + 1 ? null : questionService.updateQuestion(q.$id, { order: i + 1 })))
+      )
+      questions.value = next.map((q, i) => ({ ...q, order: i + 1 }))
+      return true
+    } catch (err) {
+      console.error(err)
+      // Some rows may have saved and some not — reload the real order.
+      await fetchForQuiz(moved.quizId)
+      return false
+    } finally {
+      reordering.value = false
+    }
+  }
+
+  return { questions, loading, error, saving, reordering, fetchForQuiz, fetchOne, save, remove, reorder }
 }

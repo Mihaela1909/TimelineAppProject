@@ -8,3 +8,7 @@ export const CATEGORY_STYLES = Object.freeze({
 })
 
 export const DEFAULT_CATEGORY_STYLE = 'bg-gray-100 text-gray-700'
+
+// Admins can create new categories, which have no colour above — they
+// fall back to a neutral grey badge instead of showing no badge at all.
+export const categoryStyle = (category) => CATEGORY_STYLES[category] || DEFAULT_CATEGORY_STYLE

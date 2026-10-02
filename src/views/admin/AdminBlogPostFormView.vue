@@ -1,19 +1,19 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useAdminBlogPosts } from '../../composables/useAdminBlogPosts'
+import { useAdminBlogPosts, REQUIRED_IMAGES } from '../../composables/useAdminBlogPosts'
 import RichTextEditor from '../../components/ui/RichTextEditor.vue'
 import ImageUpload from '../../components/ui/ImageUpload.vue'
+import PublishToggle from '../../components/ui/PublishToggle.vue'
+import CategoryPicker from '../../components/ui/CategoryPicker.vue'
 import { useToast } from '../../composables/useToast'
 
 const route = useRoute()
 const router = useRouter()
-const { fetchOne, save, saving, error } = useAdminBlogPosts()
+const { fetchOne, save, saving, error, categories, fetchAll } = useAdminBlogPosts()
 const toast = useToast()
 
 const isEditing = computed(() => !!route.params.id)
-
-const categories = ['Myth-Busting', 'Listicle', 'Dev Update', 'Digest']
 
 const form = ref({
   title: '',
@@ -26,13 +26,20 @@ const form = ref({
 })
 
 onMounted(async () => {
+  fetchAll() // existing posts → the list of categories already in use
   if (isEditing.value) {
     const existing = await fetchOne(route.params.id)
     if (existing) form.value = { ...existing }
   }
 })
 
+// Image fields: `*` when required, red once a save was attempted without one.
+const submitted = ref(false)
+const isRequired = (field) => field in REQUIRED_IMAGES
+const isMissing = (field) => submitted.value && isRequired(field) && !form.value[field]
+
 async function handleSubmit() {
+  submitted.value = true
   const ok = await save(isEditing.value ? route.params.id : null, form.value)
   if (ok) {
     toast.success('Post saved')
@@ -63,15 +70,8 @@ async function handleSubmit() {
 
         <div class="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <label class="text-xs text-bark/70 block mb-1">Category *</label>
-            <select
-              v-model="form.category"
-              required
-              class="w-full px-3 py-2 border border-black/10 rounded-md text-sm bg-white"
-            >
-              <option value="" disabled>Select</option>
-              <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
-            </select>
+            <label for="post-category" class="text-xs text-bark/70 block mb-1">Category *</label>
+            <CategoryPicker id="post-category" v-model="form.category" :options="categories" required />
           </div>
           <div>
             <label class="text-xs text-bark/70 block mb-1">Read Time</label>
@@ -97,13 +97,12 @@ async function handleSubmit() {
         </div>
 
         <div class="mb-5">
-          <ImageUpload v-model="form.coverImageId" label="Cover image" />
+          <ImageUpload v-model="form.coverImageId" label="Cover image" :required="isRequired('coverImageId')" :invalid="isMissing('coverImageId')" />
         </div>
 
-        <label class="flex items-center gap-2 text-sm mb-5">
-          <input type="checkbox" v-model="form.published" class="accent-olive" />
-          Published
-        </label>
+        <div class="mb-5">
+          <PublishToggle v-model="form.published" />
+        </div>
 
         <button
           type="submit"

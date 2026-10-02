@@ -1,5 +1,10 @@
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import * as courseService from '../services/courseService'
+import { missingFieldsMessage } from '../utils/formChecks'
+
+// Required in Appwrite — checked here first so the user gets a clear
+// message instead of a generic "could not save".
+export const REQUIRED_IMAGES = { coverImageId: 'cover image', headerImageId: 'header image' }
 
 // APPLICATION LOGIC for the admin Courses screens. Separate from
 // useCourses.js (which is the public-facing, read-only homepage version)
@@ -39,8 +44,9 @@ export function useAdminCourses() {
 
   async function save(id, data) {
     if (saving.value) return false // already saving — ignore double-clicks
+    error.value = missingFieldsMessage(data, REQUIRED_IMAGES)
+    if (error.value) return false
     saving.value = true
-    error.value = null
     try {
       if (id) {
         await courseService.updateCourse(id, data)
@@ -70,5 +76,8 @@ export function useAdminCourses() {
     }
   }
 
-  return { courses, loading, error, saving, fetchAll, fetchOne, save, remove }
+  // Every category used by an existing course (CategoryPicker dedupes and sorts).
+  const categories = computed(() => courses.value.map((c) => c.category))
+
+  return { courses, categories, loading, error, saving, fetchAll, fetchOne, save, remove }
 }

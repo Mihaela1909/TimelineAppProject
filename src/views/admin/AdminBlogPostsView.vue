@@ -3,7 +3,7 @@ import { onMounted, ref } from 'vue'
 import { useAdminBlogPosts } from '../../composables/useAdminBlogPosts'
 import ConfirmModal from '../../components/ui/ConfirmModal.vue'
 import { useToast } from '../../composables/useToast'
-import { CATEGORY_STYLES as categoryStyles } from '../../constants/blogCategories'
+import { categoryStyle } from '../../constants/blogCategories'
 
 const { posts, loading, error, fetchAll, remove } = useAdminBlogPosts()
 const pendingDelete = ref(null)
@@ -62,7 +62,7 @@ async function confirmDelete() {
             <td class="py-3 px-5">
               <span
                 class="text-xs px-3 py-1 rounded-full"
-                :class="categoryStyles[post.category] || 'bg-gray-100 text-gray-700'"
+                :class="categoryStyle(post.category)"
               >
                 {{ post.category }}
               </span>

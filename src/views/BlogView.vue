@@ -2,7 +2,7 @@
 import { onMounted, ref, computed } from 'vue'
 import { useBlog } from '../composables/useBlog'
 import { getImagePreviewUrl } from '../services/mediaService'
-import { CATEGORY_STYLES as categoryStyles } from '../constants/blogCategories'
+import { categoryStyle } from '../constants/blogCategories'
 
 const { posts, loading, error, fetchPublished } = useBlog()
 const searchTerm = ref('')
@@ -53,7 +53,7 @@ const rest = computed(() => filteredPosts.value.slice(1))
           v-for="cat in categories"
           :key="cat"
           class="text-xs px-4 py-1.5 rounded-full transition-colors"
-          :class="activeCategory === cat ? 'bg-bark text-white' : (categoryStyles[cat] || 'bg-white text-bark/60')"
+          :class="activeCategory === cat ? 'bg-bark text-white' : cat === 'All' ? 'bg-white text-bark/60' : categoryStyle(cat)"
           @click="activeCategory = cat"
         >
           {{ cat }}
@@ -78,7 +78,7 @@ const rest = computed(() => filteredPosts.value.slice(1))
           />
           <div v-else class="w-20 h-20 rounded-lg bg-olive-light flex-shrink-0"></div>
           <div>
-            <span class="text-xs px-2.5 py-0.5 rounded-full" :class="categoryStyles[featured.category]">
+            <span class="text-xs px-2.5 py-0.5 rounded-full" :class="categoryStyle(featured.category)">
               {{ featured.category }}
             </span>
             <div class="text-white font-medium mt-2">{{ featured.title }}</div>
@@ -101,7 +101,7 @@ const rest = computed(() => filteredPosts.value.slice(1))
             />
             <div v-else class="h-24 bg-olive-light"></div>
             <div class="p-3">
-              <span class="text-[10px] px-2 py-0.5 rounded-full" :class="categoryStyles[post.category]">
+              <span class="text-[10px] px-2 py-0.5 rounded-full" :class="categoryStyle(post.category)">
                 {{ post.category }}
               </span>
               <div class="text-sm font-medium text-bark mt-2">{{ post.title }}</div>

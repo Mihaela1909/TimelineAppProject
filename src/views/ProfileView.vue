@@ -8,6 +8,8 @@ import { getImagePreviewUrl } from '../services/mediaService'
 import AvatarUpload from '../components/ui/AvatarUpload.vue'
 import ConfirmModal from '../components/ui/ConfirmModal.vue'
 import { useToast } from '../composables/useToast'
+import AppIcon from '../components/ui/AppIcon.vue'
+import { STAFF_ROLES } from '../constants/roles'
 
 const router = useRouter()
 const { currentUser, updateName, updateEmail, updatePassword, logout, loading: authLoading, error: authError } = useAuth()
@@ -44,6 +46,10 @@ onMounted(() => {
   emailForm.value = currentUser.value?.email || ''
   fetchFor(currentUser.value?.$id)
 })
+
+// Staff (admins + editors) get a shortcut into the admin panel. UX only —
+// the router guard and Appwrite permissions still decide what they can do.
+const canOpenAdmin = computed(() => STAFF_ROLES.includes(currentUser.value?.role))
 
 const enrolledCount = computed(() => courseProgress.value.length)
 const completedCoursesCount = computed(() => completedCourses.value.length)
@@ -117,6 +123,14 @@ async function confirmDeleteAccount() {
           {{ currentUser?.registration ? new Date(currentUser.registration).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '' }}
         </div>
       </div>
+      <RouterLink
+        v-if="canOpenAdmin"
+        to="/admin"
+        class="ml-auto flex items-center gap-2 px-4 py-2 rounded-lg bg-white/15 text-white text-sm font-semibold backdrop-blur-sm hover:bg-white/25 transition-colors"
+      >
+        <AppIcon name="home" class="w-4 h-4" />
+        Admin panel
+      </RouterLink>
     </div>
 
     <div class="grid grid-cols-4 gap-3 mb-6">

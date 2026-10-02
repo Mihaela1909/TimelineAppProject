@@ -1,14 +1,15 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import AppHeader from '../components/layout/AppHeader.vue'
+import AppLogo from '../components/layout/AppLogo.vue'
 import AppIcon from '../components/ui/AppIcon.vue'
 import { useAuth } from '../composables/useAuth'
 import { getImagePreviewUrl } from '../services/mediaService'
 import { ROLES } from '../constants/roles'
 
-// The admin panel keeps the public AppHeader on top (so admins can jump
-// back to the live site) but swaps the footer for a functional sidebar.
+// No public header/footer here on purpose: the admin panel is a focused
+// workspace. The sidebar logo links back to the live site, and the
+// name/avatar links to the user's own profile.
 const { currentUser, logout } = useAuth()
 const route = useRoute()
 const router = useRouter()
@@ -45,10 +46,17 @@ async function handleSignOut() {
 </script>
 
 <template>
-  <AppHeader />
   <div class="flex min-h-screen">
     <aside class="w-56 bg-bark text-cream/90 px-4 py-6 flex flex-col flex-shrink-0">
-      <div class="flex items-center gap-3 px-2 mb-6">
+      <div class="px-2 mb-6">
+        <AppLogo />
+      </div>
+
+      <RouterLink
+        to="/profile"
+        class="flex items-center gap-3 px-2 py-1.5 mb-6 rounded-lg hover:bg-white/10 transition-colors"
+        title="Go to your profile"
+      >
         <div class="w-10 h-10 rounded-full overflow-hidden bg-sand flex items-center justify-center flex-shrink-0">
           <img
             v-if="currentUser?.avatarImageId"
@@ -59,7 +67,7 @@ async function handleSignOut() {
           <span v-else class="text-bark font-semibold">{{ currentUser?.name?.charAt(0)?.toUpperCase() }}</span>
         </div>
         <span class="text-white truncate">{{ currentUser?.name }}</span>
-      </div>
+      </RouterLink>
 
       <nav class="flex flex-col gap-1 flex-1">
         <RouterLink

@@ -1,5 +1,10 @@
 import { ref } from 'vue'
 import * as quizService from '../services/quizService'
+import { missingFieldsMessage } from '../utils/formChecks'
+
+// Required in Appwrite — checked here first so the user gets a clear
+// message instead of a generic "could not save".
+export const REQUIRED_IMAGES = { coverImageId: 'cover image', headerImageId: 'header image' }
 
 export function useAdminQuizzes() {
   const quizzes = ref([])
@@ -31,8 +36,9 @@ export function useAdminQuizzes() {
 
   async function save(id, data) {
     if (saving.value) return null // already saving — ignore double-clicks
+    error.value = missingFieldsMessage(data, REQUIRED_IMAGES)
+    if (error.value) return null
     saving.value = true
-    error.value = null
     try {
       return id ? await quizService.updateQuiz(id, data) : await quizService.createQuiz(data)
     } catch (err) {

@@ -3,6 +3,7 @@ import { watch, onBeforeUnmount } from 'vue'
 import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
+import AppIcon from './AppIcon.vue'
 
 // This component owns the TipTap instance and emits plain HTML strings
 // via v-model — the parent form never touches TipTap directly, it just
@@ -20,7 +21,7 @@ const editor = useEditor({
   ],
   editorProps: {
     attributes: {
-      class: 'lesson-editor-content min-h-[140px] px-3 py-2 text-sm focus:outline-none',
+      class: 'lesson-editor-content min-h-[100px] px-5 py-4 text-base text-bark focus:outline-none',
     },
   },
   onUpdate: ({ editor }) => {
@@ -47,79 +48,47 @@ function setLink() {
   const url = window.prompt('Enter a URL')
   if (url) editor.value.chain().focus().setLink({ href: url }).run()
 }
+
+// Toolbar buttons, in display order. `null` = a small gap between groups.
+// Each `run` is the same TipTap command the old text buttons used.
+const toolbar = [
+  { icon: 'bold', label: 'Bold', active: 'bold', run: () => editor.value.chain().focus().toggleBold().run() },
+  { icon: 'italic', label: 'Italic', active: 'italic', run: () => editor.value.chain().focus().toggleItalic().run() },
+  null,
+  { icon: 'h2', label: 'Heading 2', active: ['heading', { level: 2 }], run: () => editor.value.chain().focus().toggleHeading({ level: 2 }).run() },
+  { icon: 'h3', label: 'Heading 3', active: ['heading', { level: 3 }], run: () => editor.value.chain().focus().toggleHeading({ level: 3 }).run() },
+  null,
+  { icon: 'list', label: 'Bullet list', active: 'bulletList', run: () => editor.value.chain().focus().toggleBulletList().run() },
+  { icon: 'list-numbers', label: 'Numbered list', active: 'orderedList', run: () => editor.value.chain().focus().toggleOrderedList().run() },
+  null,
+  { icon: 'link', label: 'Link', active: 'link', run: setLink },
+  { icon: 'quote', label: 'Quote', active: 'blockquote', run: () => editor.value.chain().focus().toggleBlockquote().run() },
+]
+
+const isActive = (active) => (Array.isArray(active) ? editor.value.isActive(...active) : editor.value.isActive(active))
 </script>
 
 <template>
-  <div class="border border-black/10 rounded-md overflow-hidden">
-    <div v-if="editor" class="flex items-center gap-1 px-2 py-1.5 border-b border-black/10 bg-cream/40">
-      <button
-        type="button"
-        class="w-7 h-7 rounded text-xs font-bold"
-        :class="editor.isActive('bold') ? 'bg-olive text-white' : 'text-bark/60 hover:bg-black/5'"
-        @click="editor.chain().focus().toggleBold().run()"
-      >
-        B
-      </button>
-      <button
-        type="button"
-        class="w-7 h-7 rounded text-xs italic"
-        :class="editor.isActive('italic') ? 'bg-olive text-white' : 'text-bark/60 hover:bg-black/5'"
-        @click="editor.chain().focus().toggleItalic().run()"
-      >
-        I
-      </button>
-      <span class="w-px h-4 bg-black/10 mx-1"></span>
-      <button
-        type="button"
-        class="px-2 h-7 rounded text-xs font-semibold"
-        :class="editor.isActive('heading', { level: 2 }) ? 'bg-olive text-white' : 'text-bark/60 hover:bg-black/5'"
-        @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
-      >
-        H2
-      </button>
-      <button
-        type="button"
-        class="px-2 h-7 rounded text-xs font-semibold"
-        :class="editor.isActive('heading', { level: 3 }) ? 'bg-olive text-white' : 'text-bark/60 hover:bg-black/5'"
-        @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
-      >
-        H3
-      </button>
-      <span class="w-px h-4 bg-black/10 mx-1"></span>
-      <button
-        type="button"
-        class="w-7 h-7 rounded text-xs"
-        :class="editor.isActive('bulletList') ? 'bg-olive text-white' : 'text-bark/60 hover:bg-black/5'"
-        @click="editor.chain().focus().toggleBulletList().run()"
-      >
-        •≡
-      </button>
-      <button
-        type="button"
-        class="w-7 h-7 rounded text-xs"
-        :class="editor.isActive('orderedList') ? 'bg-olive text-white' : 'text-bark/60 hover:bg-black/5'"
-        @click="editor.chain().focus().toggleOrderedList().run()"
-      >
-        1≡
-      </button>
-      <span class="w-px h-4 bg-black/10 mx-1"></span>
-      <button
-        type="button"
-        class="w-7 h-7 rounded text-xs"
-        :class="editor.isActive('link') ? 'bg-olive text-white' : 'text-bark/60 hover:bg-black/5'"
-        @click="setLink"
-      >
-        🔗
-      </button>
-      <button
-        type="button"
-        class="w-7 h-7 rounded text-xs"
-        :class="editor.isActive('blockquote') ? 'bg-olive text-white' : 'text-bark/60 hover:bg-black/5'"
-        @click="editor.chain().focus().toggleBlockquote().run()"
-      >
-        "
-      </button>
+  <div>
+    <div v-if="editor" class="flex items-center gap-1 mb-2" role="toolbar" aria-label="Text formatting">
+      <template v-for="(button, i) in toolbar" :key="button ? button.icon : `gap-${i}`">
+        <span v-if="!button" class="w-2" aria-hidden="true"></span>
+        <button
+          v-else
+          type="button"
+          class="w-8 h-8 rounded-md flex items-center justify-center transition-colors"
+          :class="isActive(button.active) ? 'bg-olive-light text-olive' : 'text-sand-dark hover:text-olive hover:bg-olive-light/50'"
+          :title="button.label"
+          :aria-label="button.label"
+          :aria-pressed="isActive(button.active)"
+          @click="button.run"
+        >
+          <AppIcon :name="button.icon" class="w-5 h-5" />
+        </button>
+      </template>
     </div>
-    <EditorContent :editor="editor" />
+    <div class="bg-field border border-field-border rounded-md focus-within:border-olive focus-within:ring-2 focus-within:ring-olive/20 transition-colors">
+      <EditorContent :editor="editor" />
+    </div>
   </div>
 </template>

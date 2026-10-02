@@ -2,6 +2,7 @@
 import { onMounted } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useAuth } from '../../composables/useAuth'
+import AppLogo from './AppLogo.vue'
 
 const navLinks = [
   { label: 'Courses', to: '/courses' },
@@ -26,13 +27,7 @@ async function handleLogout() {
 
 <template>
   <header class="bg-olive-dark px-6 py-4 flex items-center justify-between">
-    <RouterLink to="/" class="font-voice text-xl text-white flex items-center gap-2">
-      <span
-        class="inline-block w-4 h-4 rounded-full border-2 border-white border-b-transparent rotate-45"
-        aria-hidden="true"
-      ></span>
-      Timeline
-    </RouterLink>
+    <AppLogo />
 
     <nav class="hidden md:flex gap-6 text-sm text-white/90">
       <RouterLink

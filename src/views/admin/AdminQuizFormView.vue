@@ -1,11 +1,13 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useAdminQuizzes } from '../../composables/useAdminQuizzes'
+import { useAdminQuizzes, REQUIRED_IMAGES } from '../../composables/useAdminQuizzes'
 import { useAdminQuizQuestions } from '../../composables/useAdminQuizQuestions'
 import { useAdminCourses } from '../../composables/useAdminCourses'
 import ConfirmModal from '../../components/ui/ConfirmModal.vue'
 import ImageUpload from '../../components/ui/ImageUpload.vue'
+import PublishToggle from '../../components/ui/PublishToggle.vue'
+import AppIcon from '../../components/ui/AppIcon.vue'
 import { useToast } from '../../composables/useToast'
 
 const route = useRoute()
@@ -16,6 +18,7 @@ const {
   loading: questionsLoading,
   fetchForQuiz,
   remove: removeQuestion,
+  reorder,
 } = useAdminQuizQuestions()
 const { courses, fetchAll: fetchCourses } = useAdminCourses()
 const toast = useToast()
@@ -46,12 +49,42 @@ watch(activeTab, (tab) => {
   if (tab === 'questions' && isEditing.value) fetchForQuiz(route.params.id)
 })
 
+// Image fields: `*` when required, red once a save was attempted without one.
+const submitted = ref(false)
+const isRequired = (field) => field in REQUIRED_IMAGES
+const isMissing = (field) => submitted.value && isRequired(field) && !form.value[field]
+
 async function handleSubmit() {
+  submitted.value = true
   const ok = await save(isEditing.value ? route.params.id : null, form.value)
   if (ok) {
     toast.success('Quiz saved')
     router.push('/admin/quizzes')
   }
+}
+
+// Drag to reorder (mouse) + Arrow Up/Down on the grip handle (keyboard).
+const dragIndex = ref(null)
+const overIndex = ref(null)
+
+function onDragStart(index, event) {
+  dragIndex.value = index
+  event.dataTransfer.effectAllowed = 'move'
+}
+
+function onDragEnd() {
+  dragIndex.value = null
+  overIndex.value = null
+}
+
+async function moveQuestion(from, to) {
+  if (!(await reorder(from, to))) toast.error('Could not save the new order. Please try again.')
+}
+
+async function onDrop(index) {
+  const from = dragIndex.value
+  onDragEnd()
+  if (from !== null) await moveQuestion(from, index)
 }
 
 async function confirmDeleteQuestion() {
@@ -131,14 +164,13 @@ async function confirmDeleteQuestion() {
         </div>
 
         <div class="mb-5 space-y-4">
-          <ImageUpload v-model="form.coverImageId" label="Cover image" />
-          <ImageUpload v-model="form.headerImageId" label="Quiz header image" />
+          <ImageUpload v-model="form.coverImageId" label="Cover image" :required="isRequired('coverImageId')" :invalid="isMissing('coverImageId')" />
+          <ImageUpload v-model="form.headerImageId" label="Quiz header image" :required="isRequired('headerImageId')" :invalid="isMissing('headerImageId')" />
         </div>
 
-        <label class="flex items-center gap-2 text-sm mb-5">
-          <input type="checkbox" v-model="form.published" class="accent-olive" />
-          Published
-        </label>
+        <div class="mb-5">
+          <PublishToggle v-model="form.published" />
+        </div>
 
         <button
           type="submit"
@@ -151,41 +183,90 @@ async function confirmDeleteQuestion() {
     </div>
 
     <div v-else-if="activeTab === 'questions'" class="bg-white rounded-xl p-6">
-      <div class="flex justify-between items-center mb-4">
-        <span class="text-xs text-bark/60">{{ questions.length }} question{{ questions.length === 1 ? '' : 's' }}</span>
+      <div class="flex justify-between items-center gap-4 mb-4">
+        <span class="text-base text-sand-dark">
+          {{ questions.length }} question{{ questions.length === 1 ? '' : 's' }}<template v-if="questions.length > 1"> · drag to reorder</template>
+        </span>
         <RouterLink
-          :to="`/admin/quizzes/${route.params.id}/questions/new`"
-          class="text-xs px-4 py-2 rounded-md bg-olive text-white"
+          :to="`/admin/quizzes/${route.params.id}/questions/new?order=${questions.length + 1}`"
+          class="flex items-center gap-2 px-5 py-3 rounded-xl bg-olive text-white font-semibold hover:bg-olive/90 transition-colors"
         >
-          + Add Question
+          <AppIcon name="plus" class="w-4 h-4" />
+          Add Question
         </RouterLink>
       </div>
 
-      <div v-if="questionsLoading" class="space-y-2">
-        <div v-for="n in 3" :key="n" class="h-10 bg-olive-light rounded animate-pulse"></div>
+      <div v-if="questionsLoading" class="space-y-3">
+        <div v-for="n in 3" :key="n" class="h-20 bg-olive-light rounded-md animate-pulse"></div>
       </div>
 
       <div v-else-if="questions.length === 0" class="text-center text-sm text-bark/60 py-10">
         No questions yet. Add your first one to get started.
       </div>
 
-      <div v-else class="space-y-2">
-        <div
+      <ol v-else class="space-y-3">
+        <li
           v-for="(question, index) in questions"
           :key="question.$id"
-          class="flex items-center gap-3 px-4 py-2.5 border border-black/5 rounded-lg text-sm"
+          draggable="true"
+          class="flex items-start gap-3 px-4 py-3.5 bg-white border rounded-md transition-colors"
+          :class="[
+            dragIndex === index ? 'opacity-40' : '',
+            overIndex === index && dragIndex !== index ? 'border-olive ring-2 ring-olive/20' : 'border-field-border',
+          ]"
+          @dragstart="onDragStart(index, $event)"
+          @dragover.prevent="overIndex = index"
+          @drop.prevent="onDrop(index)"
+          @dragend="onDragEnd"
         >
-          <span class="text-xs text-bark/40 w-6">Q{{ index + 1 }}</span>
-          <span class="flex-1 text-bark">{{ question.questionText }}</span>
-          <RouterLink
-            :to="`/admin/quizzes/${route.params.id}/questions/${question.$id}/edit`"
-            class="text-bark/60 hover:text-bark"
+          <button
+            type="button"
+            class="mt-1 text-black/20 hover:text-bark/50 cursor-grab active:cursor-grabbing rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-olive/40"
+            :aria-label="`Question ${index + 1}: press Arrow Up or Down to move it`"
+            @keydown.up.prevent="moveQuestion(index, index - 1)"
+            @keydown.down.prevent="moveQuestion(index, index + 1)"
           >
-            ✎
-          </RouterLink>
-          <button class="text-red-500 hover:text-red-700" @click="pendingDeleteQuestion = question">🗑</button>
-        </div>
-      </div>
+            <AppIcon name="grip" class="w-5 h-5" />
+          </button>
+
+          <span class="text-lg text-bark/50 w-8 flex-shrink-0">Q{{ index + 1 }}</span>
+
+          <div class="flex-1 min-w-0">
+            <p class="text-lg text-bark">{{ question.questionText }}</p>
+            <!-- Every answer: the correct one in green with a check, the others in yellow. -->
+            <ul v-if="question.options?.length" class="flex flex-wrap gap-1.5 mt-2" aria-label="Answers">
+              <li
+                v-for="(option, i) in question.options"
+                :key="i"
+                class="text-sm px-3 py-1 rounded-full"
+                :class="i === question.correctOptionIndex ? 'bg-green-200/80 text-green-900' : 'bg-amber-100 text-amber-900'"
+              >
+                <template v-if="i === question.correctOptionIndex">
+                  <span aria-hidden="true">✓ </span><span class="sr-only">Correct answer: </span>
+                </template>{{ option }}
+              </li>
+            </ul>
+          </div>
+
+          <div class="flex items-center gap-3 self-center">
+            <RouterLink
+              :to="`/admin/quizzes/${route.params.id}/questions/${question.$id}/edit`"
+              class="text-bark hover:text-olive"
+              :aria-label="`Edit question ${index + 1}`"
+            >
+              <AppIcon name="edit" class="w-6 h-6" />
+            </RouterLink>
+            <button
+              type="button"
+              class="text-red-600 hover:text-red-700"
+              :aria-label="`Delete question ${index + 1}`"
+              @click="pendingDeleteQuestion = question"
+            >
+              <AppIcon name="trash" class="w-6 h-6" />
+            </button>
+          </div>
+        </li>
+      </ol>
 
       <ConfirmModal
         :open="!!pendingDeleteQuestion"

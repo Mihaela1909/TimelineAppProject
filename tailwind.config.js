@@ -11,7 +11,15 @@ export default {
           dark: "#3d3320",
         },
         bark: "#3d3320",
-        sand: "#c2b896",
+        sand: {
+          DEFAULT: "#c2b896",
+          dark: "#9a9168", // icons on white (darker so they stay readable)
+        },
+        // Form fields: warm fill + tan border, from the admin form mockups.
+        field: {
+          DEFAULT: "#fdf6ef",
+          border: "#d9c3ab",
+        },
       },
       fontFamily: {
         voice: ["'Playfair Display'", "serif"],

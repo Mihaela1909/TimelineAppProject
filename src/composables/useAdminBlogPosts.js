@@ -1,5 +1,11 @@
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import * as blogPostService from '../services/blogPostService'
+import { missingFieldsMessage } from '../utils/formChecks'
+
+// Required in Appwrite — checked here first so the user gets a clear
+// message instead of a generic "could not save".
+export const REQUIRED_IMAGES = { coverImageId: 'cover image' }
+import { CATEGORY_STYLES } from '../constants/blogCategories'
 
 export function useAdminBlogPosts() {
   const posts = ref([])
@@ -31,8 +37,9 @@ export function useAdminBlogPosts() {
 
   async function save(id, data) {
     if (saving.value) return null // already saving — ignore double-clicks
+    error.value = missingFieldsMessage(data, REQUIRED_IMAGES)
+    if (error.value) return null
     saving.value = true
-    error.value = null
     try {
       return id
         ? await blogPostService.updateBlogPost(id, data)
@@ -59,5 +66,9 @@ export function useAdminBlogPosts() {
     }
   }
 
-  return { posts, loading, error, saving, fetchAll, fetchOne, save, remove }
+  // Every category in use, plus the built-in ones (even if no post uses
+  // them yet). CategoryPicker dedupes and sorts.
+  const categories = computed(() => [...Object.keys(CATEGORY_STYLES), ...posts.value.map((p) => p.category)])
+
+  return { posts, categories, loading, error, saving, fetchAll, fetchOne, save, remove }
 }

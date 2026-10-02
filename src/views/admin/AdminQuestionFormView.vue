@@ -16,7 +16,8 @@ const form = ref({
   questionText: '',
   options: ['', ''],
   correctOptionIndex: 0,
-  order: 1,
+  // "Add Question" passes the next free position, so new questions go last.
+  order: Number(route.query.order) || 1,
 })
 
 onMounted(async () => {
