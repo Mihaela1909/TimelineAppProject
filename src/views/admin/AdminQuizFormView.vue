@@ -189,7 +189,7 @@ async function confirmDeleteQuestion() {
         </span>
         <RouterLink
           :to="`/admin/quizzes/${route.params.id}/questions/new?order=${questions.length + 1}`"
-          class="flex items-center gap-2 px-5 py-3 rounded-xl bg-olive text-white font-semibold hover:bg-olive/90 transition-colors"
+          class="font-button flex items-center gap-2 px-5 py-3 rounded-xl bg-olive text-white font-semibold hover:bg-olive/90 transition-colors"
         >
           <AppIcon name="plus" class="w-4 h-4" />
           Add Question
@@ -239,7 +239,7 @@ async function confirmDeleteQuestion() {
                 v-for="(option, i) in question.options"
                 :key="i"
                 class="text-sm px-3 py-1 rounded-full"
-                :class="i === question.correctOptionIndex ? 'bg-green-200/80 text-green-900' : 'bg-amber-100 text-amber-900'"
+                :class="i === question.correctOptionIndex ? 'bg-leaf/30 text-bark' : 'bg-butter text-bark'"
               >
                 <template v-if="i === question.correctOptionIndex">
                   <span aria-hidden="true">✓ </span><span class="sr-only">Correct answer: </span>

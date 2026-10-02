@@ -163,7 +163,7 @@ async function handleSubmit() {
         <span class="text-xs text-bark/60">{{ lessons.length }} lesson{{ lessons.length === 1 ? '' : 's' }}</span>
         <RouterLink
           :to="`/admin/courses/${route.params.id}/lessons/new`"
-          class="text-xs px-4 py-2 rounded-md bg-olive text-white"
+          class="font-button text-xs px-4 py-2 rounded-md bg-olive text-white"
         >
           + Add Lesson
         </RouterLink>
@@ -187,7 +187,7 @@ async function handleSubmit() {
           <span class="flex-1 text-bark">{{ lesson.title }}</span>
           <span
             class="text-xs px-2.5 py-0.5 rounded-full"
-            :class="lesson.published ? 'bg-olive-light text-olive' : 'bg-yellow-100 text-yellow-700'"
+            :class="lesson.published ? 'bg-olive-light text-olive' : 'bg-butter text-bark'"
           >
             {{ lesson.published ? 'Published' : 'Draft' }}
           </span>

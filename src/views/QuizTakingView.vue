@@ -144,7 +144,7 @@ const bestScore = () =>
         class="inline-block text-xs px-3 py-1 rounded-full mb-6"
         :class="Math.round((correctCount / questions.length) * 100) >= quiz.passingScore
           ? 'bg-olive-light text-olive'
-          : 'bg-yellow-100 text-yellow-700'"
+          : 'bg-butter text-bark'"
       >
         {{ Math.round((correctCount / questions.length) * 100) }}%
         {{ Math.round((correctCount / questions.length) * 100) >= quiz.passingScore ? '· Passed' : '· Below passing score' }}

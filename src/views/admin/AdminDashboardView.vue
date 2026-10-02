@@ -51,7 +51,7 @@ const visibleActivity = computed(() => (showAll.value ? activity.value : activit
         v-for="action in quickActions"
         :key="action.to"
         :to="action.to"
-        class="flex items-center gap-2 px-6 py-3 rounded-xl bg-olive text-white font-semibold hover:bg-olive/90 transition-colors"
+        class="font-button flex items-center gap-2 px-6 py-3 rounded-xl bg-olive text-white font-semibold hover:bg-olive/90 transition-colors"
       >
         <AppIcon name="plus" class="w-4 h-4" />
         {{ action.label }}

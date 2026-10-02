@@ -10,7 +10,7 @@
         <div class="flex gap-3">
           <RouterLink
             to="/quizzes"
-            class="text-sm px-5 py-2.5 rounded-md bg-olive text-white hover:bg-olive/90 transition-colors"
+            class="font-button text-sm px-5 py-2.5 rounded-md bg-olive text-white hover:bg-olive/90 transition-colors"
           >
             Start Quiz
           </RouterLink>

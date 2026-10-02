@@ -126,7 +126,7 @@ async function confirmDeleteAccount() {
       <RouterLink
         v-if="canOpenAdmin"
         to="/admin"
-        class="ml-auto flex items-center gap-2 px-4 py-2 rounded-lg bg-white/15 text-white text-sm font-semibold backdrop-blur-sm hover:bg-white/25 transition-colors"
+        class="ml-auto flex items-center gap-2 px-4 py-2 rounded-lg font-button bg-white/15 text-white text-sm font-semibold backdrop-blur-sm hover:bg-white/25 transition-colors"
       >
         <AppIcon name="home" class="w-4 h-4" />
         Admin panel
@@ -188,7 +188,7 @@ async function confirmDeleteAccount() {
                   class="h-20 w-full object-cover"
                 />
                 <div v-else class="h-20 bg-olive-light"></div>
-                <span class="absolute top-1.5 right-1.5 bg-yellow-400 text-bark text-[9px] font-semibold px-2 py-0.5 rounded-full">In Progress</span>
+                <span class="absolute top-1.5 right-1.5 bg-butter text-bark text-[9px] font-semibold px-2 py-0.5 rounded-full">In Progress</span>
               </div>
               <div class="p-2.5">
                 <div class="text-xs font-medium text-bark leading-tight">{{ entry.course.title }}</div>
@@ -247,7 +247,7 @@ async function confirmDeleteAccount() {
           </div>
           <span
             class="text-xs px-3 py-1 rounded-full font-medium"
-            :class="attempt.score / attempt.totalQuestions >= (quizById[attempt.quizId]?.passingScore || 70) / 100 ? 'bg-olive-light text-olive' : 'bg-yellow-100 text-yellow-700'"
+            :class="attempt.score / attempt.totalQuestions >= (quizById[attempt.quizId]?.passingScore || 70) / 100 ? 'bg-olive-light text-olive' : 'bg-butter text-bark'"
           >
             {{ attempt.score }}/{{ attempt.totalQuestions }}
           </span>

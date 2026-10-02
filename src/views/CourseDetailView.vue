@@ -76,7 +76,7 @@ const nextIncompleteLesson = computed(() => lessons.value.find((l) => !completed
         <RouterLink
           v-if="nextIncompleteLesson"
           :to="`/courses/${course.$id}/lessons/${nextIncompleteLesson.$id}`"
-          class="text-sm px-5 py-2 rounded-md bg-olive text-white inline-block"
+          class="font-button text-sm px-5 py-2 rounded-md bg-olive text-white inline-block"
         >
           Continue · {{ nextIncompleteLesson.title }}
         </RouterLink>

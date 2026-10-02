@@ -24,7 +24,7 @@ async function confirmDelete() {
       <h1 class="font-voice text-3xl text-bark">Courses</h1>
       <RouterLink
         to="/admin/courses/new"
-        class="text-sm px-5 py-2.5 rounded-md bg-olive text-white hover:bg-olive/90 transition-colors"
+        class="font-button text-sm px-5 py-2.5 rounded-md bg-olive text-white hover:bg-olive/90 transition-colors"
       >
         + New Course
       </RouterLink>
@@ -65,7 +65,7 @@ async function confirmDelete() {
             <td class="py-3 px-5">
               <span
                 class="text-xs px-3 py-1 rounded-full"
-                :class="course.published ? 'bg-olive-light text-olive' : 'bg-yellow-100 text-yellow-700'"
+                :class="course.published ? 'bg-olive-light text-olive' : 'bg-butter text-bark'"
               >
                 {{ course.published ? 'Published' : 'Draft' }}
               </span>

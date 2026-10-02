@@ -2,8 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-cream text-bark font-sans;
+/* ROOT — brand colours and fonts (from the Figma "Root" board).
+   Stored as "R G B" channels so Tailwind opacity works (e.g. bg-olive/90).
+   tailwind.config.js maps these to class names; change a colour HERE only. */
+:root {
+  /* Primary */
+  --color-olive: 96 108 56;      /* #606C38 — main brand, primary buttons, active states */
+  --color-cream: 254 250 224;    /* #FEFAE0 — page background, form field fill */
+  --color-ochre: 221 161 94;     /* #DDA15E — warm accent (avatar circle, highlights) */
+
+  /* Secondary */
+  --color-leaf: 89 144 56;       /* #599038 — success / active / correct */
+  --color-bark: 78 58 41;        /* #4E3A29 — text, admin sidebar, dark surfaces */
+  --color-butter: 255 234 173;   /* #FFEAAD — pending / draft / neutral tags */
+  --color-wine: 135 77 77;       /* #874D4D — muted red accent */
+  --color-parchment: 238 231 204;/* #EEE7CC — subtle surfaces, dividers */
+  --color-taupe: 175 156 134;    /* #AF9C86 — muted text/icons, field borders */
+
+  /* Derived (not on the board — tints/shades needed for contrast) */
+  --color-olive-light: 231 233 213; /* #E7E9D5 — soft olive tint for active/hover backgrounds */
+  --color-taupe-dark: 133 115 95;   /* #85735F — taupe dark enough for icons/text on white (4.6:1) */
+}
+
+@layer base {
+  body {
+    @apply bg-cream text-bark font-sans;
+  }
+
+  /* Amethysta for buttons. Links styled as buttons add `font-button`.
+     Plain CSS (not @apply) so this file never fails if a running dev
+     server hasn't reloaded tailwind.config.js yet. */
+  button,
+  input[type='submit'] {
+    font-family: 'Amethysta', serif;
+  }
 }
 
 

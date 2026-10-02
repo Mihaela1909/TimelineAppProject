@@ -41,7 +41,7 @@ function onFileInputChange(e) {
     <div v-if="pendingImageId" class="flex items-center gap-2">
       <span class="text-bark/40 text-sm">→</span>
       <div
-        class="overflow-hidden flex-shrink-0 opacity-70 ring-2 ring-yellow-400"
+        class="overflow-hidden flex-shrink-0 opacity-70 ring-2 ring-ochre"
         :class="shape === 'circle' ? 'w-20 h-20 rounded-full' : 'w-32 h-16 rounded-lg'"
       >
         <img :src="getImagePreviewUrl(pendingImageId)" alt="" class="w-full h-full object-cover" />

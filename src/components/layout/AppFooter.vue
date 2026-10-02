@@ -16,7 +16,7 @@ const currentYear = new Date().getFullYear()
           <p class="text-xs text-cream/70 mb-2">Save your progress as you go</p>
           <RouterLink
             to="/register"
-            class="inline-block text-sm px-5 py-2 rounded-md bg-olive text-white hover:bg-olive/90 transition-colors"
+            class="font-button inline-block text-sm px-5 py-2 rounded-md bg-olive text-white hover:bg-olive/90 transition-colors"
           >
             Sign up free
           </RouterLink>

@@ -36,9 +36,9 @@ const roleOptions = [
 ]
 
 const roleStyles = {
-  [ROLES.ADMIN]: 'bg-orange-300 text-orange-950',
+  [ROLES.ADMIN]: 'bg-ochre text-bark',
   [ROLES.EDITOR]: 'bg-blue-400 text-blue-950',
-  [ROLES.USER]: 'bg-amber-100 text-amber-900',
+  [ROLES.USER]: 'bg-butter text-bark',
 }
 
 // An admin demoting or deactivating THEMSELVES would lock them out of the
@@ -134,7 +134,7 @@ async function reactivate(user) {
             <td class="py-3 px-2">
               <span
                 class="text-xs px-2.5 py-1 rounded-lg"
-                :class="isActive(user) ? 'bg-green-300/70 text-green-900' : 'bg-red-500 text-white'"
+                :class="isActive(user) ? 'bg-leaf/30 text-bark' : 'bg-red-500 text-white'"
               >
                 {{ isActive(user) ? 'Active' : 'Inactive' }}
               </span>

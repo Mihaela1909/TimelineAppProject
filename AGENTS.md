@@ -98,8 +98,17 @@ async function save(id, data) {
 ## 5. Design & style
 
 **Keep / prefer**
-- Tailwind classes only. Colours come from `tailwind.config.js` tokens: `cream` (page background), `olive` / `olive-light` / `olive-dark` (primary + accents), `bark` (text, sidebar), `sand` (avatars, muted). Status: green = active/success, red = danger/inactive, yellow = pending/in progress.
-- Fonts: `font-voice` (Playfair Display) for page titles only; Inter (`font-sans`) for everything else, including numbers.
+- Tailwind classes only. **The brand palette is defined once, as CSS variables in `src/style.css` (`:root`)**; `tailwind.config.js` maps them to class names. To change a colour, edit `style.css` only.
+  - Primary: `olive` #606C38 (brand, primary buttons, active), `cream` #FEFAE0 (page background, field fill), `ochre` #DDA15E (warm accent)
+  - Secondary: `leaf` #599038 (success/active/correct), `bark` #4E3A29 (text, sidebar), `butter` #FFEAAD (draft/pending/neutral tags), `wine` #874D4D (muted red accent), `parchment` #EEE7CC (subtle surfaces), `taupe` #AF9C86 (muted, field borders)
+  - Derived: `olive-light` (soft active/hover background), `taupe-dark` (icons/muted text on white, 4.6:1)
+  - Older aliases still work: `sand` = taupe, `field` = cream fill + taupe border, `olive-dark` = bark
+  - Status: draft/pending = `bg-butter text-bark`; active/correct = `bg-leaf/30 text-bark`; errors/danger stay Tailwind red (`red-50/500/600/700`) for contrast
+  - Text on light backgrounds is `text-bark` (or `/60`–`/80`). Never put ochre/leaf/taupe as small text on white; they fail contrast.
+- Fonts (Google Fonts in `index.html`):
+  - `font-voice` = **Metamorphous**, for headlines and page titles
+  - `font-button` = **Amethysta**, for buttons. `<button>` gets it automatically; add `font-button` to links styled as buttons.
+  - `font-sans` = **Raleway**, the default for body text and tags
 - Cards: `bg-white rounded-xl p-5/p-6`. Primary button: `bg-olive text-white rounded-md|rounded-xl hover:bg-olive/90`. Secondary: `border border-olive text-olive`. Danger: `border-red-300 text-red-600` or `bg-red-500 text-white`.
 - Admin pages: `h1.font-voice.text-3xl/4xl.text-bark` title, then content cards on `bg-cream`.
 - Icons: `<AppIcon name="…" />`. Add new paths there instead of new libraries.
@@ -107,7 +116,7 @@ async function save(id, data) {
 - Images: `getImagePreviewUrl()` (uses `getFileView`). Always set `alt` (empty `alt=""` for decorative).
 
 **Avoid**
-- Hard-coded hex colours or inline `style` for colour (inline style only for computed sizes/backgrounds).
+- Hard-coded hex colours or inline `style` for colour (inline style only for computed sizes/backgrounds). New colours go into `style.css` `:root` + `tailwind.config.js`.
 - New fonts, shadows-everywhere, gradients, or a second primary colour.
 - Inventing a new layout for a page that already has a Figma mockup. Follow the mockup.
 
