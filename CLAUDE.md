@@ -2,11 +2,10 @@
 
 Vue 3 + Vite + Tailwind front end, Appwrite backend (TablesDB + Storage), no server code.
 
-## Architecture rules
-- `src/services/appwrite.js` is the ONLY file that imports the Appwrite client. Everything else goes through `src/services/*.js` (data access layer); composables/components never call Appwrite directly.
-- Shared state uses module-scope singleton composables (`useAuth`, `useToast`), not Pinia.
-- Roles: `src/constants/roles.js` (`admin`, `editor`, `user`). Router guards in `src/router/index.js` are UX only — the real security boundary is Appwrite table/bucket permissions. Never rely on the guard alone.
-- Shared UI components live in `src/components/ui/` (the old `src/components/admin/` copies were deleted).
+## Coding rules
+@AGENTS.md
+
+All architecture, SRP/SoC, check-and-reset, Vue and design rules are in `AGENTS.md` (imported above). This file holds only project-specific state and decisions.
 
 ## Image storage & approval (decided — don't revert)
 We previously used ONE media bucket with **File Security ON** and per-file permissions (public vs. private uploads). It kept breaking (images not loading/changing), so we pivoted:
@@ -50,8 +49,12 @@ A user's upload does NOT go live until an admin approves it.
 - Admin needs table-level Read (label `admin`) on `progress` and `quiz_attempts` — their rows are otherwise owner-only.
 - Charts are plain HTML/Tailwind (no chart library), single-series in olive, values labelled directly.
 
+## Listing & deleting rows
+- Appwrite `listRows` returns only 25 rows by default. Any "get all" read must use `listAllRows()` from `services/rowHelpers.js` (cursor pagination). Only use raw `listRows` with an explicit `Query.limit`.
+- Deletes cascade in the services: `deleteCourse` → its lessons (+ their progress), quizzes (+ questions, attempts), remaining progress; `deleteQuiz` → questions + attempts; `deleteLesson` → its progress. Children are deleted first, so a failure leaves the parent in place to retry.
+- Cascades need table-level `Delete` for label `admin` on lessons, quizzes, quiz_questions, quiz_attempts, progress.
+
 ## Known gaps / next priorities
 1. Users can't remove a live photo themselves (they can only replace it, or cancel a pending one). Needs an admin-side "remove" or a pending "remove" request.
 2. Rejected/replaced files stay in the bucket (orphaned). Cleanup would need bucket `Delete` for label `admin`, then `deleteImage()` on reject/replace.
-3. Approvals page shows user IDs, not names — could now look up `profiles.name`.
-4. Role/label sync and hard user blocking need an Appwrite Function (server SDK + API key).
+3. Role/label sync and hard user blocking need an Appwrite Function (server SDK + API key).
