@@ -30,6 +30,7 @@ export function useAdminLessons() {
   }
 
   async function save(id, data) {
+    if (saving.value) return null // already saving — ignore double-clicks
     saving.value = true
     error.value = null
     try {
@@ -46,13 +47,14 @@ export function useAdminLessons() {
     }
   }
 
+  // Returns true/false; the caller shows the toast. Deliberately doesn't set
+  // `error`, which is the page's load error and would replace the whole list.
   async function remove(id) {
     try {
       await lessonService.deleteLesson(id)
       lessons.value = lessons.value.filter((l) => l.$id !== id)
       return true
     } catch (err) {
-      error.value = 'Could not delete this lesson.'
       console.error(err)
       return false
     }

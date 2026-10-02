@@ -25,9 +25,10 @@ const courseTitleById = computed(() => {
 })
 
 async function confirmDelete() {
-  await remove(pendingDelete.value.$id)
-  toast.success('Quiz deleted')
-  pendingDelete.value = null
+  const target = pendingDelete.value
+  pendingDelete.value = null // close the modal first so it can't be confirmed twice
+  if (await remove(target.$id)) toast.success('Quiz deleted')
+  else toast.error('Could not delete this quiz. Please try again.')
 }
 </script>
 
@@ -93,7 +94,7 @@ async function confirmDelete() {
     <ConfirmModal
       :open="!!pendingDelete"
       title="Delete this quiz?"
-      :message="`&quot;${pendingDelete?.title}&quot; and all its questions will be permanently deleted.`"
+      :message="`&quot;${pendingDelete?.title}&quot; and all its questions and attempts will be permanently deleted.`"
       @confirm="confirmDelete"
       @cancel="pendingDelete = null"
     />

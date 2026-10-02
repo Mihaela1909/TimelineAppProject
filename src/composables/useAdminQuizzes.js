@@ -30,6 +30,7 @@ export function useAdminQuizzes() {
   }
 
   async function save(id, data) {
+    if (saving.value) return null // already saving — ignore double-clicks
     saving.value = true
     error.value = null
     try {
@@ -43,13 +44,14 @@ export function useAdminQuizzes() {
     }
   }
 
+  // Returns true/false; the caller shows the toast. Deliberately doesn't set
+  // `error`, which is the page's load error and would replace the whole list.
   async function remove(id) {
     try {
       await quizService.deleteQuiz(id)
       quizzes.value = quizzes.value.filter((q) => q.$id !== id)
       return true
     } catch (err) {
-      error.value = 'Could not delete this quiz.'
       console.error(err)
       return false
     }

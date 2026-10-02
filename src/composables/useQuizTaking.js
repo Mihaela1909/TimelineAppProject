@@ -3,6 +3,7 @@ import { getQuizById } from '../services/quizService'
 import { getQuestionsForQuiz } from '../services/quizQuestionService'
 import { createAttempt, getAttemptsForUserAndQuiz } from '../services/quizAttemptService'
 import { getCourseById } from '../services/courseService'
+import { useToast } from './useToast'
 
 export function useQuizTaking() {
   const quiz = ref(null)
@@ -18,6 +19,7 @@ export function useQuizTaking() {
   const selectedIndex = ref(null)
   const answered = ref(false)
   const correctCount = ref(0)
+  const toast = useToast()
 
   const currentQuestion = computed(() => questions.value[currentIndex.value])
   const isLastQuestion = computed(() => currentIndex.value === questions.value.length - 1)
@@ -52,7 +54,7 @@ export function useQuizTaking() {
   }
 
   function submitAnswer() {
-    if (selectedIndex.value === null) return
+    if (selectedIndex.value === null || answered.value) return // no double-scoring
     answered.value = true
     if (selectedIndex.value === currentQuestion.value.correctOptionIndex) {
       correctCount.value++
@@ -60,16 +62,24 @@ export function useQuizTaking() {
   }
 
   async function nextQuestion(userId) {
+    if (!answered.value || phase.value !== 'question') return // must answer first; ignore double-clicks
     if (isLastQuestion.value) {
       phase.value = 'results'
       if (userId) {
-        const attempt = await createAttempt({
-          userId,
-          quizId: quiz.value.$id,
-          score: correctCount.value,
-          totalQuestions: questions.value.length,
-        })
-        pastAttempts.value = [attempt, ...pastAttempts.value]
+        // The results screen still shows if saving fails — the user just
+        // learns this attempt won't appear in their history.
+        try {
+          const attempt = await createAttempt({
+            userId,
+            quizId: quiz.value.$id,
+            score: correctCount.value,
+            totalQuestions: questions.value.length,
+          })
+          pastAttempts.value = [attempt, ...pastAttempts.value]
+        } catch (err) {
+          console.error(err)
+          toast.error('Your result could not be saved to your history.')
+        }
       }
     } else {
       currentIndex.value++

@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
-import { uploadImage, getImagePreviewUrl } from '../../services/mediaService'
+import { getImagePreviewUrl } from '../../services/mediaService'
+import { useImageUpload } from '../../composables/useImageUpload'
 
 // Personal photos (avatar, profile header) don't go live immediately —
 // an upload becomes a PENDING submission that an admin must approve.
@@ -13,26 +14,12 @@ const props = defineProps({
 })
 const emit = defineEmits(['submit', 'withdraw'])
 
-const uploading = ref(false)
-const error = ref(null)
+const { uploading, error, upload } = useImageUpload()
 const fileInput = ref(null)
 
 async function handleFile(file) {
-  if (!file || !file.type.startsWith('image/')) {
-    error.value = 'Please choose an image file.'
-    return
-  }
-  uploading.value = true
-  error.value = null
-  try {
-    const fileId = await uploadImage(file)
-    emit('submit', fileId)
-  } catch (err) {
-    error.value = 'Upload failed. Please try again.'
-    console.error(err)
-  } finally {
-    uploading.value = false
-  }
+  const fileId = await upload(file)
+  if (fileId) emit('submit', fileId)
 }
 
 function onFileInputChange(e) {

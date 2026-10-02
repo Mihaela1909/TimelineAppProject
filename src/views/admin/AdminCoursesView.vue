@@ -11,9 +11,10 @@ const toast = useToast()
 onMounted(fetchAll)
 
 async function confirmDelete() {
-  await remove(pendingDelete.value.$id)
-  toast.success('Course deleted')
-  pendingDelete.value = null
+  const target = pendingDelete.value
+  pendingDelete.value = null // close the modal first so it can't be confirmed twice
+  if (await remove(target.$id)) toast.success('Course deleted')
+  else toast.error('Could not delete this course. Please try again.')
 }
 </script>
 
@@ -83,7 +84,7 @@ async function confirmDelete() {
     <ConfirmModal
       :open="!!pendingDelete"
       title="Delete this course?"
-      :message="`&quot;${pendingDelete?.title}&quot; will be permanently deleted. This can't be undone.`"
+      :message="`&quot;${pendingDelete?.title}&quot; and all its lessons, quizzes and learner progress will be permanently deleted. This can't be undone.`"
       @confirm="confirmDelete"
       @cancel="pendingDelete = null"
     />

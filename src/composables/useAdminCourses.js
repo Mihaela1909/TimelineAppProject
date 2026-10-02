@@ -38,6 +38,7 @@ export function useAdminCourses() {
   }
 
   async function save(id, data) {
+    if (saving.value) return false // already saving — ignore double-clicks
     saving.value = true
     error.value = null
     try {
@@ -56,13 +57,14 @@ export function useAdminCourses() {
     }
   }
 
+  // Returns true/false; the caller shows the toast. Deliberately doesn't set
+  // `error`, which is the page's load error and would replace the whole list.
   async function remove(id) {
     try {
       await courseService.deleteCourse(id)
       courses.value = courses.value.filter((c) => c.$id !== id)
       return true
     } catch (err) {
-      error.value = 'Could not delete this course.'
       console.error(err)
       return false
     }

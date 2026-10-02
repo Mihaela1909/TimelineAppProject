@@ -1,24 +1,16 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue'
-import * as quizService from '../services/quizService'
-import { useAdminCourses } from '../composables/useAdminCourses'
+import { onMounted, computed } from 'vue'
+import { useQuizzes } from '../composables/useQuizzes'
+import { useCourses } from '../composables/useCourses'
 import { getImagePreviewUrl } from '../services/mediaService'
 
-const quizzes = ref([])
-const loading = ref(true)
-const error = ref(null)
-const { courses, fetchAll: fetchCourses } = useAdminCourses()
+const { quizzes, loading, error, fetchPublished } = useQuizzes()
+// Published courses only — this is a public page, so it must not load drafts.
+const { courses, fetchAllPublished: fetchCourses } = useCourses()
 
-onMounted(async () => {
+onMounted(() => {
   fetchCourses()
-  try {
-    quizzes.value = await quizService.getPublishedQuizzes()
-  } catch (err) {
-    error.value = 'Could not load quizzes.'
-    console.error(err)
-  } finally {
-    loading.value = false
-  }
+  fetchPublished()
 })
 
 const courseById = computed(() => {

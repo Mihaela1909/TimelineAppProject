@@ -1,10 +1,10 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCourseDetail } from '../composables/useCourseDetail'
 import { useAuth } from '../composables/useAuth'
 import { getImagePreviewUrl } from '../services/mediaService'
-import { markLessonComplete, getCompletedLessonIds } from '../services/progressService'
+import { useCourseProgress } from '../composables/useCourseProgress'
 import { useToast } from '../composables/useToast'
 
 const route = useRoute()
@@ -13,32 +13,24 @@ const { course, lessons, loading, error, fetchCourseAndLessons } = useCourseDeta
 const { currentUser } = useAuth()
 const toast = useToast()
 
-const completedLessonIds = ref([])
-const marking = ref(false)
+const { completedLessonIds, marking, fetchCompleted, markComplete } = useCourseProgress()
 
-onMounted(async () => {
-  await fetchCourseAndLessons(route.params.id)
-  if (currentUser.value) {
-    completedLessonIds.value = await getCompletedLessonIds(currentUser.value.$id, route.params.id)
-  }
+onMounted(() => {
+  fetchCourseAndLessons(route.params.id)
+  fetchCompleted(currentUser.value?.$id, route.params.id)
 })
 
 const isCurrentLessonComplete = computed(() => completedLessonIds.value.includes(route.params.lessonId))
 
 async function handleMarkComplete() {
   if (!currentUser.value || isCurrentLessonComplete.value) return
-  marking.value = true
-  try {
-    await markLessonComplete({
-      userId: currentUser.value.$id,
-      courseId: route.params.id,
-      lessonId: route.params.lessonId,
-    })
-    completedLessonIds.value.push(route.params.lessonId)
-    toast.success('Marked as complete')
-  } finally {
-    marking.value = false
-  }
+  const ok = await markComplete({
+    userId: currentUser.value.$id,
+    courseId: route.params.id,
+    lessonId: route.params.lessonId,
+  })
+  if (ok) toast.success('Marked as complete')
+  else toast.error('Could not save your progress. Please try again.')
 }
 
 const currentIndex = computed(() => lessons.value.findIndex((l) => l.$id === route.params.lessonId))

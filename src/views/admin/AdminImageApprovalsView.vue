@@ -1,52 +1,17 @@
 <script setup>
-import { onMounted, ref } from 'vue'
-import {
-  listPendingSubmissions,
-  approvePendingImage,
-  rejectPendingImage,
-} from '../../services/profileSettingsService'
+import { onMounted } from 'vue'
+import { useImageApprovals } from '../../composables/useImageApprovals'
 import { getImagePreviewUrl } from '../../services/mediaService'
 import { useToast } from '../../composables/useToast'
 
+const { requests, loading, error, busyKey, fetchAll, decide } = useImageApprovals()
 const toast = useToast()
-const requests = ref([])
-const loading = ref(true)
-const error = ref(null)
-const busyKey = ref(null)
-
-// One profile_settings row can hold BOTH a pending avatar and a pending
-// header, so flatten it into one request per image the admin can act on.
-async function fetchAll() {
-  loading.value = true
-  error.value = null
-  try {
-    const rows = await listPendingSubmissions()
-    requests.value = rows.flatMap((row) => [
-      ...(row.pendingAvatarImageId ? [{ key: `${row.$id}-avatar`, row, kind: 'avatar', fileId: row.pendingAvatarImageId }] : []),
-      ...(row.pendingHeaderImageId ? [{ key: `${row.$id}-header`, row, kind: 'header', fileId: row.pendingHeaderImageId }] : []),
-    ])
-  } catch (err) {
-    console.error(err)
-    error.value = 'Could not load pending images.'
-  } finally {
-    loading.value = false
-  }
-}
 
 onMounted(fetchAll)
 
-async function decide(request, approve) {
-  busyKey.value = request.key
-  try {
-    await (approve ? approvePendingImage : rejectPendingImage)(request.row, request.kind)
-    toast.success(approve ? 'Image approved' : 'Image rejected')
-    await fetchAll()
-  } catch (err) {
-    console.error(err)
-    toast.error('Action failed — check admin permissions on profiles / profile_settings.')
-  } finally {
-    busyKey.value = null
-  }
+async function handleDecision(request, approve) {
+  if (await decide(request, approve)) toast.success(approve ? 'Image approved' : 'Image rejected')
+  else toast.error('Action failed — check admin permissions on profiles / profile_settings.')
 }
 </script>
 
@@ -76,7 +41,7 @@ async function decide(request, approve) {
           <tr class="text-left text-bark/50 border-b border-black/5">
             <th class="py-3 px-5 font-medium">Image</th>
             <th class="py-3 px-5 font-medium">Type</th>
-            <th class="py-3 px-5 font-medium">User ID</th>
+            <th class="py-3 px-5 font-medium">User</th>
             <th class="py-3 px-5"></th>
           </tr>
         </thead>
@@ -93,19 +58,22 @@ async function decide(request, approve) {
               </a>
             </td>
             <td class="py-3 px-5 text-bark">{{ request.kind === 'avatar' ? 'Profile picture' : 'Profile header' }}</td>
-            <td class="py-3 px-5 text-bark/60 font-mono text-xs">{{ request.row.userId }}</td>
+            <td class="py-3 px-5">
+              <span v-if="request.userName" class="text-bark">{{ request.userName }}</span>
+              <span v-else class="text-bark/60 font-mono text-xs">{{ request.row.userId }}</span>
+            </td>
             <td class="py-3 px-5 text-right whitespace-nowrap">
               <button
                 class="text-xs px-3 py-1.5 rounded-md bg-olive text-white disabled:opacity-60 mr-2"
-                :disabled="busyKey === request.key"
-                @click="decide(request, true)"
+                :disabled="!!busyKey"
+                @click="handleDecision(request, true)"
               >
                 Approve
               </button>
               <button
                 class="text-xs px-3 py-1.5 rounded-md border border-red-300 text-red-600 disabled:opacity-60"
-                :disabled="busyKey === request.key"
-                @click="decide(request, false)"
+                :disabled="!!busyKey"
+                @click="handleDecision(request, false)"
               >
                 Reject
               </button>

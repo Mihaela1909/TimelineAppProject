@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { uploadImage, getImagePreviewUrl } from '../../services/mediaService'
+import { getImagePreviewUrl } from '../../services/mediaService'
+import { useImageUpload } from '../../composables/useImageUpload'
 
 // v-model here is the Appwrite file ID (a string), not the file itself.
 // The parent form just does v-model="form.imageId" like any other field.
@@ -11,29 +12,15 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:modelValue'])
 
-const uploading = ref(false)
-const error = ref(null)
+const { uploading, error, upload } = useImageUpload()
 const fileInput = ref(null)
 const isDragging = ref(false)
 
 const previewUrl = computed(() => getImagePreviewUrl(props.modelValue))
 
 async function handleFile(file) {
-  if (!file || !file.type.startsWith('image/')) {
-    error.value = 'Please choose an image file.'
-    return
-  }
-  uploading.value = true
-  error.value = null
-  try {
-    const fileId = await uploadImage(file)
-    emit('update:modelValue', fileId)
-  } catch (err) {
-    error.value = 'Upload failed. Please try again.'
-    console.error(err)
-  } finally {
-    uploading.value = false
-  }
+  const fileId = await upload(file)
+  if (fileId) emit('update:modelValue', fileId)
 }
 
 function onDrop(e) {

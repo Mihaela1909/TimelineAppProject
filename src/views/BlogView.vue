@@ -1,38 +1,21 @@
 <script setup>
 import { onMounted, ref, computed } from 'vue'
-import * as blogPostService from '../services/blogPostService'
+import { useBlog } from '../composables/useBlog'
 import { getImagePreviewUrl } from '../services/mediaService'
+import { CATEGORY_STYLES as categoryStyles } from '../constants/blogCategories'
 
-const posts = ref([])
-const loading = ref(true)
-const error = ref(null)
+const { posts, loading, error, fetchPublished } = useBlog()
 const searchTerm = ref('')
 const activeCategory = ref('All')
 
-const categoryStyles = {
-  'Myth-Busting': 'bg-red-100 text-red-700',
-  Listicle: 'bg-blue-100 text-blue-700',
-  'Dev Update': 'bg-purple-100 text-purple-700',
-  Digest: 'bg-cyan-100 text-cyan-700',
-}
-
-onMounted(async () => {
-  try {
-    posts.value = await blogPostService.getPublishedBlogPosts()
-  } catch (err) {
-    error.value = 'Could not load the blog.'
-    console.error(err)
-  } finally {
-    loading.value = false
-  }
-})
+onMounted(fetchPublished)
 
 const categories = computed(() => ['All', ...new Set(posts.value.map((p) => p.category))])
 
 const filteredPosts = computed(() =>
   posts.value.filter((p) => {
     const matchesCategory = activeCategory.value === 'All' || p.category === activeCategory.value
-    const matchesSearch = p.title.toLowerCase().includes(searchTerm.value.toLowerCase())
+    const matchesSearch = p.title.toLowerCase().includes(searchTerm.value.trim().toLowerCase())
     return matchesCategory && matchesSearch
   })
 )

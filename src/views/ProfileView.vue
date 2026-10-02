@@ -2,12 +2,8 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
-import { useAdminQuizzes } from '../composables/useAdminQuizzes'
-import { useAdminCourses } from '../composables/useAdminCourses'
-import { getAllAttemptsForUser } from '../services/quizAttemptService'
-import { getAllProgressForUser } from '../services/progressService'
-import { getLessonsForCourse } from '../services/lessonService'
-import { submitPendingImage } from '../services/profileSettingsService'
+import { useProfileProgress } from '../composables/useProfileProgress'
+import { useProfileImages } from '../composables/useProfileImages'
 import { getImagePreviewUrl } from '../services/mediaService'
 import AvatarUpload from '../components/ui/AvatarUpload.vue'
 import ConfirmModal from '../components/ui/ConfirmModal.vue'
@@ -15,14 +11,21 @@ import { useToast } from '../composables/useToast'
 
 const router = useRouter()
 const { currentUser, updateName, updateEmail, updatePassword, logout, loading: authLoading, error: authError } = useAuth()
-const { quizzes, fetchAll: fetchQuizzes } = useAdminQuizzes()
-const { courses, fetchAll: fetchCourses } = useAdminCourses()
+const {
+  attempts,
+  courseProgress,
+  inProgressCourses,
+  completedCourses,
+  quizById,
+  quizStats,
+  loading: dataLoading,
+  error: dataError,
+  fetchFor,
+} = useProfileProgress()
+const { submit: submitPendingImage } = useProfileImages()
 const toast = useToast()
 
 const activeTab = ref('courses')
-const attempts = ref([])
-const progressRows = ref([])
-const dataLoading = ref(true)
 
 const nameForm = ref('')
 const emailForm = ref('')
@@ -33,78 +36,29 @@ const nameSaved = ref(false)
 const emailSaved = ref(false)
 const passwordSaved = ref(false)
 const confirmingDelete = ref(false)
+// Which settings card the current authError belongs to, so it shows in the right place.
+const errorFor = ref(null)
 
-onMounted(async () => {
+onMounted(() => {
   nameForm.value = currentUser.value?.name || ''
   emailForm.value = currentUser.value?.email || ''
-  fetchQuizzes()
-  const [, attemptsData, progressData] = await Promise.all([
-    fetchCourses(), // must finish before computeCourseProgress reads courseById
-    getAllAttemptsForUser(currentUser.value.$id),
-    getAllProgressForUser(currentUser.value.$id),
-  ])
-  attempts.value = attemptsData
-  progressRows.value = progressData
-  await computeCourseProgress()
-  dataLoading.value = false
+  fetchFor(currentUser.value?.$id)
 })
-
-const quizById = computed(() => Object.fromEntries(quizzes.value.map((q) => [q.$id, q])))
-const courseById = computed(() => Object.fromEntries(courses.value.map((c) => [c.$id, c])))
-
-// NOTE: this deliberately does NOT use course.lessonCount, since that's a
-// manually-typed field that can drift out of sync with the real lessons.
-// Instead it fetches the actual published lesson count per course, so
-// "completed" is always based on real data.
-const courseProgress = ref([])
-
-async function computeCourseProgress() {
-  const map = {}
-  progressRows.value.forEach((row) => {
-    if (!map[row.courseId]) map[row.courseId] = new Set()
-    map[row.courseId].add(row.lessonId)
-  })
-
-  const entries = await Promise.all(
-    Object.entries(map).map(async ([courseId, lessonSet]) => {
-      const course = courseById.value[courseId]
-      if (!course) return null
-      const realLessons = await getLessonsForCourse(courseId, { publishedOnly: true })
-      const completedCount = lessonSet.size
-      const total = realLessons.length || completedCount
-      return { course, completedCount, total, isComplete: completedCount >= total }
-    })
-  )
-  courseProgress.value = entries.filter(Boolean)
-}
 
 const enrolledCount = computed(() => courseProgress.value.length)
-const completedCoursesCount = computed(() => courseProgress.value.filter((c) => c.isComplete).length)
-const inProgressCourses = computed(() => courseProgress.value.filter((c) => !c.isComplete))
-const completedCourses = computed(() => courseProgress.value.filter((c) => c.isComplete))
+const completedCoursesCount = computed(() => completedCourses.value.length)
 
-const quizStats = computed(() => {
-  if (attempts.value.length === 0) return { count: 0, avg: 0 }
-  const totalPct = attempts.value.reduce((sum, a) => sum + (a.score / a.totalQuestions) * 100, 0)
-  return { count: attempts.value.length, avg: Math.round(totalPct / attempts.value.length) }
-})
-
-// kind is 'avatar' | 'header'. Uploads never change the live photo —
-// they're stored as pending until an admin approves them.
-const PENDING_KEY = { avatar: 'pendingAvatarImageId', header: 'pendingHeaderImageId' }
-
+// kind is 'avatar' | 'header'; fileId = null cancels a pending request.
 async function submitImage(kind, fileId) {
-  try {
-    await submitPendingImage(currentUser.value.$id, kind, fileId)
-    currentUser.value[PENDING_KEY[kind]] = fileId
+  if (await submitPendingImage(kind, fileId)) {
     toast.success(fileId ? 'Photo submitted — an admin will review it soon' : 'Request cancelled')
-  } catch (err) {
-    console.error(err)
+  } else {
     toast.error('Could not save your photo. Please try again.')
   }
 }
 
 async function saveName() {
+  errorFor.value = 'name'
   nameSaved.value = false
   if (await updateName(nameForm.value)) {
     nameSaved.value = true
@@ -113,6 +67,7 @@ async function saveName() {
 }
 
 async function saveEmail() {
+  errorFor.value = 'email'
   emailSaved.value = false
   if (await updateEmail(emailForm.value, emailPassword.value)) {
     emailSaved.value = true
@@ -122,6 +77,7 @@ async function saveEmail() {
 }
 
 async function savePassword() {
+  errorFor.value = 'password'
   passwordSaved.value = false
   if (await updatePassword(newPassword.value, currentPassword.value)) {
     passwordSaved.value = true
@@ -192,6 +148,10 @@ async function confirmDeleteAccount() {
       <div v-if="dataLoading" class="grid grid-cols-3 gap-3" aria-live="polite">
         <div v-for="n in 3" :key="n" class="h-32 bg-white rounded-lg animate-pulse"></div>
       </div>
+      <div v-else-if="dataError" class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-6 text-center text-sm">
+        <p class="mb-3">{{ dataError }}</p>
+        <button class="px-4 py-2 rounded-md border border-red-400" @click="fetchFor(currentUser?.$id)">Retry</button>
+      </div>
       <div v-else-if="courseProgress.length === 0" class="bg-white rounded-lg p-10 text-center text-sm text-bark/60">
         Nothing started yet.
         <RouterLink to="/courses" class="text-olive font-medium">Browse courses →</RouterLink>
@@ -257,6 +217,10 @@ async function confirmDeleteAccount() {
       <div v-if="dataLoading" class="space-y-2" aria-live="polite">
         <div v-for="n in 3" :key="n" class="h-14 bg-white rounded-lg animate-pulse"></div>
       </div>
+      <div v-else-if="dataError" class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-6 text-center text-sm">
+        <p class="mb-3">{{ dataError }}</p>
+        <button class="px-4 py-2 rounded-md border border-red-400" @click="fetchFor(currentUser?.$id)">Retry</button>
+      </div>
       <div v-else-if="attempts.length === 0" class="bg-white rounded-lg p-10 text-center text-sm text-bark/60">
         You haven't taken any quizzes yet.
         <RouterLink to="/quizzes" class="text-olive font-medium">Browse quizzes →</RouterLink>
@@ -302,6 +266,7 @@ async function confirmDeleteAccount() {
 
       <div class="bg-white rounded-xl p-5">
         <div class="text-xs font-semibold text-bark mb-3">Profile Settings</div>
+        <div v-if="authError && errorFor === 'name'" class="bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2 mb-3">{{ authError }}</div>
         <label class="text-xs text-bark/70 block mb-1">Display name</label>
         <input v-model="nameForm" class="w-full px-3 py-2 border border-black/10 rounded-md text-sm mb-3" />
         <button class="text-xs px-4 py-2 rounded-md bg-olive text-white disabled:opacity-60" :disabled="authLoading" @click="saveName">
@@ -312,7 +277,7 @@ async function confirmDeleteAccount() {
 
       <div class="bg-white rounded-xl p-5">
         <div class="text-xs font-semibold text-bark mb-3">Email</div>
-        <div v-if="authError" class="bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2 mb-3">{{ authError }}</div>
+        <div v-if="authError && errorFor === 'email'" class="bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2 mb-3">{{ authError }}</div>
         <label class="text-xs text-bark/70 block mb-1">Email</label>
         <input v-model="emailForm" type="email" class="w-full px-3 py-2 border border-black/10 rounded-md text-sm mb-3" />
         <label class="text-xs text-bark/70 block mb-1">Confirm with your password</label>
@@ -325,6 +290,7 @@ async function confirmDeleteAccount() {
 
       <div class="bg-white rounded-xl p-5">
         <div class="text-xs font-semibold text-bark mb-3">Change password</div>
+        <div v-if="authError && errorFor === 'password'" class="bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2 mb-3">{{ authError }}</div>
         <label class="text-xs text-bark/70 block mb-1">Current password</label>
         <input v-model="currentPassword" type="password" class="w-full px-3 py-2 border border-black/10 rounded-md text-sm mb-3" />
         <label class="text-xs text-bark/70 block mb-1">New password</label>

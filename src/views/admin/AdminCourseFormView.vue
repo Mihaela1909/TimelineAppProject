@@ -27,9 +27,10 @@ watch(activeTab, (tab) => {
 })
 
 async function confirmDeleteLesson() {
-  await removeLesson(pendingDeleteLesson.value.$id)
-  toast.success('Lesson deleted')
-  pendingDeleteLesson.value = null
+  const target = pendingDeleteLesson.value
+  pendingDeleteLesson.value = null // close the modal first so it can't be confirmed twice
+  if (await removeLesson(target.$id)) toast.success('Lesson deleted')
+  else toast.error('Could not delete this lesson. Please try again.')
 }
 
 const form = ref({

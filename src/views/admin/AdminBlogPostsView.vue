@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import { useAdminBlogPosts } from '../../composables/useAdminBlogPosts'
 import ConfirmModal from '../../components/ui/ConfirmModal.vue'
 import { useToast } from '../../composables/useToast'
+import { CATEGORY_STYLES as categoryStyles } from '../../constants/blogCategories'
 
 const { posts, loading, error, fetchAll, remove } = useAdminBlogPosts()
 const pendingDelete = ref(null)
@@ -10,19 +11,12 @@ const toast = useToast()
 
 onMounted(fetchAll)
 
-// Matching the colors already used on the public blog cards, so a category
-// looks the same whether you're viewing it in admin or on the live site.
-const categoryStyles = {
-  'Myth-Busting': 'bg-red-100 text-red-700',
-  Listicle: 'bg-blue-100 text-blue-700',
-  'Dev Update': 'bg-purple-100 text-purple-700',
-  Digest: 'bg-cyan-100 text-cyan-700',
-}
 
 async function confirmDelete() {
-  await remove(pendingDelete.value.$id)
-  toast.success('Post deleted')
-  pendingDelete.value = null
+  const target = pendingDelete.value
+  pendingDelete.value = null // close the modal first so it can't be confirmed twice
+  if (await remove(target.$id)) toast.success('Post deleted')
+  else toast.error('Could not delete this post. Please try again.')
 }
 </script>
 

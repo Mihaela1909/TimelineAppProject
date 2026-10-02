@@ -30,6 +30,7 @@ export function useAdminBlogPosts() {
   }
 
   async function save(id, data) {
+    if (saving.value) return null // already saving — ignore double-clicks
     saving.value = true
     error.value = null
     try {
@@ -45,13 +46,14 @@ export function useAdminBlogPosts() {
     }
   }
 
+  // Returns true/false; the caller shows the toast. Deliberately doesn't set
+  // `error`, which is the page's load error and would replace the whole list.
   async function remove(id) {
     try {
       await blogPostService.deleteBlogPost(id)
       posts.value = posts.value.filter((p) => p.$id !== id)
       return true
     } catch (err) {
-      error.value = 'Could not delete this post.'
       console.error(err)
       return false
     }

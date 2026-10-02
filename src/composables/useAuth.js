@@ -11,18 +11,38 @@ import { getSettingsByUserId } from '../services/profileSettingsService'
 const currentUser = ref(null)
 const authChecked = ref(false)
 
+// Appwrite's own minimum — checked here first so the user gets a clear
+// message instead of a raw API error.
+const MIN_PASSWORD_LENGTH = 8
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 export function useAuth() {
   const loading = ref(false)
   const error = ref(null)
 
+  // Login/register THROW on failure (the views catch it and stay on the
+  // page); the update* actions below RETURN true/false instead.
+  function fail(message) {
+    error.value = message
+    throw new Error(message)
+  }
+
   async function register({ email, password, name }) {
-    loading.value = true
     error.value = null
+    name = name?.trim()
+    email = email?.trim()
+    if (!name) fail('Please enter your name.')
+    if (!EMAIL_PATTERN.test(email || '')) fail('Please enter a valid email address.')
+    if ((password || '').length < MIN_PASSWORD_LENGTH) fail(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`)
+
+    loading.value = true
     try {
       await authService.registerUser({ email, password, name })
       await refreshCurrentUser()
     } catch (err) {
-      error.value = err.message || 'Could not create account.'
+      console.error(err)
+      // 409 = Appwrite "already exists". Never show raw API text to users.
+      error.value = err.code === 409 ? 'An account with this email already exists.' : 'Could not create your account. Please try again.'
       throw err
     } finally {
       loading.value = false
@@ -30,8 +50,11 @@ export function useAuth() {
   }
 
   async function login({ email, password }) {
-    loading.value = true
     error.value = null
+    email = email?.trim()
+    if (!email || !password) fail('Please enter your email and password.')
+
+    loading.value = true
     try {
       try {
         await authService.loginUser({ email, password })
@@ -52,8 +75,14 @@ export function useAuth() {
   }
 
   async function updateName(name) {
-    loading.value = true
+    if (loading.value) return false
     error.value = null
+    name = name?.trim()
+    if (!name) {
+      error.value = 'Name cannot be empty.'
+      return false
+    }
+    loading.value = true
     try {
       await authService.updateDisplayName(name)
       await refreshCurrentUser()
@@ -68,8 +97,14 @@ export function useAuth() {
   }
 
   async function updateEmail(email, password) {
-    loading.value = true
+    if (loading.value) return false
     error.value = null
+    email = email?.trim()
+    if (!EMAIL_PATTERN.test(email || '')) {
+      error.value = 'Please enter a valid email address.'
+      return false
+    }
+    loading.value = true
     try {
       await authService.updateUserEmail(email, password)
       await refreshCurrentUser()
@@ -84,8 +119,17 @@ export function useAuth() {
   }
 
   async function updatePassword(newPassword, oldPassword) {
-    loading.value = true
+    if (loading.value) return false
     error.value = null
+    if ((newPassword || '').length < MIN_PASSWORD_LENGTH) {
+      error.value = `New password must be at least ${MIN_PASSWORD_LENGTH} characters.`
+      return false
+    }
+    if (newPassword === oldPassword) {
+      error.value = 'New password must be different from your current one.'
+      return false
+    }
+    loading.value = true
     try {
       await authService.updateUserPassword(newPassword, oldPassword)
       return true

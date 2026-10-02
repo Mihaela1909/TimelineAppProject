@@ -1,22 +1,20 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCourseDetail } from '../composables/useCourseDetail'
 import { useAuth } from '../composables/useAuth'
 import { getImagePreviewUrl } from '../services/mediaService'
-import { getCompletedLessonIds } from '../services/progressService'
+import { useCourseProgress } from '../composables/useCourseProgress'
 
 const route = useRoute()
 const { course, lessons, loading, error, fetchCourseAndLessons } = useCourseDetail()
 const { currentUser } = useAuth()
 
-const completedLessonIds = ref([])
+const { completedLessonIds, fetchCompleted } = useCourseProgress()
 
-onMounted(async () => {
-  await fetchCourseAndLessons(route.params.id)
-  if (currentUser.value) {
-    completedLessonIds.value = await getCompletedLessonIds(currentUser.value.$id, route.params.id)
-  }
+onMounted(() => {
+  fetchCourseAndLessons(route.params.id)
+  fetchCompleted(currentUser.value?.$id, route.params.id)
 })
 
 const progressPercent = computed(() => {

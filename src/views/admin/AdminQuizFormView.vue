@@ -55,9 +55,10 @@ async function handleSubmit() {
 }
 
 async function confirmDeleteQuestion() {
-  await removeQuestion(pendingDeleteQuestion.value.$id)
-  toast.success('Question deleted')
-  pendingDeleteQuestion.value = null
+  const target = pendingDeleteQuestion.value
+  pendingDeleteQuestion.value = null // close the modal first so it can't be confirmed twice
+  if (await removeQuestion(target.$id)) toast.success('Question deleted')
+  else toast.error('Could not delete this question. Please try again.')
 }
 </script>
 

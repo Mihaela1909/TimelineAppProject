@@ -1,48 +1,19 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import * as blogPostService from '../services/blogPostService'
+import { useBlog } from '../composables/useBlog'
 import { getImagePreviewUrl } from '../services/mediaService'
 import { useToast } from '../composables/useToast'
+import { CATEGORY_STYLES as categoryStyles } from '../constants/blogCategories'
 
 const route = useRoute()
 const toast = useToast()
 
-const post = ref(null)
-const allPosts = ref([])
-const loading = ref(true)
-const error = ref(null)
+const { post, relatedPosts, loading, error, fetchPost } = useBlog()
 
-const categoryStyles = {
-  'Myth-Busting': 'bg-red-100 text-red-700',
-  Listicle: 'bg-blue-100 text-blue-700',
-  'Dev Update': 'bg-purple-100 text-purple-700',
-  Digest: 'bg-cyan-100 text-cyan-700',
-}
-
-async function load() {
-  loading.value = true
-  error.value = null
-  try {
-    const [postData, published] = await Promise.all([
-      blogPostService.getBlogPostById(route.params.id),
-      blogPostService.getPublishedBlogPosts(),
-    ])
-    post.value = postData
-    allPosts.value = published
-  } catch (err) {
-    error.value = 'Could not load this post.'
-    console.error(err)
-  } finally {
-    loading.value = false
-  }
-}
-
-onMounted(load)
-
-const relatedPosts = computed(() =>
-  allPosts.value.filter((p) => p.$id !== post.value?.$id && p.category === post.value?.category).slice(0, 2)
-)
+onMounted(() => fetchPost(route.params.id))
+// Clicking a related post reuses this same component, so reload on id change.
+watch(() => route.params.id, (id) => id && fetchPost(id))
 
 const formattedDate = computed(() => {
   if (!post.value) return ''
