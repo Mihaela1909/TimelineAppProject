@@ -1,5 +1,6 @@
 import { ID, Query, Permission, Role } from 'appwrite'
 import { tablesDB, DB_ID, TABLES } from './appwrite'
+import { listAllRows } from './rowHelpers'
 
 // This table has Row Level Security enabled in Appwrite, so every row we
 // create must be given its own permissions — otherwise it would be
@@ -22,19 +23,13 @@ export async function createAttempt({ userId, quizId, score, totalQuestions }) {
 }
 
 export async function getAllAttemptsForUser(userId) {
-  const res = await tablesDB.listRows({
-    databaseId: DB_ID,
-    tableId: TABLES.QUIZ_ATTEMPTS,
-    queries: [Query.equal('userId', userId), Query.orderDesc('$createdAt')],
-  })
-  return res.rows
+  return listAllRows(TABLES.QUIZ_ATTEMPTS, [Query.equal('userId', userId), Query.orderDesc('$createdAt')])
 }
 
 export async function getAttemptsForUserAndQuiz(userId, quizId) {
-  const res = await tablesDB.listRows({
-    databaseId: DB_ID,
-    tableId: TABLES.QUIZ_ATTEMPTS,
-    queries: [Query.equal('userId', userId), Query.equal('quizId', quizId), Query.orderDesc('$createdAt')],
-  })
-  return res.rows
+  return listAllRows(TABLES.QUIZ_ATTEMPTS, [
+    Query.equal('userId', userId),
+    Query.equal('quizId', quizId),
+    Query.orderDesc('$createdAt'),
+  ])
 }

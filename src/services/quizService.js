@@ -1,18 +1,13 @@
 import { Query } from 'appwrite'
 import { tablesDB, DB_ID, TABLES } from './appwrite'
+import { listAllRows, deleteAllRows } from './rowHelpers'
 
 export async function getAllQuizzes() {
-  const res = await tablesDB.listRows({ databaseId: DB_ID, tableId: TABLES.QUIZZES })
-  return res.rows
+  return listAllRows(TABLES.QUIZZES)
 }
 
 export async function getPublishedQuizzes() {
-  const res = await tablesDB.listRows({
-    databaseId: DB_ID,
-    tableId: TABLES.QUIZZES,
-    queries: [Query.equal('published', true)],
-  })
-  return res.rows
+  return listAllRows(TABLES.QUIZZES, [Query.equal('published', true)])
 }
 
 export async function getQuizById(id) {
@@ -34,6 +29,9 @@ export async function updateQuiz(id, data) {
   return tablesDB.updateRow({ databaseId: DB_ID, tableId: TABLES.QUIZZES, rowId: id, data })
 }
 
+// Questions and attempts go first so none are left pointing at a missing quiz.
 export async function deleteQuiz(id) {
+  await deleteAllRows(TABLES.QUIZ_QUESTIONS, [Query.equal('quizId', id)])
+  await deleteAllRows(TABLES.QUIZ_ATTEMPTS, [Query.equal('quizId', id)])
   return tablesDB.deleteRow({ databaseId: DB_ID, tableId: TABLES.QUIZZES, rowId: id })
 }

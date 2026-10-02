@@ -1,5 +1,6 @@
 import { ID, Query, Permission, Role } from 'appwrite'
 import { tablesDB, DB_ID, TABLES } from './appwrite'
+import { listAllRows } from './rowHelpers'
 
 // Row Level Security is enabled on this table, same reasoning as
 // quiz_attempts: each row belongs to exactly one person, so we grant
@@ -29,19 +30,10 @@ export async function markLessonComplete({ userId, courseId, lessonId }) {
 }
 
 export async function getCompletedLessonIds(userId, courseId) {
-  const res = await tablesDB.listRows({
-    databaseId: DB_ID,
-    tableId: TABLES.PROGRESS,
-    queries: [Query.equal('userId', userId), Query.equal('courseId', courseId)],
-  })
-  return res.rows.map((row) => row.lessonId)
+  const rows = await listAllRows(TABLES.PROGRESS, [Query.equal('userId', userId), Query.equal('courseId', courseId)])
+  return rows.map((row) => row.lessonId)
 }
 
 export async function getAllProgressForUser(userId) {
-  const res = await tablesDB.listRows({
-    databaseId: DB_ID,
-    tableId: TABLES.PROGRESS,
-    queries: [Query.equal('userId', userId)],
-  })
-  return res.rows
+  return listAllRows(TABLES.PROGRESS, [Query.equal('userId', userId)])
 }

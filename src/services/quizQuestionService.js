@@ -1,13 +1,9 @@
 import { Query } from 'appwrite'
 import { tablesDB, DB_ID, TABLES } from './appwrite'
+import { listAllRows } from './rowHelpers'
 
 export async function getQuestionsForQuiz(quizId) {
-  const res = await tablesDB.listRows({
-    databaseId: DB_ID,
-    tableId: TABLES.QUIZ_QUESTIONS,
-    queries: [Query.equal('quizId', quizId), Query.orderAsc('order')],
-  })
-  return res.rows
+  return listAllRows(TABLES.QUIZ_QUESTIONS, [Query.equal('quizId', quizId), Query.orderAsc('order')])
 }
 
 export async function getQuestionById(id) {

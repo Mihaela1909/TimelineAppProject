@@ -1,6 +1,7 @@
 import { Query, Permission, Role } from 'appwrite'
 import { tablesDB, DB_ID, TABLES } from './appwrite'
 import { ROLES } from '../constants/roles'
+import { listAllRows } from './rowHelpers'
 
 // DATA ACCESS LAYER for the `profiles` table, which is what actually
 // stores each user's role (Appwrite's own Auth/Account has no concept
@@ -32,12 +33,7 @@ export async function createProfile(userId, name, email) {
 
 // ADMIN-only: every profile, newest first, for the admin Users page.
 export async function listProfiles() {
-  const res = await tablesDB.listRows({
-    databaseId: DB_ID,
-    tableId: TABLES.PROFILES,
-    queries: [Query.orderDesc('$createdAt'), Query.limit(500)],
-  })
-  return res.rows
+  return listAllRows(TABLES.PROFILES, [Query.orderDesc('$createdAt')])
 }
 
 // ADMIN-only: change role / active status. Requires table-level Update

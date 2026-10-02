@@ -1,18 +1,13 @@
 import { Query } from 'appwrite'
 import { tablesDB, DB_ID, TABLES } from './appwrite'
+import { listAllRows } from './rowHelpers'
 
 export async function getAllBlogPosts() {
-  const res = await tablesDB.listRows({ databaseId: DB_ID, tableId: TABLES.BLOG_POSTS })
-  return res.rows
+  return listAllRows(TABLES.BLOG_POSTS, [Query.orderDesc('$createdAt')])
 }
 
 export async function getPublishedBlogPosts() {
-  const res = await tablesDB.listRows({
-    databaseId: DB_ID,
-    tableId: TABLES.BLOG_POSTS,
-    queries: [Query.equal('published', true), Query.orderDesc('$createdAt')],
-  })
-  return res.rows
+  return listAllRows(TABLES.BLOG_POSTS, [Query.equal('published', true), Query.orderDesc('$createdAt')])
 }
 
 export async function getBlogPostById(id) {

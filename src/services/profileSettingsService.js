@@ -1,6 +1,7 @@
 import { ID, Query, Permission, Role } from 'appwrite'
 import { tablesDB, DB_ID, TABLES } from './appwrite'
 import { setProfileImage } from './profileService'
+import { listAllRows } from './rowHelpers'
 
 // Deliberately a separate table from `profiles`. `profiles` holds `role`
 // and the APPROVED avatar/header IDs, none of which may be user-writable.
@@ -53,15 +54,9 @@ export async function submitPendingImage(userId, kind, fileId) {
 // ADMIN side — needs table-level Read + Update for the admin label on
 // profile_settings, otherwise only the admin's own row is visible.
 export async function listPendingSubmissions() {
-  const res = await tablesDB.listRows({
-    databaseId: DB_ID,
-    tableId: TABLES.PROFILE_SETTINGS,
-    queries: [
-      Query.or([Query.isNotNull('pendingAvatarImageId'), Query.isNotNull('pendingHeaderImageId')]),
-      Query.limit(100),
-    ],
-  })
-  return res.rows
+  return listAllRows(TABLES.PROFILE_SETTINGS, [
+    Query.or([Query.isNotNull('pendingAvatarImageId'), Query.isNotNull('pendingHeaderImageId')]),
+  ])
 }
 
 export async function approvePendingImage(row, kind) {
