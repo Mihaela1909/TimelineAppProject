@@ -20,6 +20,7 @@ export default {
         ochre: c("ochre"),
         leaf: c("leaf"),
         bark: c("bark"),
+        umber: c("umber"),
         butter: c("butter"),
         wine: c("wine"),
         parchment: c("parchment"),

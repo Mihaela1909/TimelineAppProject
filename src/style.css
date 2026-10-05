@@ -22,6 +22,7 @@
   /* Derived (not on the board — tints/shades needed for contrast) */
   --color-olive-light: 231 233 213; /* #E7E9D5 — soft olive tint for active/hover backgrounds */
   --color-taupe-dark: 133 115 95;   /* #85735F — taupe dark enough for icons/text on white (4.6:1) */
+  --color-umber: 38 28 19;          /* #261C13 — deep brown for image overlays (hero gradient) */
 }
 
 @layer base {

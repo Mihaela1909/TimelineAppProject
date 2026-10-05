@@ -29,7 +29,7 @@ function scroll(direction) {
 
     <div
       ref="track"
-      class="flex gap-5 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-3 -mb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      class="flex gap-5 overflow-x-auto snap-x snap-mandatory scroll-smooth scroll-px-3 px-3 -mx-3 pt-2 -mt-2 pb-5 -mb-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       <slot />
     </div>

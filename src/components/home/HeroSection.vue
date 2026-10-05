@@ -10,7 +10,10 @@ const { currentUser } = useAuth()
 <template>
   <section
     class="relative bg-bark bg-cover bg-center text-white text-center px-5 py-24 md:py-28 min-h-[28rem] md:min-h-[34rem] flex items-center justify-center shadow-[0_6px_10px_-4px_rgba(0,0,0,0.35)]"
-    style="background-image: url('/images/home/hero.webp')"
+    style="
+      background-image: linear-gradient(to top, rgb(var(--color-umber)) 0%, rgb(var(--color-umber) / 0) 70%),
+        url('/images/home/hero.webp');
+    "
   >
     <div class="max-w-3xl flex flex-col items-center gap-5">
       <p class="text-2xl md:text-3xl drop-shadow">There's always time for history, discover it with us.</p>

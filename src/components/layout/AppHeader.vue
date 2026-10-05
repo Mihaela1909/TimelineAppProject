@@ -55,8 +55,8 @@ async function handleLogout() {
           v-for="link in navLinks"
           :key="link.to"
           :to="link.to"
-          class="text-base hover:text-cream transition-colors underline-offset-8 decoration-2"
-          active-class="underline"
+          class="nav-link relative py-1 text-base hover:text-cream transition-colors focus:outline-none focus-visible:text-cream"
+          active-class="is-active"
         >
           {{ link.label }}
         </RouterLink>
@@ -164,3 +164,32 @@ async function handleLogout() {
     </nav>
   </header>
 </template>
+
+<style scoped>
+/* Hover underline that grows outward from the middle of the link.
+   The current page's link keeps the full line. */
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 2px;
+  border-radius: 9999px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 300ms ease-out;
+}
+.nav-link:hover::after,
+.nav-link:focus-visible::after,
+.nav-link.is-active::after {
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-link::after {
+    transition: none;
+  }
+}
+</style>
