@@ -63,7 +63,8 @@ A user's upload does NOT go live until an admin approves it.
 ## Public site / home page
 - Layout: `AppHeader` (logo, nav, ochre profile circle → account menu with My profile / Admin panel for staff / Log out; hamburger menu on phones) and `AppFooter`. The logo is `public/images/logo.webp` (white artwork) via `AppLogo.vue` (`size` sm/md/lg, `link`).
 - Home sections in `components/home/`. Shared UI: `SectionHeading` (title + line + diamond), `CardCarousel` (arrows on md+, swipe on phones), `HistoryCard` (course/blog card).
-- Images in `public/images/home/`. Quiz and Who-are-we use the artwork as a background on md+ and stack it as a band on phones.
+- Images in `public/images/home/`. The quiz section still uses one flat background image on md+, stacked as a band on phones.
+- Who-are-we is built from layers in `public/images/home/who-are-we/` inside a square stage, positioned in %: ring-back → window → napoleon → window-front → rings-front. The olive diagonal is CSS `clip-path` and the dots sit behind it. Napoleon rides in diagonally from bottom-right each time the section scrolls into view; he resets only after the section fully leaves the screen (`composables/useInView.js` with `once: false`; no motion with reduced-motion settings). He is clipped only on the right (right column's outer edge, 84.7%) and bottom (sill, 85%), measured from window.webp, so he breaks out of the frame top-left on purpose.
 - Event of the Day: `services/wikimediaService.js` (Wikipedia "On this day" REST API, no key, CORS OK) → `useEventOfDay.js` picks one pre-1900 event by day-of-year, so it's the same all day.
 - "Start Quiz" opens a random published quiz. The "recommended course" quiz in the copy doesn't exist yet.
 - "Most Popular Courses" shows the first published courses, not real popularity; guests can't read progress, so there's no popularity data.

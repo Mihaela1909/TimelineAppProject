@@ -48,7 +48,7 @@ async function handleLogout() {
 <template>
   <header class="bg-olive relative z-30">
     <div class="max-w-7xl mx-auto px-5 md:px-8 h-20 flex items-center justify-between gap-6">
-      <AppLogo size="sm" />
+      <AppLogo size="base" />
 
       <nav class="hidden md:flex items-center gap-8 lg:gap-10 text-white" aria-label="Main">
         <RouterLink

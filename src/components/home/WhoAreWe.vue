@@ -1,6 +1,12 @@
 <script setup>
 import { ref } from 'vue'
 import AppIcon from '../ui/AppIcon.vue'
+import { useInView } from '../../composables/useInView'
+
+// Napoleon rides into the window each time the section scrolls into view
+// (resets once it has fully left the screen).
+const art = ref(null)
+const { inView } = useInView(art, { threshold: 0.35, once: false })
 
 // Two tabs: "Values" (icon list) and "Dev Note". The selected tab is the
 // filled olive one; the other is the light outlined one.
@@ -27,25 +33,71 @@ function onTabKeydown(event, index) {
 </script>
 
 <template>
-  <!-- md+: artwork as the section background, content on its white right side.
-       Phones: the artwork as a band on top, content on white below. -->
-  <section
-    class="bg-white md:bg-[url('/images/home/who-are-we.webp')] md:bg-cover md:bg-left shadow-[0_-4px_10px_-6px_rgba(0,0,0,0.25),0_6px_10px_-6px_rgba(0,0,0,0.25)]"
-  >
+  <!-- Built from separate layers (not one flat image) so each part can adapt
+       to the screen: olive diagonal + dots are CSS/background, the window
+       artwork is a stacked set of transparent images, the text has its own column. -->
+  <section class="relative overflow-hidden bg-white shadow-[0_-4px_10px_-6px_rgba(0,0,0,0.25),0_6px_10px_-6px_rgba(0,0,0,0.25)]">
+    <!-- Dot pattern on the right (behind the olive, so dots only show on white) -->
+    <img
+      src="/images/home/who-are-we/dots.webp"
+      alt=""
+      class="hidden md:block absolute right-0 top-0 h-full w-auto max-w-none pointer-events-none"
+    />
+    <!-- md+: olive diagonal across the left of the section -->
     <div
-      class="md:hidden h-56 bg-[url('/images/home/who-are-we.webp')] bg-cover bg-left"
+      class="hidden md:block absolute inset-0 bg-olive [clip-path:polygon(0_0,16.5%_0,66.5%_100%,0_100%)]"
       aria-hidden="true"
     ></div>
-    <!-- lg+: same proportions as the artwork (2000×981), so the olive triangle
-         lands where the mockup has it and never runs under the text. -->
-    <div class="max-w-7xl mx-auto px-5 md:px-8 py-10 md:py-20 md:min-h-[38rem] lg:min-h-[49vw] lg:py-12 flex">
-      <div class="md:ml-auto w-full md:w-[45%] lg:w-[40%] flex flex-col justify-center">
-        <h2 class="font-voice text-olive leading-[0.8] mb-6 md:mb-8 flex items-end gap-2">
-          <span class="flex flex-col">
-            <span class="text-6xl md:text-8xl xl:text-9xl">Who</span>
-            <span class="text-5xl md:text-7xl xl:text-8xl pl-1">are we</span>
+
+    <div class="relative max-w-7xl mx-auto px-5 md:px-8 py-12 md:py-16 lg:py-20 grid md:grid-cols-[1fr_minmax(0,42%)] lg:grid-cols-[1fr_minmax(0,40%)] gap-10 md:gap-12 items-center">
+      <!-- Artwork -->
+      <div class="relative">
+        <!-- Phones: the diagonal sits behind the artwork only, so the text stays on white -->
+        <div
+          class="md:hidden absolute -inset-x-5 -top-12 -bottom-4 bg-olive [clip-path:polygon(0_0,35%_0,100%_100%,0_100%)]"
+          aria-hidden="true"
+        ></div>
+
+        <!-- Square stage: every layer is positioned in % of it, so they stay
+             aligned at any size. Order = back to front. -->
+        <div ref="art" class="relative w-full max-w-[21rem] sm:max-w-[25.5rem] md:max-w-[36rem] lg:max-w-[37rem] mx-auto md:mx-0 aspect-square">
+          <img src="/images/home/who-are-we/ring-back.webp" alt="" class="absolute left-[-7%] top-[-9.5%] w-[50%]" />
+          <img src="/images/home/who-are-we/window.webp" alt="" class="absolute inset-0 w-full h-full" />
+
+          <!-- Napoleon is clipped only on the RIGHT (outer edge of the right column,
+               84.7% — measured from window.webp) and BOTTOM (sill line, 85%), so he
+               rides in hidden behind the column and sill, then breaks out of the
+               frame over the top and left edges in his final pose. -->
+          <div class="absolute inset-0 [clip-path:inset(-50%_15.3%_15%_-50%)]">
+            <img
+              src="/images/home/who-are-we/napoleon.webp"
+              alt="Napoleon on a rearing horse, emerging from a stone window"
+              class="absolute left-[2%] top-[-3%] w-[86%] ease-out motion-reduce:transition-none motion-reduce:transform-none"
+              :class="
+                inView
+                  ? 'transition-transform duration-[1600ms] translate-x-0 translate-y-0 rotate-0'
+                  : 'translate-x-[35%] translate-y-[70%] rotate-[8deg]'
+              "
+            />
+          </div>
+
+          <img src="/images/home/who-are-we/window-front.webp" alt="" class="absolute inset-0 w-full h-full" />
+          <img src="/images/home/who-are-we/rings-front.webp" alt="" class="absolute left-[68.5%] top-[67%] w-[47%]" />
+        </div>
+      </div>
+
+      <!-- Text -->
+      <div class="flex flex-col justify-center">
+        <!-- Figma: "Who" 200px, "are we" 140px (= 0.7em) in a ~2400px-wide frame.
+             The h2 size = "Who", scaling with the screen like the Figma frame
+             (8.2vw, clamped); "are we" and "?" are sized in em relative to it. -->
+        <h2 class="font-voice text-olive text-[4.5rem] md:text-[clamp(4.5rem,8.2vw,9.5rem)] mt-4 md:mt-0 mb-6 md:mb-8 flex items-end">
+          <span class="flex flex-col leading-[0.8]">
+            <span>Who</span>
+            <span class="text-[0.7em] -mt-[0.02em] pl-[0.04em] whitespace-nowrap">are we</span>
           </span>
-          <span class="text-7xl md:text-9xl xl:text-[10rem] leading-none -mb-1 md:-mb-3" aria-hidden="true">?</span>
+          <!-- One big "?" spanning both lines; its diamond dot sits on the "are we" baseline. -->
+          <span class="text-[2.3em] leading-[0.7] -ml-[0.13em] mb-[-0.02em]" aria-hidden="true">?</span>
           <span class="sr-only">?</span>
         </h2>
 
@@ -68,13 +120,16 @@ function onTabKeydown(event, index) {
           </button>
         </div>
 
+        <!-- Both panels sit in the same grid cell; the inactive one is invisible
+             but still takes up space, so the card keeps the same height on both tabs. -->
+        <div class="grid">
         <!-- Values -->
         <ul
-          v-if="activeTab === 'values'"
           id="who-panel-values"
           role="tabpanel"
           aria-labelledby="who-tab-values"
-          class="space-y-4 md:space-y-5"
+          class="[grid-area:1/1] space-y-4 md:space-y-4"
+          :class="activeTab === 'values' ? '' : 'invisible'"
         >
           <li
             v-for="(value, i) in values"
@@ -82,10 +137,10 @@ function onTabKeydown(event, index) {
             class="flex items-center gap-3 md:gap-5"
             :class="i % 2 === 1 ? 'flex-row-reverse text-right' : ''"
           >
-            <span class="flex-shrink-0 w-10 h-10 md:w-16 md:h-16 xl:w-20 xl:h-20 rounded-full bg-olive text-cream flex items-center justify-center ring-4 ring-white">
-              <AppIcon :name="value.icon" class="w-5 h-5 md:w-8 md:h-8 xl:w-10 xl:h-10" />
+            <span class="flex-shrink-0 w-10 h-10 md:w-14 md:h-14 xl:w-16 xl:h-16 rounded-full bg-olive text-cream flex items-center justify-center ring-4 ring-white">
+              <AppIcon :name="value.icon" class="w-5 h-5 md:w-7 md:h-7 xl:w-8 xl:h-8" />
             </span>
-            <p class="text-sm md:text-base xl:text-xl text-bark leading-snug">
+            <p class="text-sm md:text-base xl:text-lg text-bark leading-snug">
               <strong class="font-bold">{{ value.title }}</strong> {{ value.text }}
             </p>
           </li>
@@ -93,17 +148,18 @@ function onTabKeydown(event, index) {
 
         <!-- Dev note -->
         <div
-          v-else
           id="who-panel-dev-note"
           role="tabpanel"
           aria-labelledby="who-tab-dev-note"
-          class="text-sm md:text-base xl:text-xl text-bark leading-snug"
+          class="[grid-area:1/1] text-sm md:text-base xl:text-lg text-bark leading-snug"
+          :class="activeTab === 'dev-note' ? '' : 'invisible'"
         >
           <p class="mb-4">
             Textbooks made history feel dense and forgettable. Timeline is my attempt to fix that — free for anyone
             studying, or just here for a little past time.
           </p>
           <p class="text-bark/60 pl-2">- The Dev</p>
+        </div>
         </div>
 
         <RouterLink

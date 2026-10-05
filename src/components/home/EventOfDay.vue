@@ -64,7 +64,7 @@ onMounted(fetchToday)
         <img
           src="/images/home/books.webp"
           alt=""
-          class="hidden md:block absolute -right-10 -bottom-20 w-40 pointer-events-none"
+          class="hidden md:block absolute -right-6 xl:-right-10 -bottom-20 w-40 pointer-events-none"
         />
       </div>
     </div>
