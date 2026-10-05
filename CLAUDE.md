@@ -60,6 +60,14 @@ A user's upload does NOT go live until an admin approves it.
 - Options come from `useAdminCourses().categories` / `useAdminBlogPosts().categories` (blog also includes the built-in `CATEGORY_STYLES` names).
 - Blog badges use `categoryStyle(name)` from `constants/blogCategories.js`, with a grey fallback for new categories.
 
+## Public site / home page
+- Layout: `AppHeader` (logo, nav, ochre profile circle → account menu with My profile / Admin panel for staff / Log out; hamburger menu on phones) and `AppFooter`. The logo is `public/images/logo.webp` (white artwork) via `AppLogo.vue` (`size` sm/md/lg, `link`).
+- Home sections in `components/home/`. Shared UI: `SectionHeading` (title + line + diamond), `CardCarousel` (arrows on md+, swipe on phones), `HistoryCard` (course/blog card).
+- Images in `public/images/home/`. Quiz and Who-are-we use the artwork as a background on md+ and stack it as a band on phones.
+- Event of the Day: `services/wikimediaService.js` (Wikipedia "On this day" REST API, no key, CORS OK) → `useEventOfDay.js` picks one pre-1900 event by day-of-year, so it's the same all day.
+- "Start Quiz" opens a random published quiz. The "recommended course" quiz in the copy doesn't exist yet.
+- "Most Popular Courses" shows the first published courses, not real popularity; guests can't read progress, so there's no popularity data.
+
 ## Known gaps / next priorities
 1. Users can't remove a live photo themselves (they can only replace it, or cancel a pending one). Needs an admin-side "remove" or a pending "remove" request.
 2. Rejected/replaced files stay in the bucket (orphaned). Cleanup would need bucket `Delete` for label `admin`, then `deleteImage()` on reject/replace.

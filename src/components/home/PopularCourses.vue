@@ -2,79 +2,60 @@
 import { onMounted } from 'vue'
 import { useCourses } from '../../composables/useCourses'
 import { getImagePreviewUrl } from '../../services/mediaService'
+import SectionHeading from '../ui/SectionHeading.vue'
+import CardCarousel from '../ui/CardCarousel.vue'
+import HistoryCard from '../ui/HistoryCard.vue'
+import AppIcon from '../ui/AppIcon.vue'
 
+const SHOWN = 8
 const { courses, loading, error, fetchPopularCourses } = useCourses()
 
-onMounted(() => {
-  fetchPopularCourses(3)
-})
+onMounted(() => fetchPopularCourses(SHOWN))
+
+// Mockup style: "Ancient" in the white band, "Egypt" in the olive band.
+// One-word titles go entirely in the olive band.
+function splitTitle(title = '') {
+  const [first, ...rest] = title.trim().split(/\s+/)
+  return rest.length ? { label: first, title: rest.join(' ') } : { label: '', title: first }
+}
+
+const lessonsText = (n) => (n ? `${n} lesson${n === 1 ? '' : 's'}` : '')
 </script>
 
 <template>
-  <section class="px-6 py-14 max-w-5xl mx-auto">
-    <div class="flex items-center gap-3 mb-6">
-      <h2 class="font-voice text-2xl text-bark whitespace-nowrap">Most Popular Courses</h2>
-      <div class="flex-1 h-px bg-olive/50"></div>
+  <section class="px-5 md:px-8 py-14 md:py-20 max-w-7xl mx-auto">
+    <SectionHeading title="Most Popular Courses" />
+
+    <div v-if="loading" class="flex gap-5 overflow-hidden md:px-14" aria-live="polite">
+      <div v-for="n in 3" :key="n" class="flex-shrink-0 w-[78%] sm:w-[45%] lg:w-[calc((100%-2.5rem)/3)] h-64 rounded-lg bg-white animate-pulse"></div>
     </div>
 
-    <!-- Loading state -->
-    <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-3 gap-4" aria-live="polite">
-      <div v-for="n in 3" :key="n" class="bg-white rounded-lg overflow-hidden animate-pulse">
-        <div class="h-24 bg-olive-light"></div>
-        <div class="p-3 space-y-2">
-          <div class="h-3 w-2/3 bg-olive-light rounded"></div>
-          <div class="h-2 w-1/3 bg-olive-light rounded"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Error state -->
-    <div
-      v-else-if="error"
-      class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-6 text-center text-sm"
-      role="alert"
-    >
+    <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-6 text-center text-sm" role="alert">
       <p class="mb-3">{{ error }}</p>
-      <button
-        class="px-4 py-2 rounded-md border border-red-400 text-red-700 hover:bg-red-100 transition-colors"
-        @click="fetchPopularCourses(3)"
-      >
-        Retry
-      </button>
+      <button class="px-4 py-2 rounded-md border border-red-400 hover:bg-red-100" @click="fetchPopularCourses(SHOWN)">Retry</button>
     </div>
 
-    <!-- Empty state -->
     <div v-else-if="courses.length === 0" class="bg-white rounded-lg p-10 text-center text-sm text-bark/60">
       No courses published yet. Check back soon.
     </div>
 
-    <!-- Loaded state -->
-    <div v-else class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <RouterLink
+    <CardCarousel v-else label="Popular courses">
+      <HistoryCard
         v-for="course in courses"
         :key="course.$id"
         :to="`/courses/${course.$id}`"
-        class="bg-white rounded-lg overflow-hidden hover:shadow-md transition-shadow"
-      >
-        <img
-          v-if="course.coverImageId"
-          :src="getImagePreviewUrl(course.coverImageId)"
-          :alt="course.title"
-          class="h-24 w-full object-cover"
-        />
-        <div v-else class="h-24 bg-olive-light flex items-center justify-center text-olive text-2xl font-voice">
-          {{ course.title.charAt(0) }}
-        </div>
-        <div class="p-3">
-          <div class="text-sm font-medium text-bark">{{ course.title }}</div>
-          <div class="text-xs text-bark/50">{{ course.lessonCount }} lessons</div>
-        </div>
-      </RouterLink>
-    </div>
+        :image="course.coverImageId ? getImagePreviewUrl(course.coverImageId) : null"
+        :badge="course.category"
+        :label="splitTitle(course.title).label"
+        :title="splitTitle(course.title).title"
+        :meta="lessonsText(course.lessonCount)"
+        label-large
+      />
+    </CardCarousel>
 
-    <div class="text-right mt-4">
-      <RouterLink to="/courses" class="text-sm text-olive font-medium hover:underline">
-        Browse all &rarr;
+    <div class="flex justify-end mt-6">
+      <RouterLink to="/courses" class="inline-flex items-center gap-2 text-sm font-semibold text-bark hover:text-olive">
+        Browse all <AppIcon name="arrow-right" class="w-4 h-4" />
       </RouterLink>
     </div>
   </section>

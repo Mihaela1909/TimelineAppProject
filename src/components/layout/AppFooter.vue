@@ -1,59 +1,75 @@
 <script setup>
+import { useAuth } from '../../composables/useAuth'
+import AppLogo from './AppLogo.vue'
+
+const { currentUser } = useAuth()
 const currentYear = new Date().getFullYear()
+
+// `to` = a page in the app; items without it are plain text (no page yet).
+const columns = [
+  {
+    title: 'Explore',
+    items: [
+      { label: 'Courses', to: '/courses' },
+      { label: 'Blog', to: '/blog' },
+      { label: 'Quizzes', to: '/quizzes' },
+      { label: 'About us', to: '/about' },
+    ],
+  },
+  { title: 'Support', items: [{ label: 'Contact/Feedback' }, { label: 'FAQ' }] },
+  { title: 'Sources', items: [{ label: 'Wikipedia & open-access museum archives' }] },
+  { title: 'Follow', items: [{ label: 'Instagram' }, { label: 'X' }] },
+]
 </script>
 
 <template>
-  <footer class="bg-olive-dark text-cream/90 px-6 pt-10 pb-6 mt-16">
-    <div class="max-w-6xl mx-auto">
-      <div class="flex flex-col md:flex-row justify-between gap-8 border-b border-white/10 pb-8 mb-6">
-        <div class="max-w-xs">
-          <div class="font-voice text-xl text-white mb-2">Timeline</div>
-          <p class="text-xs text-cream/70">
-            Free history courses, quizzes, and stories — for anyone curious about the past.
-          </p>
-        </div>
-        <div class="text-right">
-          <p class="text-xs text-cream/70 mb-2">Save your progress as you go</p>
+  <footer class="bg-olive text-white px-5 md:px-8 pt-12 pb-6">
+    <div class="max-w-7xl mx-auto grid gap-10 md:grid-cols-[auto_1fr] md:gap-16 items-start">
+      <!-- Logo + sign-up call to action -->
+      <div class="flex flex-col items-center md:items-start gap-3">
+        <AppLogo size="md" />
+        <template v-if="!currentUser">
+          <p class="text-sm text-cream/90">Save your progress as you go</p>
           <RouterLink
             to="/register"
-            class="font-button inline-block text-sm px-5 py-2 rounded-md bg-olive text-white hover:bg-olive/90 transition-colors"
+            class="font-button px-8 py-2.5 rounded-lg bg-cream text-bark text-lg shadow hover:bg-white transition-colors"
           >
-            Sign up free
+            Sign Up Free
           </RouterLink>
-        </div>
+        </template>
+        <RouterLink
+          v-else
+          to="/profile"
+          class="font-button px-8 py-2.5 rounded-lg bg-cream text-bark text-lg shadow hover:bg-white transition-colors"
+        >
+          My Profile
+        </RouterLink>
       </div>
 
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-xs mb-8">
-        <div>
-          <div class="text-cream/50 uppercase tracking-wide mb-2">Explore</div>
-          <ul class="space-y-1 text-cream/85">
-            <li><RouterLink to="/courses">Courses</RouterLink></li>
-            <li><RouterLink to="/blog">Blog</RouterLink></li>
-            <li><RouterLink to="/quizzes">Quizzes</RouterLink></li>
-            <li><RouterLink to="/about">About us</RouterLink></li>
-          </ul>
+      <!-- Link columns, with the thin line + diamond under the headings -->
+      <div class="relative">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-x-8 md:gap-x-0 gap-y-8">
+          <div v-for="column in columns" :key="column.title">
+            <h3 class="text-lg mb-1 md:pr-6">{{ column.title }}</h3>
+            <div class="flex items-center mb-3" aria-hidden="true">
+              <span class="flex-1 h-px bg-white/80"></span>
+              <span class="w-2 h-2 bg-white rotate-45 -ml-1 md:hidden"></span>
+            </div>
+            <ul class="space-y-1.5 text-sm text-cream/90 md:pr-6">
+              <li v-for="item in column.items" :key="item.label">
+                <RouterLink v-if="item.to" :to="item.to" class="hover:text-white hover:underline">{{ item.label }}</RouterLink>
+                <span v-else>{{ item.label }}</span>
+              </li>
+            </ul>
+          </div>
         </div>
-        <div>
-          <div class="text-cream/50 uppercase tracking-wide mb-2">Support</div>
-          <ul class="space-y-1 text-cream/85">
-            <li>Contact / Feedback</li>
-            <li>FAQ</li>
-          </ul>
-        </div>
-        <div>
-          <div class="text-cream/50 uppercase tracking-wide mb-2">Sources</div>
-          <p class="text-cream/85">Wikipedia &amp; open-access museum archives</p>
-        </div>
-        <div>
-          <div class="text-cream/50 uppercase tracking-wide mb-2">Follow</div>
-          <p class="text-cream/85">Instagram &middot; X</p>
-        </div>
+        <!-- One continuous diamond at the end of the line on wide screens -->
+        <span class="hidden md:block absolute right-0 top-[2.15rem] w-2.5 h-2.5 bg-white rotate-45" aria-hidden="true"></span>
       </div>
+    </div>
 
-      <div class="text-xs text-cream/50 flex justify-between border-t border-white/10 pt-4">
-        <span>&copy; {{ currentYear }} Timeline</span>
-        <span>Made by [Your Name]</span>
-      </div>
+    <div class="max-w-7xl mx-auto mt-10 pt-4 border-t border-white/15 text-xs text-cream/70 text-center md:text-left">
+      &copy; {{ currentYear }} Timeline
     </div>
   </footer>
 </template>

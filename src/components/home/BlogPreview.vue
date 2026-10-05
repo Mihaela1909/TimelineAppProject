@@ -1,37 +1,55 @@
 <script setup>
-const posts = [
-  { id: 1, title: 'The Untold Story of Cleopatra', tag: 'Myth-busting', read: '4 min read' },
-  { id: 2, title: '5 Roman Inventions You Still Use Today', tag: 'Listicle', read: '3 min read' },
-  { id: 3, title: 'New Course Live: Ancient China', tag: 'Dev Update', read: '2 min read' },
-]
+import { computed, onMounted } from 'vue'
+import { useBlog } from '../../composables/useBlog'
+import { getImagePreviewUrl } from '../../services/mediaService'
+import SectionHeading from '../ui/SectionHeading.vue'
+import CardCarousel from '../ui/CardCarousel.vue'
+import HistoryCard from '../ui/HistoryCard.vue'
+import AppIcon from '../ui/AppIcon.vue'
+
+const SHOWN = 8
+const { posts, loading, error, fetchPublished } = useBlog()
+onMounted(fetchPublished)
+
+// Newest first (the service already sorts by creation date).
+const latest = computed(() => posts.value.slice(0, SHOWN))
+
+// readTime is free text in the admin form ("4 min", "5 mins read"…).
+const readTimeText = (t) => (!t ? '' : /read/i.test(t) ? t : `${t} read`)
 </script>
 
 <template>
-  <section class="px-6 py-14 max-w-5xl mx-auto">
-    <div class="flex items-center gap-3 mb-6">
-      <h2 class="font-voice text-2xl text-bark whitespace-nowrap">Community Blog</h2>
-      <div class="flex-1 h-px bg-olive/50"></div>
+  <section class="px-5 md:px-8 py-14 md:py-20 max-w-7xl mx-auto">
+    <SectionHeading title="Community Blog" />
+
+    <div v-if="loading" class="flex gap-5 overflow-hidden md:px-14" aria-live="polite">
+      <div v-for="n in 3" :key="n" class="flex-shrink-0 w-[78%] sm:w-[45%] lg:w-[calc((100%-2.5rem)/3)] h-64 rounded-lg bg-white animate-pulse"></div>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <RouterLink
-        v-for="post in posts"
-        :key="post.id"
-        :to="`/blog/${post.id}`"
-        class="bg-white rounded-lg overflow-hidden hover:shadow-md transition-shadow"
-      >
-        <div class="h-20 bg-olive-light"></div>
-        <div class="p-3">
-          <span class="text-[10px] bg-olive-light text-olive px-2 py-0.5 rounded-full">{{ post.tag }}</span>
-          <div class="text-sm font-medium text-bark mt-2">{{ post.title }}</div>
-          <div class="text-xs text-bark/50 mt-1">{{ post.read }}</div>
-        </div>
-      </RouterLink>
+    <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-6 text-center text-sm" role="alert">
+      <p class="mb-3">{{ error }}</p>
+      <button class="px-4 py-2 rounded-md border border-red-400 hover:bg-red-100" @click="fetchPublished">Retry</button>
     </div>
 
-    <div class="text-right mt-4">
-      <RouterLink to="/blog" class="text-sm text-olive font-medium hover:underline">
-        Browse all &rarr;
+    <div v-else-if="latest.length === 0" class="bg-white rounded-lg p-10 text-center text-sm text-bark/60">
+      No blog posts yet. Check back soon.
+    </div>
+
+    <CardCarousel v-else label="Latest blog posts">
+      <HistoryCard
+        v-for="post in latest"
+        :key="post.$id"
+        :to="`/blog/${post.$id}`"
+        :image="post.coverImageId ? getImagePreviewUrl(post.coverImageId) : null"
+        :label="post.category"
+        :title="post.title"
+        :meta="readTimeText(post.readTime)"
+      />
+    </CardCarousel>
+
+    <div class="flex justify-end mt-6">
+      <RouterLink to="/blog" class="inline-flex items-center gap-2 text-sm font-semibold text-bark hover:text-olive">
+        Browse all <AppIcon name="arrow-right" class="w-4 h-4" />
       </RouterLink>
     </div>
   </section>

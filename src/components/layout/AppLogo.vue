@@ -1,14 +1,21 @@
 <script setup>
-// The Timeline logo, linking home. Used by the public header and the admin
-// sidebar — when the real logo image is ready, swap it in here only.
+// The Timeline logo (white artwork, for dark/olive backgrounds).
+// `link` wraps it in a link to the home page; the hero uses it unlinked.
+defineProps({
+  size: { type: String, default: 'sm' }, // 'sm' header/sidebar · 'md' footer · 'lg' hero
+  link: { type: Boolean, default: true },
+})
+
+const HEIGHTS = { sm: 'h-10', md: 'h-16 md:h-20', lg: 'h-24 md:h-36' }
 </script>
 
 <template>
-  <RouterLink to="/" class="font-voice text-xl text-white inline-flex items-center gap-2" aria-label="Timeline — home">
-    <span
-      class="inline-block w-4 h-4 rounded-full border-2 border-white border-b-transparent rotate-45"
-      aria-hidden="true"
-    ></span>
-    Timeline
-  </RouterLink>
+  <component
+    :is="link ? 'RouterLink' : 'div'"
+    :to="link ? '/' : undefined"
+    class="inline-block"
+    :aria-label="link ? 'Timeline — home' : undefined"
+  >
+    <img src="/images/logo.webp" alt="Timeline" :class="[HEIGHTS[size], 'w-auto']" />
+  </component>
 </template>
