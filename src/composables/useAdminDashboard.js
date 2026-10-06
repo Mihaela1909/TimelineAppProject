@@ -69,18 +69,5 @@ export function useAdminDashboard() {
   return { stats, activity, loading, error, fetchAll }
 }
 
-// "2h ago" style labels for the activity feed.
-export function timeAgo(date) {
-  const seconds = Math.floor((Date.now() - new Date(date)) / 1000)
-  if (seconds < 60) return 'just now'
-  const units = [
-    ['y', 31536000],
-    ['mo', 2592000],
-    ['d', 86400],
-    ['h', 3600],
-    ['m', 60],
-  ]
-  for (const [suffix, size] of units) {
-    if (seconds >= size) return `${Math.floor(seconds / size)}${suffix} ago`
-  }
-}
+// Moved to utils/time.js (also used by the quiz page); re-exported for existing imports.
+export { timeAgo } from '../utils/time'

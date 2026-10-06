@@ -81,6 +81,16 @@ A user's upload does NOT go live until an admin approves it.
 - Overview: the main button is "Start course" / "Continue · Lesson N" / "Review course". Lesson rows are done (parchment + ✓) / current = first not-done (ochre) / upcoming (white). The course quiz (from `useCourseDetail().quiz`) unlocks once all lessons are done; the lock is UX only, the quiz page itself stays public.
 - Lesson page: the "Lesson N of M" bar shows position in the course; Mark as Complete via `useCourseProgress`. "Undo" on the Completed bar calls `unmarkComplete` → `progressService.unmarkLessonComplete` (deletes the user's own progress row; rows grant delete to their owner). Requires **Row Security ON** for `progress`, otherwise Appwrite ignores the row permissions and returns 401. Never give `users` table-level Delete. Router `scrollBehavior` keeps the scroll position when moving between lessons of the same course.
 
+## Quizzes page
+- `/quizzes` → `QuizzesView.vue` + `components/quizzes/QuizzesHero.vue` (Thinker + "Eureka!", Tesla + "Hmmm..", fitted against the 1459×540 mockup like CoursesHero; background `bg-bottom`; figures rise, then bubbles pop) + `components/quizzes/QuizCard.vue`.
+- Status pills come from `useQuizStatuses` (the user's attempts → best % vs the quiz `passingScore`, default 70; plus `useCourseStatuses` for "Course not completed"): Passed (leaf) / Failed (ochre) / Course not completed (wine, "Finish Course" + "Start anyway") / Not attempted (taupe). Guests get just "Start Quiz".
+- Quiz categories come from the linked course's category. Sort: A–Z / Z–A / Newest. 6 per page.
+
+## Quiz-taking page
+- `/quizzes/:id` → `QuizTakingView.vue` (state in `useQuizTaking`, which also loads the course's published lesson count) with three dumb components in `components/quizzes/`: `QuizIntro` (status pill, stat boxes, Start/Retake, history OR course progress), `QuizQuestion` (2×2 answers, feedback, Next), `QuizResults`. The phases swap with a `<Transition>`. The card body reuses `images/home/who-are-we/dots.webp`.
+- Optional fields shown if present: `quiz.description` (fallback "Test what you learned in <course>.") and `question.explanation` (fallback: the correct answer on a wrong pick). Neither column exists yet; add String columns + admin form fields to use them.
+- Est. time = 0.4 min per question. `timeAgo` lives in `utils/time.js`.
+
 ## Known gaps / next priorities
 1. Users can't remove a live photo themselves (they can only replace it, or cancel a pending one). Needs an admin-side "remove" or a pending "remove" request.
 2. Rejected/replaced files stay in the bucket (orphaned). Cleanup would need bucket `Delete` for label `admin`, then `deleteImage()` on reject/replace.

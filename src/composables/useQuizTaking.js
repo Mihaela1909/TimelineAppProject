@@ -3,6 +3,7 @@ import { getQuizById } from '../services/quizService'
 import { getQuestionsForQuiz } from '../services/quizQuestionService'
 import { createAttempt, getAttemptsForUserAndQuiz } from '../services/quizAttemptService'
 import { getCourseById } from '../services/courseService'
+import { getLessonsForCourse } from '../services/lessonService'
 import { useToast } from './useToast'
 
 export function useQuizTaking() {
@@ -10,6 +11,7 @@ export function useQuizTaking() {
   const course = ref(null)
   const questions = ref([])
   const pastAttempts = ref([])
+  const courseLessonCount = ref(0) // published lessons in the linked course (for 'course completed?')
   const loading = ref(false)
   const error = ref(null)
 
@@ -31,7 +33,14 @@ export function useQuizTaking() {
       const quizData = await getQuizById(quizId)
       quiz.value = quizData
       questions.value = await getQuestionsForQuiz(quizId)
-      if (quizData.courseId) course.value = await getCourseById(quizData.courseId)
+      if (quizData.courseId) {
+        const [courseData, lessons] = await Promise.all([
+          getCourseById(quizData.courseId),
+          getLessonsForCourse(quizData.courseId, { publishedOnly: true }),
+        ])
+        course.value = courseData
+        courseLessonCount.value = lessons.length
+      }
       if (userId) pastAttempts.value = await getAttemptsForUserAndQuiz(userId, quizId)
     } catch (err) {
       error.value = 'Could not load this quiz.'
@@ -97,6 +106,7 @@ export function useQuizTaking() {
     course,
     questions,
     pastAttempts,
+    courseLessonCount,
     loading,
     error,
     phase,
