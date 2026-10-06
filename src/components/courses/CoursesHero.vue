@@ -1,4 +1,7 @@
 <script setup>
+import { ref } from 'vue'
+import { useInView } from '../../composables/useInView'
+
 // "All Courses" banner: a stone-hall background with two groups of historical
 // figures, measured from the Figma mockup (1648×604 frame).
 //
@@ -12,26 +15,39 @@
 const FIGURES = '/images/courses/figures'
 
 const leftGroup = [
-  { src: 'stefancelmare', alt: 'Stephen the Great', left: -5.3, top: -5.6, width: 66.1 },
-  { src: 'jeandarc', alt: 'Joan of Arc', left: 34.8, top: 18.5, width: 53.9 },
-  { src: 'pharaoh', alt: 'Tutankhamun', left: -16.4, top: 29.3, width: 57.9 },
-  { src: 'vladtepes', alt: 'Vlad the Impaler', left: 19.4, top: 47.8, width: 49.3 },
-  { src: 'dante', alt: 'Dante Alighieri', left: 69.2, top: 56.4, width: 37.9 },
+  { src: 'stefancelmare', alt: 'Stephen the Great', left: -5.3, top: -5.6, width: 66.1, row: 0 },
+  { src: 'jeandarc', alt: 'Joan of Arc', left: 34.8, top: 18.5, width: 53.9, row: 1 },
+  { src: 'pharaoh', alt: 'Tutankhamun', left: -16.4, top: 29.3, width: 57.9, row: 1 },
+  { src: 'vladtepes', alt: 'Vlad the Impaler', left: 19.4, top: 47.8, width: 49.3, row: 2 },
+  { src: 'dante', alt: 'Dante Alighieri', left: 69.2, top: 56.4, width: 37.9, row: 2 },
 ]
 
 const rightGroup = [
-  { src: 'marie', alt: 'Marie Antoinette', left: 51.1, top: -2.3, width: 47.2 },
-  { src: 'augustus', alt: 'Augustus', left: 61.8, top: 31.3, width: 56.2 },
-  { src: 'alexander', alt: 'Alexander the Great', left: 22.7, top: 12.9, width: 50.9 },
-  { src: 'lincoln', alt: 'Abraham Lincoln', left: 50.5, top: 53.3, width: 38.0 },
-  { src: 'davinci', alt: 'Leonardo da Vinci', left: 1.0, top: 57.0, width: 38.6 },
+  { src: 'marie', alt: 'Marie Antoinette', left: 51.1, top: -2.3, width: 47.2, row: 0 },
+  { src: 'augustus', alt: 'Augustus', left: 61.8, top: 31.3, width: 56.2, row: 1 },
+  { src: 'alexander', alt: 'Alexander the Great', left: 22.7, top: 12.9, width: 50.9, row: 1 },
+  { src: 'lincoln', alt: 'Abraham Lincoln', left: 50.5, top: 53.3, width: 38.0, row: 2 },
+  { src: 'davinci', alt: 'Leonardo da Vinci', left: 1.0, top: 57.0, width: 38.6, row: 2 },
 ]
 
-const place = (f) => ({ left: `${f.left}%`, top: `${f.top}%`, width: `${f.width}%` })
+// Entrance: rows rise up from below the bottom edge, back row first, then each
+// row in front of it (`row`: 0 = back … 2 = front). Replays on scroll-in.
+const ROW_DELAY = 0.28 // seconds between rows
+const hero = ref(null)
+const { inView } = useInView(hero, { threshold: 0.3, once: false })
+
+const place = (f) => ({
+  left: `${f.left}%`,
+  top: `${f.top}%`,
+  width: `${f.width}%`,
+  '--delay': `${0.15 + f.row * ROW_DELAY}s`,
+})
 </script>
 
 <template>
   <section
+    ref="hero"
+    :class="{ 'is-playing': inView }"
     class="relative overflow-hidden bg-umber h-[95vw] max-h-[34rem] md:h-auto md:max-h-none md:aspect-[1648/604]"
   >
     <!-- Background: stone hall -->
@@ -45,7 +61,7 @@ const place = (f) => ({ left: `${f.left}%`, top: `${f.top}%`, width: `${f.width}
         :key="f.src"
         :src="`${FIGURES}/${f.src}.webp`"
         alt=""
-        class="absolute h-auto max-w-none"
+        class="figure absolute h-auto max-w-none"
         :style="place(f)"
       />
     </div>
@@ -57,7 +73,7 @@ const place = (f) => ({ left: `${f.left}%`, top: `${f.top}%`, width: `${f.width}
         :key="f.src"
         :src="`${FIGURES}/${f.src}.webp`"
         alt=""
-        class="absolute h-auto max-w-none"
+        class="figure absolute h-auto max-w-none"
         :style="place(f)"
       />
     </div>
@@ -78,3 +94,30 @@ const place = (f) => ({ left: `${f.left}%`, top: `${f.top}%`, width: `${f.width}
     </div>
   </section>
 </template>
+
+<style scoped>
+/* Start below the hero's bottom edge (the section clips them), then rise into
+   place with a small overshoot. --delay sets each figure's row turn. */
+.figure {
+  opacity: 0;
+  transform: translateY(140%);
+}
+.is-playing .figure {
+  animation: rise 0.9s cubic-bezier(0.25, 1.25, 0.45, 1) var(--delay) forwards;
+}
+@keyframes rise {
+  0% { opacity: 0; transform: translateY(140%); }
+  25% { opacity: 1; }
+  100% { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .figure {
+    opacity: 1;
+    transform: none;
+  }
+  .is-playing .figure {
+    animation: none;
+  }
+}
+</style>

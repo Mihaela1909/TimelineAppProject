@@ -71,7 +71,7 @@ A user's upload does NOT go live until an admin approves it.
 - "Most Popular Courses" shows the first published courses, not real popularity; guests can't read progress, so there's no popularity data.
 
 ## Courses page
-- `/courses` → `CoursesView.vue` + `components/courses/CoursesHero.vue`. The hero figures are in `public/images/courses/figures/`, placed in % of two bottom-anchored group boxes (left / right). The values were fitted against the 1648×604 mockup (pixel matching + difference-overlay check). On md+ the hero keeps that aspect ratio, so they match Figma at any width. A short umber fade (28% high) sits over the figures' bottoms.
+- `/courses` → `CoursesView.vue` + `components/courses/CoursesHero.vue`. The hero figures are in `public/images/courses/figures/`, placed in % of two bottom-anchored group boxes (left / right). The values were fitted against the 1648×604 mockup (pixel matching + difference-overlay check). On md+ the hero keeps that aspect ratio, so they match Figma at any width. A short umber fade (28% high) sits over the figures' bottoms. Entrance: each figure has a `row` (0 = back … 2 = front); rows rise from below the bottom edge one after another (`ROW_DELAY` 0.28s), replaying on scroll-in via `useInView`.
 - Background: `public/images/courses/hero-bg.webp`.
 - Status badges ("In Progress" with a bar / "Completed") come from `useCourseStatuses` (2 reads: the user's progress + all published lessons). Guests see none.
 - Sort options: Newest / A–Z / Most lessons. There's no "Popular", because there's no popularity data. 6 per page via `components/ui/PaginationNav.vue`. `HistoryCard` has `layout="grid"` for grids.
