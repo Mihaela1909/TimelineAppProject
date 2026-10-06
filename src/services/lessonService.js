@@ -12,6 +12,11 @@ export async function getLessonsForCourse(courseId, { publishedOnly = false } = 
   return listAllRows(TABLES.LESSONS, queries)
 }
 
+// All published lessons across every course — used to count lessons per course.
+export async function getAllPublishedLessons() {
+  return listAllRows(TABLES.LESSONS, [Query.equal('published', true)])
+}
+
 export async function getLessonById(id) {
   return tablesDB.getRow({ databaseId: DB_ID, tableId: TABLES.LESSONS, rowId: id })
 }

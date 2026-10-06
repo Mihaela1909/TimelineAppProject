@@ -1,98 +1,152 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useCourses } from '../composables/useCourses'
+import { useCourseStatuses } from '../composables/useCourseStatuses'
+import { useAuth } from '../composables/useAuth'
 import { getImagePreviewUrl } from '../services/mediaService'
+import CoursesHero from '../components/courses/CoursesHero.vue'
+import HistoryCard from '../components/ui/HistoryCard.vue'
+import PaginationNav from '../components/ui/PaginationNav.vue'
+import AppIcon from '../components/ui/AppIcon.vue'
+
+const PAGE_SIZE = 6
 
 const { courses, loading, error, fetchAllPublished } = useCourses()
+const { statusById, fetchFor: fetchStatuses } = useCourseStatuses()
+const { currentUser } = useAuth()
+
 const searchTerm = ref('')
 const activeCategory = ref('All')
+const sortBy = ref('newest')
+const page = ref(1)
 
-onMounted(fetchAllPublished)
+const SORTS = [
+  { value: 'newest', label: 'Newest' },
+  { value: 'az', label: 'A–Z' },
+  { value: 'lessons', label: 'Most lessons' },
+]
 
-const categories = computed(() => {
-  const unique = [...new Set(courses.value.map((c) => c.category))]
-  return ['All', ...unique]
+onMounted(() => {
+  fetchAllPublished()
+  fetchStatuses(currentUser.value?.$id)
 })
+
+const categories = computed(() => ['All', ...new Set(courses.value.map((c) => c.category).filter(Boolean))])
 
 const filteredCourses = computed(() => {
-  return courses.value.filter((course) => {
+  const term = searchTerm.value.trim().toLowerCase()
+  const list = courses.value.filter((course) => {
     const matchesCategory = activeCategory.value === 'All' || course.category === activeCategory.value
-    const matchesSearch = course.title.toLowerCase().includes(searchTerm.value.toLowerCase())
-    return matchesCategory && matchesSearch
+    return matchesCategory && course.title.toLowerCase().includes(term)
   })
+  const sorters = {
+    newest: (a, b) => new Date(b.$createdAt) - new Date(a.$createdAt),
+    az: (a, b) => a.title.localeCompare(b.title),
+    lessons: (a, b) => (b.lessonCount || 0) - (a.lessonCount || 0),
+  }
+  return [...list].sort(sorters[sortBy.value])
 })
+
+const pageCount = computed(() => Math.max(1, Math.ceil(filteredCourses.value.length / PAGE_SIZE)))
+const pagedCourses = computed(() => filteredCourses.value.slice((page.value - 1) * PAGE_SIZE, page.value * PAGE_SIZE))
+
+// RESET: any change to search / filter / sort starts again from page 1.
+watch([searchTerm, activeCategory, sortBy], () => (page.value = 1))
+
+// "Ancient Egypt" → white band "Ancient", olive band "Egypt" (same as the home page cards).
+function splitTitle(title = '') {
+  const [first, ...rest] = title.trim().split(/\s+/)
+  return rest.length ? { label: first, title: rest.join(' ') } : { label: '', title: first }
+}
+const lessonsText = (n) => (n ? `${n} lesson${n === 1 ? '' : 's'}` : '')
+
+function statusBadge(courseId) {
+  const status = statusById.value[courseId]
+  if (!status) return {}
+  return status.state === 'completed'
+    ? { badge: 'Completed', badgeTone: 'leaf' }
+    : { badge: 'In Progress', badgeTone: 'ochre', progress: status.ratio }
+}
 </script>
 
 <template>
-  <div class="max-w-5xl mx-auto px-6 py-10">
-    <h1 class="font-voice text-3xl text-bark mb-1">All Courses</h1>
-    <p class="text-xs text-bark/60 mb-6">{{ courses.length }} courses &middot; always free</p>
+  <div>
+    <CoursesHero />
 
-    <div class="flex gap-3 mb-4">
-      <input
-        v-model="searchTerm"
-        type="text"
-        placeholder="Search courses..."
-        class="flex-1 px-4 py-2.5 bg-white rounded-lg text-sm border border-black/5"
-      />
-    </div>
-
-    <div class="flex gap-2 mb-8 flex-wrap">
-      <button
-        v-for="cat in categories"
-        :key="cat"
-        class="text-sm px-4 py-1.5 rounded-full transition-colors"
-        :class="activeCategory === cat ? 'bg-bark text-white' : 'bg-white text-olive'"
-        @click="activeCategory = cat"
-      >
-        {{ cat }}
-      </button>
-    </div>
-
-    <!-- Loading -->
-    <div v-if="loading" class="grid grid-cols-2 md:grid-cols-3 gap-4" aria-live="polite">
-      <div v-for="n in 6" :key="n" class="bg-white rounded-lg overflow-hidden animate-pulse">
-        <div class="h-28 bg-olive-light"></div>
-        <div class="p-3 space-y-2">
-          <div class="h-3 w-2/3 bg-olive-light rounded"></div>
-          <div class="h-2 w-1/3 bg-olive-light rounded"></div>
-        </div>
+    <div class="max-w-6xl mx-auto px-5 md:px-8 py-8 md:py-10">
+      <!-- Search + sort -->
+      <div class="flex gap-3 md:gap-5 mb-4">
+        <label class="relative flex-1">
+          <span class="sr-only">Search courses</span>
+          <AppIcon name="search" class="w-5 h-5 text-bark/60 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            v-model="searchTerm"
+            type="search"
+            placeholder="Search courses..."
+            class="w-full pl-12 pr-4 py-2.5 md:py-3 bg-white border border-field-border rounded-md text-base text-bark placeholder:text-bark/50 shadow-[0_2px_6px_rgba(0,0,0,0.15)] focus:outline-none focus:border-olive focus:ring-2 focus:ring-olive/20"
+          />
+        </label>
+        <label class="relative">
+          <span class="sr-only">Sort courses</span>
+          <select
+            v-model="sortBy"
+            class="appearance-none h-full pl-3 md:pl-4 pr-8 md:pr-10 py-2.5 md:py-3 bg-white border border-field-border rounded-md text-xs md:text-base font-semibold text-ochre shadow-[0_2px_6px_rgba(0,0,0,0.15)] focus:outline-none focus:border-olive focus:ring-2 focus:ring-olive/20 cursor-pointer"
+          >
+            <option v-for="s in SORTS" :key="s.value" :value="s.value">Sort: {{ s.label }}</option>
+          </select>
+          <AppIcon name="chevron" class="w-4 h-4 md:w-5 md:h-5 text-ochre absolute right-2.5 md:right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+        </label>
       </div>
-    </div>
 
-    <!-- Error -->
-    <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-8 text-center text-sm">
-      <p class="mb-3">{{ error }}</p>
-      <button class="px-4 py-2 rounded-md border border-red-400" @click="fetchAllPublished">Retry</button>
-    </div>
+      <!-- Category pills (scroll sideways on phones) -->
+      <div class="flex gap-2 overflow-x-auto pb-2 -mx-5 px-5 md:mx-0 md:px-0 md:flex-wrap mb-8 md:mb-12 [scrollbar-width:none]" role="group" aria-label="Filter by category">
+        <button
+          v-for="cat in categories"
+          :key="cat"
+          type="button"
+          class="flex-shrink-0 px-5 py-1 rounded-full text-base border shadow-[0_2px_4px_rgba(0,0,0,0.2)] transition-colors"
+          :class="activeCategory === cat ? 'bg-olive text-white border-olive font-semibold' : 'bg-white text-olive border-bark/30 hover:bg-parchment'"
+          :aria-pressed="activeCategory === cat"
+          @click="activeCategory = cat"
+        >
+          {{ cat }}
+        </button>
+      </div>
 
-    <!-- No results (empty state for filter/search) -->
-    <div v-else-if="filteredCourses.length === 0" class="bg-white rounded-lg p-12 text-center text-sm text-bark/60">
-      No courses match "{{ searchTerm }}"<span v-if="activeCategory !== 'All'"> in {{ activeCategory }}</span>.
-    </div>
+      <!-- Loading -->
+      <div v-if="loading" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8" aria-live="polite">
+        <div v-for="n in 6" :key="n" class="h-56 rounded-xl bg-white animate-pulse"></div>
+      </div>
 
-    <!-- Results -->
-    <div v-else class="grid grid-cols-2 md:grid-cols-3 gap-4">
-      <RouterLink
-        v-for="course in filteredCourses"
-        :key="course.$id"
-        :to="`/courses/${course.$id}`"
-        class="bg-white rounded-lg overflow-hidden hover:shadow-md transition-shadow"
-      >
-        <img
-          v-if="course.coverImageId"
-          :src="getImagePreviewUrl(course.coverImageId)"
-          :alt="course.title"
-          class="h-28 w-full object-cover"
-        />
-        <div v-else class="h-28 bg-olive-light flex items-center justify-center text-olive text-2xl font-voice">
-          {{ course.title.charAt(0) }}
+      <!-- Error -->
+      <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-8 text-center text-sm" role="alert">
+        <p class="mb-3">{{ error }}</p>
+        <button class="px-4 py-2 rounded-md border border-red-400" @click="fetchAllPublished">Retry</button>
+      </div>
+
+      <!-- Empty (search / filter has no matches) -->
+      <div v-else-if="filteredCourses.length === 0" class="bg-white rounded-lg p-12 text-center text-sm text-bark/60">
+        No courses match<span v-if="searchTerm.trim()"> "{{ searchTerm.trim() }}"</span><span v-if="activeCategory !== 'All'"> in {{ activeCategory }}</span>.
+      </div>
+
+      <!-- Results -->
+      <template v-else>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-12">
+          <HistoryCard
+            v-for="course in pagedCourses"
+            :key="course.$id"
+            layout="grid"
+            :to="`/courses/${course.$id}`"
+            :image="course.coverImageId ? getImagePreviewUrl(course.coverImageId) : null"
+            :label="splitTitle(course.title).label"
+            :title="splitTitle(course.title).title"
+            :meta="lessonsText(course.lessonCount)"
+            label-large
+            v-bind="statusBadge(course.$id)"
+          />
         </div>
-        <div class="p-3">
-          <div class="text-sm font-medium text-bark">{{ course.title }}</div>
-          <div class="text-xs text-bark/50">{{ course.lessonCount }} lessons</div>
-        </div>
-      </RouterLink>
+        <PaginationNav v-model="page" :page-count="pageCount" />
+      </template>
     </div>
   </div>
 </template>

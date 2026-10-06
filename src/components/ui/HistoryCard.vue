@@ -10,15 +10,25 @@ defineProps({
   labelLarge: { type: Boolean, default: false }, // course cards: label is part of the title
   title: { type: String, required: true },
   meta: { type: String, default: '' }, // e.g. "6 lessons", "4 min read"
+  badgeTone: { type: String, default: 'olive' }, // 'olive' | 'ochre' (in progress) | 'leaf' (completed)
+  progress: { type: Number, default: null }, // 0–1: thin bar under the badge (in-progress courses)
+  layout: { type: String, default: 'carousel' }, // 'carousel' (fixed widths, snap) | 'grid' (fills its cell)
 })
+
+const BADGE_TONES = { olive: 'bg-olive', ochre: 'bg-ochre', leaf: 'bg-leaf' }
+const LAYOUTS = {
+  carousel: 'snap-start flex-shrink-0 w-[78%] sm:w-[45%] lg:w-[calc((100%-2.5rem)/3)]',
+  grid: 'w-full',
+}
 </script>
 
 <template>
   <RouterLink
     :to="to"
-    class="group snap-start flex-shrink-0 w-[78%] sm:w-[45%] lg:w-[calc((100%-2.5rem)/3)] rounded-xl overflow-hidden bg-olive shadow-[0_4px_12px_rgba(0,0,0,0.45)] hover:shadow-[0_10px_20px_rgba(0,0,0,0.45)] hover:-translate-y-1 focus-visible:-translate-y-1 transition-[transform,box-shadow] duration-300 ease-out motion-reduce:transition-none motion-reduce:transform-none focus:outline-none focus-visible:ring-4 focus-visible:ring-olive/40"
+    :class="LAYOUTS[layout]"
+    class="group rounded-xl overflow-hidden bg-olive shadow-[0_4px_12px_rgba(0,0,0,0.45)] hover:shadow-[0_10px_20px_rgba(0,0,0,0.45)] hover:-translate-y-1 focus-visible:-translate-y-1 transition-[transform,box-shadow] duration-300 ease-out motion-reduce:transition-none motion-reduce:transform-none focus:outline-none focus-visible:ring-4 focus-visible:ring-olive/40"
   >
-    <div class="relative h-40 bg-parchment overflow-hidden">
+    <div class="relative h-40 bg-white overflow-hidden">
       <img
         v-if="image"
         :src="image"
@@ -26,9 +36,14 @@ defineProps({
         loading="lazy"
         class="w-full h-full object-cover grayscale group-hover:scale-105 transition-transform duration-500 motion-reduce:transition-none"
       />
-      <span v-if="badge" class="absolute top-2 right-2 bg-olive text-white text-xs px-2.5 py-0.5 rounded">
-        {{ badge }}
-      </span>
+      <div v-if="badge" class="absolute top-2 right-2 flex flex-col items-stretch gap-1">
+        <span class="text-white text-xs font-semibold px-2.5 py-0.5 rounded" :class="BADGE_TONES[badgeTone]">
+          {{ badge }}
+        </span>
+        <span v-if="progress !== null" class="h-1 rounded-full bg-white/80 overflow-hidden" aria-hidden="true">
+          <span class="block h-full bg-ochre" :style="{ width: `${Math.round(progress * 100)}%` }"></span>
+        </span>
+      </div>
     </div>
 
     <div v-if="label" class="bg-white px-4" :class="labelLarge ? 'py-1.5' : 'py-1'">

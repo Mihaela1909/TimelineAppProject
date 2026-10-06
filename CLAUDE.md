@@ -70,6 +70,12 @@ A user's upload does NOT go live until an admin approves it.
 - "Start Quiz" opens a random published quiz. The "recommended course" quiz in the copy doesn't exist yet.
 - "Most Popular Courses" shows the first published courses, not real popularity; guests can't read progress, so there's no popularity data.
 
+## Courses page
+- `/courses` → `CoursesView.vue` + `components/courses/CoursesHero.vue`. The hero figures are in `public/images/courses/figures/`, placed in % of two bottom-anchored group boxes (left / right). The values were fitted against the 1648×604 mockup (pixel matching + difference-overlay check). On md+ the hero keeps that aspect ratio, so they match Figma at any width. A short umber fade (28% high) sits over the figures' bottoms.
+- Background: `public/images/courses/hero-bg.webp`.
+- Status badges ("In Progress" with a bar / "Completed") come from `useCourseStatuses` (2 reads: the user's progress + all published lessons). Guests see none.
+- Sort options: Newest / A–Z / Most lessons. There's no "Popular", because there's no popularity data. 6 per page via `components/ui/PaginationNav.vue`. `HistoryCard` has `layout="grid"` for grids.
+
 ## Known gaps / next priorities
 1. Users can't remove a live photo themselves (they can only replace it, or cancel a pending one). Needs an admin-side "remove" or a pending "remove" request.
 2. Rejected/replaced files stay in the bucket (orphaned). Cleanup would need bucket `Delete` for label `admin`, then `deleteImage()` on reject/replace.
