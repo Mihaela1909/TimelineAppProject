@@ -18,6 +18,10 @@ export async function registerUser({ email, password, name }) {
 }
 
 export async function loginUser({ email, password }) {
+  // Appwrite refuses to create a session while one is already active
+  // (e.g. another account is still logged in this browser), so clear any
+  // leftover session first. Fails harmlessly when nobody is logged in.
+  await account.deleteSession('current').catch(() => {})
   return account.createEmailPasswordSession(email, password)
 }
 

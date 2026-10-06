@@ -85,6 +85,7 @@ async function save(id, data) {
 - `defineProps` with types + defaults; `defineEmits` for every event; `v-model` = `modelValue` + `update:modelValue`.
 - Module-scope singleton composables for app-wide state (`useAuth`, `useToast`). No Pinia unless asked.
 - `RouterLink` for navigation, `router.push` only after an action succeeds.
+- New routes are lazy-loaded in `router/index.js` (`const XView = () => import('../views/XView.vue')`). Only the home page and its layout are imported normally, so each page is downloaded the first time it's opened.
 - Loading → skeleton (`animate-pulse`); error → red box + Retry; empty → friendly message with a link to create one. Every list view has all three states.
 - Comments that explain **why**, not what.
 

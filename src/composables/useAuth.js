@@ -11,6 +11,15 @@ import { getSettingsByUserId } from '../services/profileSettingsService'
 const currentUser = ref(null)
 const authChecked = ref(false)
 
+// Friendly login messages per Appwrite error type — so a correct password
+// that's refused for another reason doesn't show "Incorrect password".
+const LOGIN_ERRORS = {
+  user_invalid_credentials: 'Incorrect email or password.',
+  user_blocked: 'This account has been blocked. Please contact an admin.',
+  general_rate_limit_exceeded: 'Too many login attempts. Please wait a few minutes and try again.',
+  user_session_already_exists: 'You are already logged in. Please refresh the page.',
+}
+
 // Appwrite's own minimum — checked here first so the user gets a clear
 // message instead of a raw API error.
 const MIN_PASSWORD_LENGTH = 8
@@ -59,7 +68,11 @@ export function useAuth() {
       try {
         await authService.loginUser({ email, password })
       } catch (err) {
-        error.value = 'Incorrect email or password.'
+        console.error(err)
+        error.value =
+          LOGIN_ERRORS[err.type] ||
+          (err.code === 429 ? LOGIN_ERRORS.general_rate_limit_exceeded : null) ||
+          (err.code === 401 ? LOGIN_ERRORS.user_invalid_credentials : 'Could not log in. Please try again.')
         throw err
       }
       await refreshCurrentUser()

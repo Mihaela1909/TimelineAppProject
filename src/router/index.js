@@ -1,32 +1,41 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import PublicLayout from '../layouts/PublicLayout.vue'
-import AdminLayout from '../layouts/AdminLayout.vue'
 import HomeView from '../views/HomeView.vue'
-import CoursesView from '../views/CoursesView.vue'
-import CourseDetailView from '../views/CourseDetailView.vue'
-import LessonView from '../views/LessonView.vue'
-import QuizzesView from '../views/QuizzesView.vue'
-import QuizTakingView from '../views/QuizTakingView.vue'
-import BlogView from '../views/BlogView.vue'
-import BlogPostDetailView from '../views/BlogPostDetailView.vue'
-import ProfileView from '../views/ProfileView.vue'
-import LoginView from '../views/LoginView.vue'
-import RegisterView from '../views/RegisterView.vue'
 import PlaceholderView from '../views/PlaceholderView.vue'
-import AdminCoursesView from '../views/admin/AdminCoursesView.vue'
-import AdminCourseFormView from '../views/admin/AdminCourseFormView.vue'
-import AdminLessonFormView from '../views/admin/AdminLessonFormView.vue'
-import AdminQuizzesView from '../views/admin/AdminQuizzesView.vue'
-import AdminQuizFormView from '../views/admin/AdminQuizFormView.vue'
-import AdminQuestionFormView from '../views/admin/AdminQuestionFormView.vue'
-import AdminBlogPostsView from '../views/admin/AdminBlogPostsView.vue'
-import AdminBlogPostFormView from '../views/admin/AdminBlogPostFormView.vue'
-import AdminImageApprovalsView from '../views/admin/AdminImageApprovalsView.vue'
-import AdminDashboardView from '../views/admin/AdminDashboardView.vue'
-import AdminUsersView from '../views/admin/AdminUsersView.vue'
-import AdminStatisticsView from '../views/admin/AdminStatisticsView.vue'
 import { ROLES, STAFF_ROLES } from '../constants/roles'
 import { useAuth } from '../composables/useAuth'
+
+// CODE SPLITTING: only the home page (+ its layout) is in the main bundle.
+// Every other page is a lazy `() => import(...)`, so Vite builds it as a
+// separate file that's downloaded the first time that page is opened —
+// visitors never download the admin panel or the lesson editor.
+
+// Public pages
+const CoursesView = () => import('../views/CoursesView.vue')
+const CourseDetailView = () => import('../views/CourseDetailView.vue')
+const LessonView = () => import('../views/LessonView.vue')
+const QuizzesView = () => import('../views/QuizzesView.vue')
+const QuizTakingView = () => import('../views/QuizTakingView.vue')
+const BlogView = () => import('../views/BlogView.vue')
+const BlogPostDetailView = () => import('../views/BlogPostDetailView.vue')
+const ProfileView = () => import('../views/ProfileView.vue')
+const LoginView = () => import('../views/LoginView.vue')
+const RegisterView = () => import('../views/RegisterView.vue')
+
+// Admin panel — never downloaded by visitors who don't open it
+const AdminLayout = () => import('../layouts/AdminLayout.vue')
+const AdminCoursesView = () => import('../views/admin/AdminCoursesView.vue')
+const AdminCourseFormView = () => import('../views/admin/AdminCourseFormView.vue')
+const AdminLessonFormView = () => import('../views/admin/AdminLessonFormView.vue')
+const AdminQuizzesView = () => import('../views/admin/AdminQuizzesView.vue')
+const AdminQuizFormView = () => import('../views/admin/AdminQuizFormView.vue')
+const AdminQuestionFormView = () => import('../views/admin/AdminQuestionFormView.vue')
+const AdminBlogPostsView = () => import('../views/admin/AdminBlogPostsView.vue')
+const AdminBlogPostFormView = () => import('../views/admin/AdminBlogPostFormView.vue')
+const AdminImageApprovalsView = () => import('../views/admin/AdminImageApprovalsView.vue')
+const AdminDashboardView = () => import('../views/admin/AdminDashboardView.vue')
+const AdminUsersView = () => import('../views/admin/AdminUsersView.vue')
+const AdminStatisticsView = () => import('../views/admin/AdminStatisticsView.vue')
 
 // Every route lives under one of two layouts. Public pages share the
 // header/footer; admin pages share the sidebar. Auth pages (login/register)

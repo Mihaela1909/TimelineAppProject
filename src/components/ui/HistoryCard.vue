@@ -1,6 +1,7 @@
 <script setup>
 // Card used by the home page carousels (courses + blog posts):
 // grayscale image → cream band (label) → olive band (title + meta).
+// Hover: the card lifts, the shadow deepens, and the photo zooms slightly.
 defineProps({
   to: { type: String, required: true },
   image: { type: String, default: null }, // URL, or null for a plain placeholder
@@ -15,7 +16,7 @@ defineProps({
 <template>
   <RouterLink
     :to="to"
-    class="group snap-start flex-shrink-0 w-[78%] sm:w-[45%] lg:w-[calc((100%-2.5rem)/3)] rounded-xl overflow-hidden bg-olive shadow-[0_4px_12px_rgba(0,0,0,0.45)] hover:shadow-[0_8px_18px_rgba(0,0,0,0.45)] transition-shadow focus:outline-none focus-visible:ring-4 focus-visible:ring-olive/40"
+    class="group snap-start flex-shrink-0 w-[78%] sm:w-[45%] lg:w-[calc((100%-2.5rem)/3)] rounded-xl overflow-hidden bg-olive shadow-[0_4px_12px_rgba(0,0,0,0.45)] hover:shadow-[0_10px_20px_rgba(0,0,0,0.45)] hover:-translate-y-1 focus-visible:-translate-y-1 transition-[transform,box-shadow] duration-300 ease-out motion-reduce:transition-none motion-reduce:transform-none focus:outline-none focus-visible:ring-4 focus-visible:ring-olive/40"
   >
     <div class="relative h-40 bg-parchment overflow-hidden">
       <img
@@ -23,7 +24,7 @@ defineProps({
         :src="image"
         alt=""
         loading="lazy"
-        class="w-full h-full object-cover grayscale group-hover:scale-105 transition-transform duration-500"
+        class="w-full h-full object-cover grayscale group-hover:scale-105 transition-transform duration-500 motion-reduce:transition-none"
       />
       <span v-if="badge" class="absolute top-2 right-2 bg-olive text-white text-xs px-2.5 py-0.5 rounded">
         {{ badge }}

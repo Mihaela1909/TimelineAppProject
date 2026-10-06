@@ -25,14 +25,15 @@ const columns = [
 <template>
   <footer class="bg-olive text-white px-5 md:px-8 pt-12 pb-6">
     <div class="max-w-7xl mx-auto grid gap-10 md:grid-cols-[auto_1fr] md:gap-16 items-start">
-      <!-- Logo + sign-up call to action -->
-      <div class="flex flex-col items-center md:items-start gap-3">
-        <AppLogo size="md" />
+      <!-- Logo + sign-up call to action: one fixed-width block, so the logo and the
+           button are exactly the same width and read as a unit. -->
+      <div class="w-44 mx-auto md:mx-0 flex flex-col items-stretch gap-3 text-center">
+        <AppLogo size="fill" />
         <template v-if="!currentUser">
-          <p class="text-sm text-cream/90">Save your progress as you go</p>
+          <p class="text-xs text-cream/90 whitespace-nowrap">Save your progress as you go</p>
           <RouterLink
             to="/register"
-            class="font-button px-8 py-2.5 rounded-lg bg-cream text-bark text-lg shadow hover:bg-white transition-colors"
+            class="font-button block py-2.5 rounded-lg bg-cream text-bark text-lg shadow hover:bg-white transition-colors"
           >
             Sign Up Free
           </RouterLink>
@@ -40,7 +41,7 @@ const columns = [
         <RouterLink
           v-else
           to="/profile"
-          class="font-button px-8 py-2.5 rounded-lg bg-cream text-bark text-lg shadow hover:bg-white transition-colors"
+          class="font-button block py-2.5 rounded-lg bg-cream text-bark text-lg shadow hover:bg-white transition-colors"
         >
           My Profile
         </RouterLink>
