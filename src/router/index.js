@@ -122,7 +122,13 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior() {
+  // New page → top. Back/forward → where you were. Switching lesson inside the
+  // same course (prev/next) → stay put, so you don't have to scroll back down
+  // to the content every time.
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) return savedPosition
+    const sameCourseLessons = to.name === 'lesson-view' && from.name === 'lesson-view' && to.params.id === from.params.id
+    if (sameCourseLessons) return false
     return { top: 0 }
   },
 })

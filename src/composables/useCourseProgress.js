@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { getCompletedLessonIds, markLessonComplete } from '../services/progressService'
+import { getCompletedLessonIds, markLessonComplete, unmarkLessonComplete } from '../services/progressService'
 
 // APPLICATION LOGIC for one user's progress through one course — shared by
 // the course page (progress bar, "continue" button) and the lesson page
@@ -38,5 +38,23 @@ export function useCourseProgress() {
     }
   }
 
-  return { completedLessonIds, marking, fetchCompleted, markComplete }
+  // Undo a completion. Returns true when the lesson is (now) not complete.
+  async function unmarkComplete({ userId, lessonId }) {
+    if (!userId || marking.value) return false
+    if (!completedLessonIds.value.includes(lessonId)) return true
+
+    marking.value = true
+    try {
+      await unmarkLessonComplete({ userId, lessonId })
+      completedLessonIds.value = completedLessonIds.value.filter((id) => id !== lessonId)
+      return true
+    } catch (err) {
+      console.error(err)
+      return false
+    } finally {
+      marking.value = false
+    }
+  }
+
+  return { completedLessonIds, marking, fetchCompleted, markComplete, unmarkComplete }
 }

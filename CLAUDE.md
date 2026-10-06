@@ -76,6 +76,11 @@ A user's upload does NOT go live until an admin approves it.
 - Status badges ("In Progress" with a bar / "Completed") come from `useCourseStatuses` (2 reads: the user's progress + all published lessons). Guests see none.
 - Sort options: Newest / A–Z / Most lessons. There's no "Popular", because there's no popularity data. 6 per page via `components/ui/PaginationNav.vue`. `HistoryCard` has `layout="grid"` for grids.
 
+## Course + lesson pages
+- `/courses/:id` → `CourseDetailView.vue`; `/courses/:id/lessons/:lessonId` → `LessonView.vue`. Both use `components/courses/CourseBanner.vue` (header image, falling back to cover, grayscale + umber fade).
+- Overview: the main button is "Start course" / "Continue · Lesson N" / "Review course". Lesson rows are done (parchment + ✓) / current = first not-done (ochre) / upcoming (white). The course quiz (from `useCourseDetail().quiz`) unlocks once all lessons are done; the lock is UX only, the quiz page itself stays public.
+- Lesson page: the "Lesson N of M" bar shows position in the course; Mark as Complete via `useCourseProgress`. "Undo" on the Completed bar calls `unmarkComplete` → `progressService.unmarkLessonComplete` (deletes the user's own progress row; rows grant delete to their owner). Requires **Row Security ON** for `progress`, otherwise Appwrite ignores the row permissions and returns 401. Never give `users` table-level Delete. Router `scrollBehavior` keeps the scroll position when moving between lessons of the same course.
+
 ## Known gaps / next priorities
 1. Users can't remove a live photo themselves (they can only replace it, or cancel a pending one). Needs an admin-side "remove" or a pending "remove" request.
 2. Rejected/replaced files stay in the bucket (orphaned). Cleanup would need bucket `Delete` for label `admin`, then `deleteImage()` on reject/replace.

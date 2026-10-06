@@ -88,7 +88,7 @@ const place = (f) => ({
 
     <!-- Title (in front of the figures) -->
     <div class="relative z-10 h-full flex items-start md:items-center justify-center pt-[18%] md:pt-0 md:pb-0">
-      <h1 class="font-voice text-white text-5xl md:text-[clamp(2.5rem,5vw,5.5rem)] drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]">
+      <h1 class="title font-voice text-white text-5xl md:text-[clamp(2.5rem,5vw,5.5rem)] drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]">
         All Courses
       </h1>
     </div>
@@ -111,7 +111,26 @@ const place = (f) => ({
   100% { opacity: 1; transform: none; }
 }
 
+/* Title fades up just after the back row starts rising */
+.title {
+  opacity: 0;
+  transform: translateY(14px);
+}
+.is-playing .title {
+  animation: title-in 0.7s ease-out 0.35s forwards;
+}
+@keyframes title-in {
+  to { opacity: 1; transform: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .title {
+    opacity: 1;
+    transform: none;
+  }
+  .is-playing .title {
+    animation: none;
+  }
   .figure {
     opacity: 1;
     transform: none;

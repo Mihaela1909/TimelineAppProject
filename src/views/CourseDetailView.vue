@@ -3,13 +3,14 @@ import { onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCourseDetail } from '../composables/useCourseDetail'
 import { useAuth } from '../composables/useAuth'
-import { getImagePreviewUrl } from '../services/mediaService'
 import { useCourseProgress } from '../composables/useCourseProgress'
+import { getImagePreviewUrl } from '../services/mediaService'
+import CourseBanner from '../components/courses/CourseBanner.vue'
+import AppIcon from '../components/ui/AppIcon.vue'
 
 const route = useRoute()
-const { course, lessons, loading, error, fetchCourseAndLessons } = useCourseDetail()
+const { course, lessons, quiz, loading, error, fetchCourseAndLessons } = useCourseDetail()
 const { currentUser } = useAuth()
-
 const { completedLessonIds, fetchCompleted } = useCourseProgress()
 
 onMounted(() => {
@@ -17,93 +18,178 @@ onMounted(() => {
   fetchCompleted(currentUser.value?.$id, route.params.id)
 })
 
-const progressPercent = computed(() => {
-  if (!lessons.value.length) return 0
-  return Math.round((completedLessonIds.value.length / lessons.value.length) * 100)
+const lessonLink = (lesson) => `/courses/${route.params.id}/lessons/${lesson.$id}`
+const isDone = (lesson) => completedLessonIds.value.includes(lesson.$id)
+
+const doneCount = computed(() => lessons.value.filter(isDone).length)
+const progressPercent = computed(() => (lessons.value.length ? (doneCount.value / lessons.value.length) * 100 : 0))
+const allDone = computed(() => lessons.value.length > 0 && doneCount.value === lessons.value.length)
+
+// The lesson to continue with: the first one not done yet (logged-in users only).
+const nextLesson = computed(() => (currentUser.value ? lessons.value.find((l) => !isDone(l)) : null))
+
+// Main button: Continue (started) · Start (not started / guest) · Review (all done).
+const mainAction = computed(() => {
+  if (!lessons.value.length) return null
+  if (allDone.value) return { label: 'Review course', to: lessonLink(lessons.value[0]) }
+  if (nextLesson.value && doneCount.value > 0) {
+    const n = lessons.value.indexOf(nextLesson.value) + 1
+    return { label: `Continue · Lesson ${n}`, to: lessonLink(nextLesson.value) }
+  }
+  return { label: 'Start course', to: lessonLink(lessons.value[0]) }
 })
 
-const nextIncompleteLesson = computed(() => lessons.value.find((l) => !completedLessonIds.value.includes(l.$id)))
+// Row style per lesson: done (muted) · current (ochre) · upcoming (white).
+function rowClass(lesson) {
+  if (isDone(lesson)) return 'bg-parchment text-bark/50 border-field-border'
+  if (lesson === nextLesson.value) return 'bg-ochre text-white font-bold border-ochre'
+  return 'bg-white text-bark border-field-border hover:bg-cream'
+}
+
+const coverUrl = computed(() => (course.value?.coverImageId ? getImagePreviewUrl(course.value.coverImageId) : null))
+const bannerUrl = computed(() => {
+  const id = course.value?.headerImageId || course.value?.coverImageId
+  return id ? getImagePreviewUrl(id) : null
+})
 </script>
 
 <template>
-  <div class="max-w-3xl mx-auto px-6 py-10">
-    <!-- Loading -->
-    <div v-if="loading" class="space-y-3" aria-live="polite">
-      <div class="h-32 bg-white rounded-xl animate-pulse"></div>
-      <div class="h-10 bg-white rounded-lg animate-pulse"></div>
-      <div class="h-10 bg-white rounded-lg animate-pulse"></div>
-    </div>
+  <div>
+    <CourseBanner :image="bannerUrl" />
 
-    <!-- Error -->
-    <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-8 text-center text-sm">
-      <p class="mb-3">{{ error }}</p>
-      <button class="px-4 py-2 rounded-md border border-red-400" @click="fetchCourseAndLessons(route.params.id)">
-        Retry
-      </button>
-    </div>
+    <div class="max-w-6xl mx-auto px-5 md:px-8 py-6 md:py-8">
+      <!-- Breadcrumb -->
+      <nav class="flex items-center gap-2 text-sm text-bark mb-5" aria-label="Breadcrumb">
+        <AppIcon name="arrow-left" class="w-4 h-4" />
+        <RouterLink to="/courses" class="hover:text-olive">Back to All Courses</RouterLink>
+        <template v-if="course">
+          <span class="text-bark/50">/</span>
+          <span class="font-semibold text-olive">{{ course.title }}</span>
+        </template>
+      </nav>
 
-    <template v-else-if="course">
-      <RouterLink to="/courses" class="text-xs text-bark/60 hover:text-bark mb-3 inline-block">
-        ← All Courses
-      </RouterLink>
-
-      <div class="flex gap-5 items-center mb-6">
-        <img
-          v-if="course.headerImageId || course.coverImageId"
-          :src="getImagePreviewUrl(course.headerImageId || course.coverImageId)"
-          :alt="course.title"
-          class="w-24 h-24 rounded-xl object-cover flex-shrink-0"
-        />
-        <div v-else class="w-24 h-24 rounded-xl bg-olive-light flex items-center justify-center text-olive text-3xl font-voice flex-shrink-0">
-          {{ course.title.charAt(0) }}
-        </div>
-        <div>
-          <span class="text-xs bg-olive-light text-olive px-3 py-1 rounded-full">{{ course.category }}</span>
-          <h1 class="font-voice text-2xl text-bark mt-2">{{ course.title }}</h1>
-          <p class="text-xs text-bark/60 mt-1">{{ lessons.length }} lessons &middot; free</p>
-        </div>
-      </div>
-
-      <p class="text-sm text-bark/70 leading-relaxed mb-6">{{ course.description }}</p>
-
-      <div v-if="currentUser && completedLessonIds.length > 0" class="mb-8">
-        <div class="flex items-center gap-3 mb-2">
-          <span class="text-xs text-bark/60 whitespace-nowrap">{{ completedLessonIds.length }}/{{ lessons.length }} complete</span>
-          <div class="flex-1 h-1.5 bg-black/5 rounded-full">
-            <div class="h-full bg-olive rounded-full transition-all" :style="{ width: `${progressPercent}%` }"></div>
+      <!-- Loading -->
+      <div v-if="loading" class="bg-white rounded-xl p-8 shadow-[0_4px_12px_rgba(0,0,0,0.2)] space-y-4" aria-live="polite">
+        <div class="flex gap-8">
+          <div class="w-64 h-48 bg-olive-light rounded-lg animate-pulse"></div>
+          <div class="flex-1 space-y-3">
+            <div class="h-6 w-24 bg-olive-light rounded animate-pulse"></div>
+            <div class="h-12 w-2/3 bg-olive-light rounded animate-pulse"></div>
           </div>
         </div>
-        <RouterLink
-          v-if="nextIncompleteLesson"
-          :to="`/courses/${course.$id}/lessons/${nextIncompleteLesson.$id}`"
-          class="font-button text-sm px-5 py-2 rounded-md bg-olive text-white inline-block"
-        >
-          Continue · {{ nextIncompleteLesson.title }}
-        </RouterLink>
-        <div v-else class="text-sm text-olive font-medium">🎉 Course completed!</div>
+        <div v-for="n in 4" :key="n" class="h-12 bg-olive-light rounded animate-pulse"></div>
       </div>
 
-      <div class="flex items-center gap-2 mb-3">
-        <h2 class="text-sm font-semibold text-bark">Lessons</h2>
+      <!-- Error -->
+      <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-8 text-center text-sm" role="alert">
+        <p class="mb-3">{{ error }}</p>
+        <button class="px-4 py-2 rounded-md border border-red-400" @click="fetchCourseAndLessons(route.params.id)">Retry</button>
       </div>
 
-      <div v-if="lessons.length === 0" class="bg-white rounded-lg p-8 text-center text-sm text-bark/60">
-        No lessons published yet — check back soon.
-      </div>
+      <article v-else-if="course" class="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.2)] px-5 py-6 md:px-16 md:py-10">
+        <!-- Overview: cover + title, progress, main button -->
+        <div class="grid md:grid-cols-[minmax(0,20rem)_1fr] gap-6 md:gap-10 items-start mb-8">
+          <div class="aspect-[5/4] rounded-xl overflow-hidden border-2 border-ochre shadow-[0_4px_12px_rgba(0,0,0,0.3)] bg-parchment">
+            <img v-if="coverUrl" :src="coverUrl" :alt="course.title" class="w-full h-full object-cover grayscale" />
+          </div>
 
-      <div v-else class="space-y-2">
-        <RouterLink
-          v-for="(lesson, index) in lessons"
-          :key="lesson.$id"
-          :to="`/courses/${course.$id}/lessons/${lesson.$id}`"
-          class="flex items-center gap-3 bg-white px-4 py-3 rounded-lg text-sm hover:shadow-sm transition-shadow"
-        >
-          <span v-if="completedLessonIds.includes(lesson.$id)" class="text-olive text-sm">✓</span>
-          <span v-else class="text-xs text-bark/40 w-5">{{ index + 1 }}</span>
-          <span class="flex-1 text-bark">{{ lesson.title }}</span>
-          <span class="text-olive text-xs">→</span>
-        </RouterLink>
-      </div>
-    </template>
+          <div>
+            <span v-if="course.category" class="inline-block bg-olive text-white px-5 py-1 rounded-md shadow-[0_2px_4px_rgba(0,0,0,0.3)] mb-3">
+              {{ course.category }}
+            </span>
+            <h1 class="font-voice text-bark text-4xl md:text-6xl leading-tight mb-3">{{ course.title }}</h1>
+            <p class="text-taupe-dark md:text-lg mb-2">
+              {{ lessons.length }} lesson{{ lessons.length === 1 ? '' : 's' }} · free
+              <template v-if="currentUser"> · {{ doneCount }}/{{ lessons.length }} complete</template>
+            </p>
+            <div
+              v-if="currentUser && lessons.length"
+              class="h-1.5 bg-black/10 rounded-full overflow-hidden mb-6 max-w-xl"
+              role="progressbar"
+              :aria-valuenow="Math.round(progressPercent)"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-label="Course progress"
+            >
+              <div class="bar-fill h-full bg-ochre rounded-full transition-[width] duration-500" :style="{ width: `${progressPercent}%` }"></div>
+            </div>
+            <div v-else class="mb-6"></div>
+
+            <RouterLink
+              v-if="mainAction"
+              :to="mainAction.to"
+              class="font-button inline-block px-8 py-3 rounded-md bg-olive text-white text-lg shadow-[0_4px_8px_rgba(0,0,0,0.3)] hover:bg-olive/90 transition-colors"
+            >
+              {{ mainAction.label }}
+            </RouterLink>
+            <p v-if="!currentUser" class="text-sm text-bark/60 mt-3">
+              <RouterLink to="/login" class="text-olive font-semibold hover:underline">Log in</RouterLink> to save your progress.
+            </p>
+          </div>
+        </div>
+
+        <p v-if="course.description" class="text-bark/80 leading-relaxed mb-10 max-w-3xl">{{ course.description }}</p>
+
+        <!-- Lessons -->
+        <h2 class="sr-only">Lessons</h2>
+        <div v-if="lessons.length === 0" class="bg-cream rounded-lg p-8 text-center text-sm text-bark/60">
+          No lessons published yet — check back soon.
+        </div>
+        <ol v-else class="space-y-3">
+          <li v-for="(lesson, i) in lessons" :key="lesson.$id">
+            <RouterLink
+              :to="lessonLink(lesson)"
+              class="flex items-center gap-3 px-6 py-3.5 rounded-sm border shadow-[0_2px_4px_rgba(0,0,0,0.2)] transition-colors"
+              :class="rowClass(lesson)"
+              :aria-current="lesson === nextLesson ? 'step' : undefined"
+            >
+              <span class="w-5 text-right text-sm font-semibold">{{ i + 1 }}</span>
+              <span class="opacity-60" aria-hidden="true">|</span>
+              <span class="flex-1">{{ lesson.title }}</span>
+              <AppIcon v-if="isDone(lesson)" name="check" class="w-5 h-5 text-leaf" />
+              <span v-if="isDone(lesson)" class="sr-only">(completed)</span>
+            </RouterLink>
+          </li>
+        </ol>
+
+        <!-- Course quiz: unlocks once every lesson is done -->
+        <template v-if="quiz">
+          <RouterLink
+            v-if="allDone"
+            :to="`/quizzes/${quiz.$id}`"
+            class="mt-6 flex items-center gap-4 px-6 py-4 rounded-sm bg-olive text-white shadow-[0_2px_4px_rgba(0,0,0,0.2)] hover:bg-olive/90 transition-colors"
+          >
+            <AppIcon name="quiz" class="w-7 h-7" />
+            <span>
+              <span class="block font-semibold">Course Quiz</span>
+              <span class="block text-sm text-cream/90">Test what you've learned →</span>
+            </span>
+          </RouterLink>
+          <div v-else class="mt-6 flex items-center gap-4 px-6 py-4 rounded-sm bg-parchment text-bark/60 shadow-[0_2px_4px_rgba(0,0,0,0.2)]">
+            <AppIcon name="lock" class="w-7 h-7" />
+            <span>
+              <span class="block font-semibold">Course Quiz</span>
+              <span class="block text-sm">Complete all lessons to unlock</span>
+            </span>
+          </div>
+        </template>
+      </article>
+    </div>
   </div>
 </template>
+
+<style scoped>
+/* Progress bar fills up from empty when it first appears (later changes glide via the width transition) */
+.bar-fill {
+  animation: bar-fill 0.9s cubic-bezier(0.3, 0.7, 0.3, 1) 0.2s backwards;
+}
+@keyframes bar-fill {
+  from { width: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar-fill {
+    animation: none;
+  }
+}
+</style>

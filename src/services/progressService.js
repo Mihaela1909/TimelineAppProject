@@ -1,6 +1,6 @@
 import { ID, Query, Permission, Role } from 'appwrite'
 import { tablesDB, DB_ID, TABLES } from './appwrite'
-import { listAllRows } from './rowHelpers'
+import { listAllRows, deleteAllRows } from './rowHelpers'
 
 // Row Level Security is enabled on this table, same reasoning as
 // quiz_attempts: each row belongs to exactly one person, so we grant
@@ -27,6 +27,12 @@ export async function markLessonComplete({ userId, courseId, lessonId }) {
       Permission.delete(Role.user(userId)),
     ],
   })
+}
+
+// Undo "Mark as Complete". Each row grants delete to its owner (set at creation),
+// and the userId filter means a user can only ever remove their own progress.
+export async function unmarkLessonComplete({ userId, lessonId }) {
+  return deleteAllRows(TABLES.PROGRESS, [Query.equal('userId', userId), Query.equal('lessonId', lessonId)])
 }
 
 export async function getCompletedLessonIds(userId, courseId) {

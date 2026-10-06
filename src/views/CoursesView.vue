@@ -50,6 +50,16 @@ const filteredCourses = computed(() => {
 const pageCount = computed(() => Math.max(1, Math.ceil(filteredCourses.value.length / PAGE_SIZE)))
 const pagedCourses = computed(() => filteredCourses.value.slice((page.value - 1) * PAGE_SIZE, page.value * PAGE_SIZE))
 
+// Card animation: the first set of cards fades up one by one; after that, any
+// change to the results (search / category / sort / page) gives the grid a
+// quick fade, so it's clear the list changed. Changing the key re-mounts the grid.
+const gridKey = ref(0)
+const firstLoad = ref(true)
+watch([searchTerm, activeCategory, sortBy, page], () => {
+  firstLoad.value = false
+  gridKey.value++
+})
+
 // RESET: any change to search / filter / sort starts again from page 1.
 watch([searchTerm, activeCategory, sortBy], () => (page.value = 1))
 
@@ -131,7 +141,7 @@ function statusBadge(courseId) {
 
       <!-- Results -->
       <template v-else>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-12">
+        <div :key="gridKey" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-12" :class="firstLoad ? 'cards-stagger' : 'cards-swap'">
           <HistoryCard
             v-for="course in pagedCourses"
             :key="course.$id"
@@ -150,3 +160,34 @@ function statusBadge(courseId) {
     </div>
   </div>
 </template>
+
+<style scoped>
+/* First load: cards fade up one after another */
+.cards-stagger > * {
+  animation: card-in 0.6s ease-out backwards;
+}
+.cards-stagger > :nth-child(2) { animation-delay: 0.08s; }
+.cards-stagger > :nth-child(3) { animation-delay: 0.16s; }
+.cards-stagger > :nth-child(4) { animation-delay: 0.24s; }
+.cards-stagger > :nth-child(5) { animation-delay: 0.32s; }
+.cards-stagger > :nth-child(6) { animation-delay: 0.4s; }
+
+/* Results changed: one quick fade for the whole grid */
+.cards-swap {
+  animation: swap-in 0.25s ease-out;
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(14px); }
+}
+@keyframes swap-in {
+  from { opacity: 0; transform: translateY(6px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cards-stagger > *,
+  .cards-swap {
+    animation: none;
+  }
+}
+</style>
