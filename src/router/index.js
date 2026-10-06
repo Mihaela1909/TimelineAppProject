@@ -21,6 +21,7 @@ const BlogPostDetailView = () => import('../views/BlogPostDetailView.vue')
 const ProfileView = () => import('../views/ProfileView.vue')
 const LoginView = () => import('../views/LoginView.vue')
 const RegisterView = () => import('../views/RegisterView.vue')
+const EventOfDayView = () => import('../views/EventOfDayView.vue')
 
 // Admin panel — never downloaded by visitors who don't open it
 const AdminLayout = () => import('../layouts/AdminLayout.vue')
@@ -52,7 +53,7 @@ const routes = [
       { path: 'courses/:id/lessons/:lessonId', name: 'lesson-view', component: LessonView },
       { path: 'quizzes', name: 'quizzes', component: QuizzesView },
       { path: 'quizzes/:id', name: 'quiz-taking', component: QuizTakingView },
-      { path: 'event-of-the-day', name: 'event-of-the-day', component: PlaceholderView, props: { title: 'Event of the Day' } },
+      { path: 'event-of-the-day', name: 'event-of-the-day', component: EventOfDayView },
       { path: 'about', name: 'about', component: PlaceholderView, props: { title: 'About Us' } },
       { path: 'blog', name: 'blog', component: BlogView },
       { path: 'blog/:id', name: 'blog-post', component: BlogPostDetailView },

@@ -22,3 +22,25 @@ export async function getEventsOnThisDay(month, day) {
     url: event.pages?.[0]?.content_urls?.desktop?.page || null,
   }))
 }
+
+// Events AND births for a date (one request) — for the Event of the Day page.
+export async function getOnThisDay(month, day) {
+  const mm = String(month).padStart(2, '0')
+  const dd = String(day).padStart(2, '0')
+  const res = await fetch(`https://en.wikipedia.org/api/rest_v1/feed/onthisday/all/${mm}/${dd}`, {
+    headers: { 'Api-User-Agent': 'Timeline history app (student project)' },
+  })
+  if (!res.ok) throw new Error(`Wikipedia responded with ${res.status}`)
+
+  const data = await res.json()
+  const toItem = (kind) => (entry) => ({
+    year: entry.year,
+    text: entry.text,
+    kind,
+    url: entry.pages?.[0]?.content_urls?.desktop?.page || null,
+  })
+  return {
+    events: (data.events || []).map(toItem('event')),
+    births: (data.births || []).map(toItem('birth')),
+  }
+}

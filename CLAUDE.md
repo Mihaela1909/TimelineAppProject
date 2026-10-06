@@ -91,6 +91,11 @@ A user's upload does NOT go live until an admin approves it.
 - Optional fields shown if present: `quiz.description` (fallback "Test what you learned in <course>.") and `question.explanation` (fallback: the correct answer on a wrong pick). Neither column exists yet; add String columns + admin form fields to use them.
 - Est. time = 0.4 min per question. `timeAgo` lives in `utils/time.js`.
 
+## Event of the Day page
+- `/event-of-the-day?date=YYYY-MM-DD` → `EventOfDayView.vue`. The date lives in the URL (shareable, back button works); an invalid or missing date means today. Prev/next day, a native date picker (transparent `<input type=date>` over the date), and "Get a random date" (same year).
+- Data: `wikimediaService.getOnThisDay` (Wikipedia `/feed/onthisday/all`: events + births) → `useEventOfDay().fetchFor(date)`. Featured = pre-1900 event picked by day-of-year. "Also on this day" = 2 other events + 1 pre-1900 birth (`pickAlsoOnThisDay`). Topics are a keyword guess (`topicOf`), colours in `constants/eventCategories.js`. Births show as "<Name> is born." (`displayText`).
+- Reuses the home frame image cropped to the frame only (x 6–69%, y 8.4–87.6%) and `books.webp`. The background is `public/images/event/dots-wave.webp`, top as-is and bottom flipped. Share uses `navigator.share`, falling back to copying the link.
+
 ## Known gaps / next priorities
 1. Users can't remove a live photo themselves (they can only replace it, or cancel a pending one). Needs an admin-side "remove" or a pending "remove" request.
 2. Rejected/replaced files stay in the bucket (orphaned). Cleanup would need bucket `Delete` for label `admin`, then `deleteImage()` on reject/replace.
