@@ -124,7 +124,7 @@ async function confirmDeleteQuestion() {
       </button>
     </div>
 
-    <div v-if="activeTab === 'details'" class="bg-white rounded-xl p-6">
+    <div v-if="activeTab === 'details'" class="bg-white rounded-xl p-4 md:p-6">
       <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2 mb-4">
         {{ error }}
       </div>
@@ -137,7 +137,7 @@ async function confirmDeleteQuestion() {
           class="w-full px-3 py-2 border border-black/10 rounded-md text-sm mb-4"
         />
 
-        <div class="grid grid-cols-2 gap-4 mb-5">
+        <div class="grid sm:grid-cols-2 gap-4 mb-5">
           <div>
             <label class="text-xs text-bark/70 block mb-1">Linked course *</label>
             <select
@@ -182,7 +182,7 @@ async function confirmDeleteQuestion() {
       </form>
     </div>
 
-    <div v-else-if="activeTab === 'questions'" class="bg-white rounded-xl p-6">
+    <div v-else-if="activeTab === 'questions'" class="bg-white rounded-xl p-4 md:p-6">
       <div class="flex justify-between items-center gap-4 mb-4">
         <span class="text-base text-sand-dark">
           {{ questions.length }} question{{ questions.length === 1 ? '' : 's' }}<template v-if="questions.length > 1"> · drag to reorder</template>

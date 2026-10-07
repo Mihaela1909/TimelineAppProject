@@ -85,9 +85,9 @@ async function reactivate(user) {
 
 <template>
   <div>
-    <h1 class="font-voice text-4xl text-bark mb-8">{{ inactiveOnly ? 'Inactive Users' : 'Users' }}</h1>
+    <h1 class="font-voice text-3xl md:text-4xl text-bark mb-8">{{ inactiveOnly ? 'Inactive Users' : 'Users' }}</h1>
 
-    <div v-if="loading" class="bg-white rounded-xl p-6 space-y-3" aria-live="polite">
+    <div v-if="loading" class="bg-white rounded-xl p-4 md:p-6 space-y-3" aria-live="polite">
       <div v-for="n in 4" :key="n" class="h-10 bg-olive-light rounded animate-pulse"></div>
     </div>
 
@@ -100,14 +100,14 @@ async function reactivate(user) {
       {{ inactiveOnly ? 'No inactive users.' : 'No users yet.' }}
     </div>
 
-    <div v-else class="bg-white rounded-xl px-6 py-4">
+    <div v-else class="bg-white rounded-xl px-3 md:px-6 py-4">
       <table class="w-full text-sm">
         <thead>
           <tr class="text-left text-bark border-b border-bark/30">
             <th class="py-3 px-2 font-normal">Name</th>
-            <th class="py-3 px-2 font-normal">Email</th>
-            <th class="py-3 px-2 font-normal">Role</th>
-            <th class="py-3 px-2 font-normal">Joined</th>
+            <th class="hidden md:table-cell py-3 px-2 font-normal">Email</th>
+            <th class="hidden sm:table-cell py-3 px-2 font-normal">Role</th>
+            <th class="hidden lg:table-cell py-3 px-2 font-normal">Joined</th>
             <th class="py-3 px-2 font-normal">Status</th>
             <th class="py-3 px-2"></th>
           </tr>
@@ -120,17 +120,21 @@ async function reactivate(user) {
                   <img v-if="user.avatarImageId" :src="getImagePreviewUrl(user.avatarImageId)" alt="" class="w-full h-full object-cover" />
                   <span v-else class="text-bark text-xs font-semibold">{{ (user.name || '?').charAt(0).toUpperCase() }}</span>
                 </div>
-                <span class="text-bark">{{ user.name || 'Unnamed user' }}</span>
-                <span v-if="isSelf(user)" class="text-xs text-bark/50">(you)</span>
+                <div class="min-w-0">
+                  <span class="text-bark">{{ user.name || 'Unnamed user' }}</span>
+                  <span v-if="isSelf(user)" class="text-xs text-bark/50"> (you)</span>
+                  <div class="md:hidden text-xs text-bark/60 break-all">{{ user.email || '—' }}</div>
+                  <div class="sm:hidden text-xs text-bark/60 capitalize">{{ user.role || ROLES.USER }}</div>
+                </div>
               </div>
             </td>
-            <td class="py-3 px-2 text-bark">{{ user.email || '—' }}</td>
-            <td class="py-3 px-2">
+            <td class="hidden md:table-cell py-3 px-2 text-bark break-all">{{ user.email || '—' }}</td>
+            <td class="hidden sm:table-cell py-3 px-2">
               <span class="text-xs px-2.5 py-1 rounded-lg capitalize" :class="roleStyles[user.role] || roleStyles[ROLES.USER]">
                 {{ user.role || ROLES.USER }}
               </span>
             </td>
-            <td class="py-3 px-2 text-bark">{{ formatJoined(user.$createdAt) }}</td>
+            <td class="hidden lg:table-cell py-3 px-2 text-bark">{{ formatJoined(user.$createdAt) }}</td>
             <td class="py-3 px-2">
               <span
                 class="text-xs px-2.5 py-1 rounded-lg"

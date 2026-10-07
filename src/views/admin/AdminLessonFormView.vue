@@ -67,7 +67,7 @@ async function handleSubmit() {
         Back to Lessons<template v-if="courseTitle"> · <span class="text-olive font-semibold">{{ courseTitle }}</span></template>
       </span>
     </RouterLink>
-    <h1 class="font-voice text-5xl text-bark mb-8">{{ isEditing ? 'Edit Lesson' : 'New Lesson' }}</h1>
+    <h1 class="font-voice text-3xl md:text-5xl text-bark mb-6 md:mb-8">{{ isEditing ? 'Edit Lesson' : 'New Lesson' }}</h1>
 
     <div class="bg-white rounded-2xl p-8">
       <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3 mb-5">
@@ -75,7 +75,7 @@ async function handleSubmit() {
       </div>
 
       <form @submit.prevent="handleSubmit">
-        <div class="grid grid-cols-[1fr_12rem] gap-6 mb-5">
+        <div class="grid md:grid-cols-[1fr_12rem] gap-6 mb-5">
           <div>
             <label for="lesson-title" class="text-base text-bark block mb-1.5">
               Lesson title <sup class="text-bark/60">*</sup>

@@ -33,6 +33,7 @@ A user's upload does NOT go live until an admin approves it.
 - Recent Activity has no log table: it merges the newest rows of courses/quizzes/blog posts (by `$updatedAt`, "published" vs "Draft saved") and profiles (by `$createdAt`, "New user signed up").
 - `profiles.name` (String, optional) is written at registration so admin pages can show names. Older users have no name until backfilled.
 - `createProfile` sets explicit `Read → that user` permissions. Appwrite's default would grant the creator update/delete, letting users edit their own `role`.
+- Phones (< md): the sidebar is a slide-in drawer opened from a bark top bar (menu button); it closes on navigation, Escape or a tap outside. Admin tables hide secondary columns on phones (`hidden sm:table-cell` etc.) and show that info under the main cell instead.
 - Sidebar (`AdminLayout.vue`): the "Users" group (Statistic, Inactive, Users, Image Approvals) is admin-only and hidden for editors. Statistic → `AdminStatisticsView.vue`.
 
 ## Admin Users page

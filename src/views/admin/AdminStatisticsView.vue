@@ -30,8 +30,8 @@ const learnerMax = computed(() => Math.max(1, ...(stats.value?.courses.map((c) =
 
 <template>
   <div>
-    <div class="flex justify-between items-center mb-8">
-      <h1 class="font-voice text-4xl text-bark">Statistics</h1>
+    <div class="flex flex-wrap gap-3 justify-between items-center mb-8">
+      <h1 class="font-voice text-3xl md:text-4xl text-bark">Statistics</h1>
       <button
         class="text-sm px-4 py-2 rounded-md border border-olive text-olive disabled:opacity-60"
         :disabled="loading"
@@ -71,7 +71,7 @@ const learnerMax = computed(() => Math.max(1, ...(stats.value?.courses.map((c) =
 
       <div class="grid lg:grid-cols-2 gap-6">
         <!-- Sign-ups per month: single-series column chart -->
-        <section class="bg-white rounded-xl p-6">
+        <section class="bg-white rounded-xl p-4 md:p-6">
           <h2 class="text-lg font-semibold text-bark">New sign-ups</h2>
           <p class="text-xs text-bark/50 mb-6">Per month, last 6 months</p>
 
@@ -103,7 +103,7 @@ const learnerMax = computed(() => Math.max(1, ...(stats.value?.courses.map((c) =
         </section>
 
         <!-- Community breakdown -->
-        <section class="bg-white rounded-xl p-6">
+        <section class="bg-white rounded-xl p-4 md:p-6">
           <h2 class="text-lg font-semibold text-bark">Community</h2>
           <p class="text-xs text-bark/50 mb-6">{{ stats.community.total }} accounts in total</p>
 
@@ -130,13 +130,13 @@ const learnerMax = computed(() => Math.max(1, ...(stats.value?.courses.map((c) =
       </div>
 
       <!-- Course engagement: single-series horizontal bars -->
-      <section class="bg-white rounded-xl p-6">
+      <section class="bg-white rounded-xl p-4 md:p-6">
         <h2 class="text-lg font-semibold text-bark">Course engagement</h2>
         <p class="text-xs text-bark/50 mb-6">Learners who completed at least one lesson, and how many finished the course</p>
 
         <div v-if="stats.courses.length === 0" class="text-sm text-bark/60">No courses yet.</div>
         <ul v-else class="space-y-3">
-          <li v-for="course in stats.courses" :key="course.id" class="grid grid-cols-[minmax(0,12rem)_1fr_auto] items-center gap-4 text-sm">
+          <li v-for="course in stats.courses" :key="course.id" class="grid grid-cols-[minmax(0,7rem)_1fr_auto] sm:grid-cols-[minmax(0,12rem)_1fr_auto] items-center gap-2 sm:gap-4 text-sm">
             <RouterLink :to="`/admin/courses/${course.id}/edit`" class="text-bark truncate hover:text-olive" :title="course.title">
               {{ course.title }}
             </RouterLink>
@@ -153,12 +153,13 @@ const learnerMax = computed(() => Math.max(1, ...(stats.value?.courses.map((c) =
       </section>
 
       <!-- Quiz performance table -->
-      <section class="bg-white rounded-xl p-6">
+      <section class="bg-white rounded-xl p-4 md:p-6">
         <h2 class="text-lg font-semibold text-bark">Quiz performance</h2>
         <p class="text-xs text-bark/50 mb-4">Sorted by number of attempts</p>
 
         <div v-if="stats.quizzes.length === 0" class="text-sm text-bark/60">No quizzes yet.</div>
-        <table v-else class="w-full text-sm">
+        <div v-else class="overflow-x-auto -mx-1 px-1">
+        <table class="w-full min-w-[28rem] text-sm">
           <thead>
             <tr class="text-left text-bark/50 border-b border-black/10">
               <th class="py-2 pr-4 font-medium">Quiz</th>
@@ -186,6 +187,7 @@ const learnerMax = computed(() => Math.max(1, ...(stats.value?.courses.map((c) =
             </tr>
           </tbody>
         </table>
+        </div>
       </section>
     </div>
   </div>

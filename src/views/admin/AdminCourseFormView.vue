@@ -104,7 +104,7 @@ async function handleSubmit() {
       </button>
     </div>
 
-    <div v-if="activeTab === 'details'" class="bg-white rounded-xl p-6">
+    <div v-if="activeTab === 'details'" class="bg-white rounded-xl p-4 md:p-6">
       <div
         v-if="error"
         class="bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2 mb-4"
@@ -133,7 +133,7 @@ async function handleSubmit() {
         </p>
         <div v-else class="mb-4"></div>
 
-        <div class="grid grid-cols-2 gap-4 mb-5">
+        <div class="grid sm:grid-cols-2 gap-4 mb-5">
           <div>
             <label for="course-category" class="text-xs text-bark/70 block mb-1">Category *</label>
             <CategoryPicker id="course-category" v-model="form.category" :options="categories" required />
@@ -143,7 +143,7 @@ async function handleSubmit() {
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 mb-5">
+        <div class="grid sm:grid-cols-2 gap-4 mb-5">
           <ImageUpload v-model="form.coverImageId" label="Cover image" :required="isRequired('coverImageId')" :invalid="isMissing('coverImageId')" />
           <ImageUpload v-model="form.headerImageId" label="Course Header image" :required="isRequired('headerImageId')" :invalid="isMissing('headerImageId')" />
         </div>
@@ -158,7 +158,7 @@ async function handleSubmit() {
       </form>
     </div>
 
-    <div v-else-if="activeTab === 'lessons'" class="bg-white rounded-xl p-6">
+    <div v-else-if="activeTab === 'lessons'" class="bg-white rounded-xl p-4 md:p-6">
       <div class="flex justify-between items-center mb-4">
         <span class="text-xs text-bark/60">{{ lessons.length }} lesson{{ lessons.length === 1 ? '' : 's' }}</span>
         <RouterLink

@@ -55,7 +55,7 @@ async function handleSubmit() {
     </RouterLink>
     <h1 class="font-voice text-3xl text-bark mb-4">{{ isEditing ? 'Edit Blog Post' : 'New Blog Post' }}</h1>
 
-    <div class="bg-white rounded-xl p-6">
+    <div class="bg-white rounded-xl p-4 md:p-6">
       <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2 mb-4">
         {{ error }}
       </div>
@@ -68,7 +68,7 @@ async function handleSubmit() {
           class="w-full px-3 py-2 border border-black/10 rounded-md text-sm mb-4"
         />
 
-        <div class="grid grid-cols-2 gap-4 mb-4">
+        <div class="grid sm:grid-cols-2 gap-4 mb-4">
           <div>
             <label for="post-category" class="text-xs text-bark/70 block mb-1">Category *</label>
             <CategoryPicker id="post-category" v-model="form.category" :options="categories" required />

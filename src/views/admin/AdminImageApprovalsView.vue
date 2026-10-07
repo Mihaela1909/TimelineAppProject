@@ -17,12 +17,12 @@ async function handleDecision(request, approve) {
 
 <template>
   <div>
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex flex-wrap gap-3 justify-between items-center mb-6">
       <h1 class="font-voice text-3xl text-bark">Image Approvals</h1>
       <button class="text-sm px-4 py-2 rounded-md border border-olive text-olive" @click="fetchAll">Refresh</button>
     </div>
 
-    <div v-if="loading" class="bg-white rounded-xl p-6 space-y-3" aria-live="polite">
+    <div v-if="loading" class="bg-white rounded-xl p-4 md:p-6 space-y-3" aria-live="polite">
       <div v-for="n in 3" :key="n" class="h-8 bg-olive-light rounded animate-pulse"></div>
     </div>
 
@@ -39,32 +39,33 @@ async function handleDecision(request, approve) {
       <table class="w-full text-sm">
         <thead>
           <tr class="text-left text-bark/50 border-b border-black/5">
-            <th class="py-3 px-5 font-medium">Image</th>
-            <th class="py-3 px-5 font-medium">Type</th>
-            <th class="py-3 px-5 font-medium">User</th>
-            <th class="py-3 px-5"></th>
+            <th class="py-3 px-3 md:px-5 font-medium">Image</th>
+            <th class="hidden sm:table-cell py-3 px-3 md:px-5 font-medium">Type</th>
+            <th class="py-3 px-3 md:px-5 font-medium">User</th>
+            <th class="py-3 px-3 md:px-5"></th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="request in requests" :key="request.key" class="border-b border-black/5 last:border-0">
-            <td class="py-3 px-5">
+            <td class="py-3 px-3 md:px-5">
               <a :href="getImagePreviewUrl(request.fileId)" target="_blank" rel="noopener">
                 <img
                   :src="getImagePreviewUrl(request.fileId)"
                   alt=""
                   class="object-cover"
-                  :class="request.kind === 'avatar' ? 'w-14 h-14 rounded-full' : 'w-32 h-14 rounded-lg'"
+                  :class="request.kind === 'avatar' ? 'w-14 h-14 rounded-full' : 'w-20 sm:w-32 h-14 rounded-lg'"
                 />
               </a>
             </td>
-            <td class="py-3 px-5 text-bark">{{ request.kind === 'avatar' ? 'Profile picture' : 'Profile header' }}</td>
-            <td class="py-3 px-5">
+            <td class="hidden sm:table-cell py-3 px-3 md:px-5 text-bark">{{ request.kind === 'avatar' ? 'Profile picture' : 'Profile header' }}</td>
+            <td class="py-3 px-3 md:px-5">
               <span v-if="request.userName" class="text-bark">{{ request.userName }}</span>
-              <span v-else class="text-bark/60 font-mono text-xs">{{ request.row.userId }}</span>
+              <span v-else class="text-bark/60 font-mono text-xs break-all">{{ request.row.userId }}</span>
+              <span class="sm:hidden block text-xs text-bark/60">{{ request.kind === 'avatar' ? 'Profile picture' : 'Profile header' }}</span>
             </td>
-            <td class="py-3 px-5 text-right whitespace-nowrap">
+            <td class="py-3 px-3 md:px-5 text-right whitespace-nowrap">
               <button
-                class="text-xs px-3 py-1.5 rounded-md bg-olive text-white disabled:opacity-60 mr-2"
+                class="text-xs px-3 py-1.5 rounded-md bg-olive text-white disabled:opacity-60 mr-2 mb-1 sm:mb-0"
                 :disabled="!!busyKey"
                 @click="handleDecision(request, true)"
               >

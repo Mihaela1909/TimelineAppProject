@@ -22,7 +22,7 @@ async function confirmDelete() {
 
 <template>
   <div>
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex flex-wrap gap-3 justify-between items-center mb-6">
       <h1 class="font-voice text-3xl text-bark">Blog Posts</h1>
       <RouterLink
         to="/admin/blog-posts/new"
@@ -32,7 +32,7 @@ async function confirmDelete() {
       </RouterLink>
     </div>
 
-    <div v-if="loading" class="bg-white rounded-xl p-6 space-y-3" aria-live="polite">
+    <div v-if="loading" class="bg-white rounded-xl p-4 md:p-6 space-y-3" aria-live="polite">
       <div v-for="n in 3" :key="n" class="h-8 bg-olive-light rounded animate-pulse"></div>
     </div>
 
@@ -50,16 +50,16 @@ async function confirmDelete() {
       <table class="w-full text-sm">
         <thead>
           <tr class="text-left text-bark/50 border-b border-black/5">
-            <th class="py-3 px-5 font-medium">Title</th>
-            <th class="py-3 px-5 font-medium">Category</th>
-            <th class="py-3 px-5 font-medium">Status</th>
-            <th class="py-3 px-5"></th>
+            <th class="py-3 px-3 md:px-5 font-medium">Title</th>
+            <th class="hidden sm:table-cell py-3 px-3 md:px-5 font-medium">Category</th>
+            <th class="py-3 px-3 md:px-5 font-medium">Status</th>
+            <th class="py-3 px-3 md:px-5"></th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="post in posts" :key="post.$id" class="border-b border-black/5 last:border-0">
-            <td class="py-3 px-5 text-bark">{{ post.title }}</td>
-            <td class="py-3 px-5">
+            <td class="py-3 px-3 md:px-5 text-bark">{{ post.title }}</td>
+            <td class="hidden sm:table-cell py-3 px-3 md:px-5">
               <span
                 class="text-xs px-3 py-1 rounded-full"
                 :class="categoryStyle(post.category)"
@@ -67,7 +67,7 @@ async function confirmDelete() {
                 {{ post.category }}
               </span>
             </td>
-            <td class="py-3 px-5">
+            <td class="py-3 px-3 md:px-5">
               <span
                 class="text-xs px-3 py-1 rounded-full"
                 :class="post.published ? 'bg-olive-light text-olive' : 'bg-butter text-bark'"
@@ -75,7 +75,7 @@ async function confirmDelete() {
                 {{ post.published ? 'Published' : 'Draft' }}
               </span>
             </td>
-            <td class="py-3 px-5 text-right whitespace-nowrap">
+            <td class="py-3 px-3 md:px-5 text-right whitespace-nowrap">
               <RouterLink :to="`/admin/blog-posts/${post.$id}/edit`" class="mr-3 text-bark/60 hover:text-bark">
                 ✎
               </RouterLink>

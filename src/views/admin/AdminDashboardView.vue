@@ -26,7 +26,7 @@ const visibleActivity = computed(() => (showAll.value ? activity.value : activit
 
 <template>
   <div>
-    <h1 class="font-voice text-4xl text-bark mb-8">Dashboard</h1>
+    <h1 class="font-voice text-3xl md:text-4xl text-bark mb-8">Dashboard</h1>
 
     <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center text-sm mb-6">
       <p class="mb-3">{{ error }}</p>
@@ -42,7 +42,7 @@ const visibleActivity = computed(() => (showAll.value ? activity.value : activit
       >
         <div class="text-sm text-bark/70 mb-1">{{ card.label }}</div>
         <div v-if="loading" class="h-9 w-12 bg-olive-light rounded animate-pulse"></div>
-        <div v-else class="text-4xl font-bold text-bark">{{ card.value }}</div>
+        <div v-else class="text-3xl md:text-4xl font-bold text-bark">{{ card.value }}</div>
       </RouterLink>
     </div>
 
@@ -51,14 +51,14 @@ const visibleActivity = computed(() => (showAll.value ? activity.value : activit
         v-for="action in quickActions"
         :key="action.to"
         :to="action.to"
-        class="font-button flex items-center gap-2 px-6 py-3 rounded-xl bg-olive text-white font-semibold hover:bg-olive/90 transition-colors"
+        class="font-button flex items-center gap-2 px-4 sm:px-6 py-3 rounded-xl bg-olive text-white font-semibold hover:bg-olive/90 transition-colors"
       >
         <AppIcon name="plus" class="w-4 h-4" />
         {{ action.label }}
       </RouterLink>
     </div>
 
-    <div class="bg-white rounded-xl p-6">
+    <div class="bg-white rounded-xl p-4 md:p-6">
       <h2 class="text-lg font-semibold text-bark mb-4">Recent Activity</h2>
 
       <div v-if="loading" class="space-y-3" aria-live="polite">

@@ -62,7 +62,7 @@ async function handleSubmit() {
     </RouterLink>
     <h1 class="font-voice text-2xl text-bark mb-4">{{ isEditing ? 'Edit Question' : 'New Question' }}</h1>
 
-    <div class="bg-white rounded-xl p-6">
+    <div class="bg-white rounded-xl p-4 md:p-6">
       <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2 mb-4">
         {{ error }}
       </div>
