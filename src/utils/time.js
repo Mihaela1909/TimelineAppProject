@@ -15,3 +15,13 @@ export function timeAgo(date) {
     if (seconds >= size) return `${Math.floor(seconds / size)}${suffix} ago`
   }
 }
+
+// "Aug 12, 2026"
+export function formatDate(date) {
+  return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+// Blog readTime is free text in the admin form ("4 min", "5 mins read"…) → "4 min read".
+export function readTimeText(t) {
+  return !t ? '' : /read/i.test(t) ? t : `${t} read`
+}

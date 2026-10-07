@@ -10,6 +10,7 @@ defineProps({
   labelLarge: { type: Boolean, default: false }, // course cards: label is part of the title
   title: { type: String, required: true },
   meta: { type: String, default: '' }, // e.g. "6 lessons", "4 min read"
+  date: { type: String, default: '' }, // blog cards: shown on the left, meta on the right
   badgeTone: { type: String, default: 'olive' }, // 'olive' | 'ochre' (in progress) | 'leaf' (completed)
   progress: { type: Number, default: null }, // 0–1: thin bar under the badge (in-progress courses)
   layout: { type: String, default: 'carousel' }, // 'carousel' (fixed widths, snap) | 'grid' (fills its cell)
@@ -56,7 +57,10 @@ const LAYOUTS = {
       :class="labelLarge ? 'flex items-end justify-between gap-3' : 'flex flex-col gap-1'"
     >
       <span class="font-button text-white leading-snug" :class="labelLarge ? 'text-[1.75rem]' : 'text-xl'">{{ title }}</span>
-      <span v-if="meta" class="text-xs text-cream/80 whitespace-nowrap" :class="labelLarge ? 'pb-1' : ''">{{ meta }}</span>
+      <span v-if="date" class="flex justify-between gap-3 text-xs text-cream/80 whitespace-nowrap">
+        <span>{{ date }}</span><span>{{ meta }}</span>
+      </span>
+      <span v-else-if="meta" class="text-xs text-cream/80 whitespace-nowrap" :class="labelLarge ? 'pb-1' : ''">{{ meta }}</span>
     </div>
   </RouterLink>
 </template>

@@ -6,6 +6,7 @@ import SectionHeading from '../ui/SectionHeading.vue'
 import CardCarousel from '../ui/CardCarousel.vue'
 import HistoryCard from '../ui/HistoryCard.vue'
 import AppIcon from '../ui/AppIcon.vue'
+import { readTimeText } from '../../utils/time'
 
 const SHOWN = 8
 const { posts, loading, error, fetchPublished } = useBlog()
@@ -14,8 +15,6 @@ onMounted(fetchPublished)
 // Newest first (the service already sorts by creation date).
 const latest = computed(() => posts.value.slice(0, SHOWN))
 
-// readTime is free text in the admin form ("4 min", "5 mins read"…).
-const readTimeText = (t) => (!t ? '' : /read/i.test(t) ? t : `${t} read`)
 </script>
 
 <template>

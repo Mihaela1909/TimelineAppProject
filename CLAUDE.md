@@ -101,6 +101,13 @@ A user's upload does NOT go live until an admin approves it.
 - `components/auth/AuthScene.vue` (dots + olive diagonal + Napoleon artwork from xl/1280px up, card with the static brown `AnimatedLogo :animated="false"`, title, form slot) + `AuthField.vue`. Form logic is unchanged (`useAuth` login/register).
 - The window artwork is the shared `components/ui/NapoleonWindow.vue` (`playing`, `layout` 'home' | 'auth'), also used by `WhoAreWe`. 'auth' = ring positions + Napoleon inside the frame, from the login mockup. Mirror a ring with `[--flip:-1]` (part of the pop animation's transform).
 
+## Blog pages
+- `/blog` → `BlogView.vue` + `components/blog/BlogHero.vue` (Fitzgerald + Woolf, Camus + Kafka, fitted against the 1408×520 mockup like the other heroes; background `public/images/blog/hero-bg.webp`, unfiltered since its brightness already matches the mockup). 2×2 `HistoryCard` grid (`date` prop: date left, read time right), 4 per page. Sort: Newest / Oldest / A–Z (no "Popular": no view counts).
+- `/blog/:id` → `BlogPostDetailView.vue`: grayscale cover banner, dot waves, category pill, intro box (date / read time), diamond divider, content (serif h2/h3 via scoped `:deep` on `.post-content`), Share, then a "Browse more" carousel (same category first).
+- Saved posts: `saved_posts` table (`userId`, `postId`, both String required), env `VITE_APPWRITE_SAVED_POSTS_TABLE_ID`. **Row Security ON**, table-level Create → Users only; each row grants Read + Delete to its owner (set in `savedPostService.savePost`). `useSavedPosts` is module-scope state shared by the post page's Save/Saved button and the profile's "Saved Posts" tab (`components/profile/SavedPostsTab.vue`). Guests clicking Save go to login and come back.
+- "Browse more" only renders when there's at least one other published post.
+- `formatDate` / `readTimeText` live in `utils/time.js`.
+
 ## Known gaps / next priorities
 1. Users can't remove a live photo themselves (they can only replace it, or cancel a pending one). Needs an admin-side "remove" or a pending "remove" request.
 2. Rejected/replaced files stay in the bucket (orphaned). Cleanup would need bucket `Delete` for label `admin`, then `deleteImage()` on reject/replace.

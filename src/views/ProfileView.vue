@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
 import { useProfileProgress } from '../composables/useProfileProgress'
@@ -10,6 +10,9 @@ import ConfirmModal from '../components/ui/ConfirmModal.vue'
 import { useToast } from '../composables/useToast'
 import AppIcon from '../components/ui/AppIcon.vue'
 import { STAFF_ROLES } from '../constants/roles'
+import { useSavedPosts } from '../composables/useSavedPosts'
+import { useBlog } from '../composables/useBlog'
+import SavedPostsTab from '../components/profile/SavedPostsTab.vue'
 
 const router = useRouter()
 const { currentUser, updateName, updateEmail, updatePassword, logout, loading: authLoading, error: authError } = useAuth()
@@ -28,6 +31,27 @@ const { submit: submitPendingImage } = useProfileImages()
 const toast = useToast()
 
 const activeTab = ref('courses')
+
+// Saved posts: loaded the first time the tab is opened.
+const { savedIds, loading: savedLoading, error: savedError, busy: savedBusy, fetchFor: fetchSaved, toggle: toggleSaved } = useSavedPosts()
+const { posts: blogPosts, loading: blogLoading, error: blogError, fetchPublished: fetchBlogPosts } = useBlog()
+let savedLoaded = false
+async function loadSaved() {
+  savedLoaded = true
+  await Promise.all([fetchSaved(currentUser.value?.$id), fetchBlogPosts()])
+}
+watch(activeTab, (tab) => {
+  if (tab === 'saved' && !savedLoaded) loadSaved()
+})
+// Most recently saved first; posts that were deleted or unpublished drop out.
+const savedPosts = computed(() =>
+  [...savedIds.value].reverse().map((id) => blogPosts.value.find((p) => p.$id === id)).filter(Boolean)
+)
+async function removeSaved(post) {
+  const nowSaved = await toggleSaved(currentUser.value?.$id, post.$id)
+  if (nowSaved === null) toast.error('Could not remove this post. Please try again.')
+  else toast.success('Removed from saved posts')
+}
 
 const nameForm = ref('')
 const emailForm = ref('')
@@ -152,9 +176,10 @@ async function confirmDeleteAccount() {
       </div>
     </div>
 
-    <div class="flex gap-4 border-b border-black/10 mb-5 text-sm">
+    <div class="flex gap-4 border-b border-black/10 mb-5 text-sm overflow-x-auto whitespace-nowrap [scrollbar-width:none]">
       <button class="pb-2 border-b-2" :class="activeTab === 'courses' ? 'border-olive text-olive font-semibold' : 'border-transparent text-bark/50'" @click="activeTab = 'courses'">My Courses</button>
       <button class="pb-2 border-b-2" :class="activeTab === 'history' ? 'border-olive text-olive font-semibold' : 'border-transparent text-bark/50'" @click="activeTab = 'history'">Quiz History</button>
+      <button class="pb-2 border-b-2" :class="activeTab === 'saved' ? 'border-olive text-olive font-semibold' : 'border-transparent text-bark/50'" @click="activeTab = 'saved'">Saved Posts</button>
       <button class="pb-2 border-b-2" :class="activeTab === 'settings' ? 'border-olive text-olive font-semibold' : 'border-transparent text-bark/50'" @click="activeTab = 'settings'">Settings</button>
     </div>
 
@@ -254,6 +279,16 @@ async function confirmDeleteAccount() {
         </div>
       </div>
     </div>
+
+    <SavedPostsTab
+      v-else-if="activeTab === 'saved'"
+      :posts="savedPosts"
+      :loading="savedLoading || blogLoading"
+      :error="savedError || blogError"
+      :busy="savedBusy"
+      @remove="removeSaved"
+      @retry="loadSaved"
+    />
 
     <div v-else-if="activeTab === 'settings'" class="space-y-4">
       <div class="bg-white rounded-xl p-5">
