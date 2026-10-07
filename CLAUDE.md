@@ -96,6 +96,11 @@ A user's upload does NOT go live until an admin approves it.
 - Data: `wikimediaService.getOnThisDay` (Wikipedia `/feed/onthisday/all`: events + births) → `useEventOfDay().fetchFor(date)`. Featured = pre-1900 event picked by day-of-year. "Also on this day" = 2 other events + 1 pre-1900 birth (`pickAlsoOnThisDay`). Topics are a keyword guess (`topicOf`), colours in `constants/eventCategories.js`. Births show as "<Name> is born." (`displayText`).
 - Reuses the home frame image cropped to the frame only (x 6–69%, y 8.4–87.6%) and `books.webp`. The background is `public/images/event/dots-wave.webp`, top as-is and bottom flipped. Share uses `navigator.share`, falling back to copying the link.
 
+## Login / register
+- `/login` and `/register` are top-level routes WITHOUT `PublicLayout` (full-screen scene, no header/footer); the card logo links home. Both keep `?redirect=` when switching between them.
+- `components/auth/AuthScene.vue` (dots + olive diagonal + Napoleon artwork from xl/1280px up, card with the static brown `AnimatedLogo :animated="false"`, title, form slot) + `AuthField.vue`. Form logic is unchanged (`useAuth` login/register).
+- The window artwork is the shared `components/ui/NapoleonWindow.vue` (`playing`, `layout` 'home' | 'auth'), also used by `WhoAreWe`. 'auth' = ring positions + Napoleon inside the frame, from the login mockup. Mirror a ring with `[--flip:-1]` (part of the pop animation's transform).
+
 ## Known gaps / next priorities
 1. Users can't remove a live photo themselves (they can only replace it, or cancel a pending one). Needs an admin-side "remove" or a pending "remove" request.
 2. Rejected/replaced files stay in the bucket (orphaned). Cleanup would need bucket `Delete` for label `admin`, then `deleteImage()` on reject/replace.

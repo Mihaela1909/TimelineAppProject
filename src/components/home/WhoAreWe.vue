@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import AppIcon from '../ui/AppIcon.vue'
+import NapoleonWindow from '../ui/NapoleonWindow.vue'
 import { useInView } from '../../composables/useInView'
 
 // Napoleon rides into the window each time the section scrolls into view
@@ -62,31 +63,10 @@ function onTabKeydown(event, index) {
           aria-hidden="true"
         ></div>
 
-        <!-- Square stage: every layer is positioned in % of it, so they stay
-             aligned at any size. Order = back to front. -->
-        <div ref="art" :class="{ 'is-revealed': inView }" class="relative w-full max-w-[21rem] sm:max-w-[25.5rem] md:max-w-[36rem] lg:max-w-[37rem] mx-auto md:mx-0 aspect-square">
-          <img src="/images/home/who-are-we/ring-back.webp" alt="" class="ring-pop absolute left-[-7%] top-[-9.5%] w-[50%]" />
-          <img src="/images/home/who-are-we/window.webp" alt="" class="absolute inset-0 w-full h-full" />
-
-          <!-- Napoleon is clipped only on the RIGHT (outer edge of the right column,
-               84.7% — measured from window.webp) and BOTTOM (sill line, 85%), so he
-               rides in hidden behind the column and sill, then breaks out of the
-               frame over the top and left edges in his final pose. -->
-          <div class="absolute inset-0 [clip-path:inset(-50%_15.3%_15%_-50%)]">
-            <img
-              src="/images/home/who-are-we/napoleon.webp"
-              alt="Napoleon on a rearing horse, emerging from a stone window"
-              class="absolute left-[2%] top-[-3%] w-[86%] ease-out motion-reduce:transition-none motion-reduce:transform-none"
-              :class="
-                inView
-                  ? 'transition-transform duration-[1600ms] translate-x-0 translate-y-0 rotate-0'
-                  : 'translate-x-[35%] translate-y-[70%] rotate-[8deg]'
-              "
-            />
-          </div>
-
-          <img src="/images/home/who-are-we/window-front.webp" alt="" class="absolute inset-0 w-full h-full" />
-          <img src="/images/home/who-are-we/rings-front.webp" alt="" style="--delay: 0.25s" class="ring-pop absolute left-[68.5%] top-[67%] w-[47%]" />
+        <!-- The window + Napoleon artwork (shared component); this wrapper sets its
+             size and is what useInView watches. -->
+        <div ref="art" class="relative w-full max-w-[21rem] sm:max-w-[25.5rem] md:max-w-[36rem] lg:max-w-[37rem] mx-auto md:mx-0">
+          <NapoleonWindow :playing="inView" />
         </div>
       </div>
 
@@ -124,16 +104,18 @@ function onTabKeydown(event, index) {
           </button>
         </div>
 
-        <!-- Both panels sit in the same grid cell; the inactive one is invisible
-             but still takes up space, so the card keeps the same height on both tabs. -->
+        <!-- Both panels sit in the same grid cell; the inactive one is faded out
+             (and `invisible`, so it's skipped by screen readers and clicks) but still
+             takes up space, so the card keeps the same height on both tabs.
+             Switching tabs cross-fades them (.tab-panel / .is-hidden below). -->
         <div class="grid">
         <!-- Values -->
         <ul
           id="who-panel-values"
           role="tabpanel"
           aria-labelledby="who-tab-values"
-          class="[grid-area:1/1] space-y-4 md:space-y-4"
-          :class="activeTab === 'values' ? '' : 'invisible'"
+          class="tab-panel [grid-area:1/1] space-y-4 md:space-y-4"
+          :class="{ 'is-hidden': activeTab !== 'values' }"
         >
           <li
             v-for="(value, i) in values"
@@ -156,15 +138,16 @@ function onTabKeydown(event, index) {
           id="who-panel-dev-note"
           role="tabpanel"
           aria-labelledby="who-tab-dev-note"
-          class="[grid-area:1/1] text-sm md:text-base xl:text-lg text-bark leading-snug reveal"
-          style="--delay: 0.45s"
-          :class="activeTab === 'dev-note' ? '' : 'invisible'"
+          class="tab-panel [grid-area:1/1] text-sm md:text-base xl:text-lg text-bark leading-snug"
+          :class="{ 'is-hidden': activeTab !== 'dev-note' }"
         >
+          <div class="reveal" style="--delay: 0.45s">
           <p class="mb-4">
             Textbooks made history feel dense and forgettable. Timeline is my attempt to fix that — free for anyone
             studying, or just here for a little past time.
           </p>
           <p class="text-bark/60 pl-2">- The Dev</p>
+          </div>
         </div>
         </div>
 
@@ -198,13 +181,15 @@ function onTabKeydown(event, index) {
   animation: icon-pop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) calc(var(--delay, 0s) + 0.1s) forwards;
 }
 
-/* Decorative rings pop in with the artwork */
-.ring-pop {
-  opacity: 0;
-  transform: scale(0.6);
+/* Tab switch: the old panel fades out while the new one fades (and rises) in.
+   visibility flips at the END of a fade-out and the START of a fade-in. */
+.tab-panel {
+  transition: opacity 0.35s ease, transform 0.35s ease, visibility 0.35s;
 }
-.is-revealed .ring-pop {
-  animation: ring-pop 0.7s cubic-bezier(0.3, 1.4, 0.5, 1) var(--delay, 0s) forwards;
+.tab-panel.is-hidden {
+  opacity: 0;
+  transform: translateY(6px);
+  visibility: hidden;
 }
 
 @keyframes reveal-up {
@@ -213,21 +198,19 @@ function onTabKeydown(event, index) {
 @keyframes icon-pop {
   to { transform: none; }
 }
-@keyframes ring-pop {
-  to { opacity: 1; transform: none; }
-}
 
 @media (prefers-reduced-motion: reduce) {
   .reveal,
-  .icon-pop,
-  .ring-pop {
+  .icon-pop {
     opacity: 1;
     transform: none;
   }
   .is-revealed .reveal,
-  .is-revealed .icon-pop,
-  .is-revealed .ring-pop {
+  .is-revealed .icon-pop {
     animation: none;
+  }
+  .tab-panel {
+    transition: none;
   }
 }
 </style>

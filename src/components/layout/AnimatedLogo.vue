@@ -13,6 +13,7 @@ import { useInView } from '../../composables/useInView'
 // Replays each time it scrolls back into view; no motion with reduced-motion settings.
 defineProps({
   label: { type: String, default: 'Timeline' },
+  animated: { type: Boolean, default: true }, // false = just the finished logo
 })
 
 const root = ref(null)
@@ -38,7 +39,7 @@ onMounted(async () => {
     role="img"
     :aria-label="label"
     class="animated-logo"
-    :class="{ 'is-playing': inView && fontReady }"
+    :class="animated ? { 'is-playing': inView && fontReady } : 'is-static'"
   >
     <defs>
       <!-- Everything left of x=240 (the circle + "I" + short tail) is always visible;
@@ -180,5 +181,34 @@ onMounted(async () => {
   .is-playing .word {
     animation: none;
   }
+}
+
+/* Static mode (e.g. the login card): the finished logo, no animation */
+.is-static .slide,
+.is-static .arc,
+.is-static .bird-l,
+.is-static .bird-r,
+.is-static .diamond,
+.is-static .letter-i,
+.is-static .grow,
+.is-static .grow-text {
+  opacity: 1;
+  transform: none;
+}
+.is-static .word {
+  fill-opacity: 1;
+  stroke-width: 0;
+  stroke-dashoffset: 0;
+}
+.is-static .slide,
+.is-static .arc,
+.is-static .bird-l,
+.is-static .bird-r,
+.is-static .diamond,
+.is-static .letter-i,
+.is-static .grow,
+.is-static .grow-text,
+.is-static .word {
+  animation: none;
 }
 </style>

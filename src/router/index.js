@@ -40,9 +40,12 @@ const AdminStatisticsView = () => import('../views/admin/AdminStatisticsView.vue
 
 // Every route lives under one of two layouts. Public pages share the
 // header/footer; admin pages share the sidebar. Auth pages (login/register)
-// intentionally use PublicLayout too, but AppHeader only renders the logo
-// there — see the earlier design discussion on why.
+// are full-screen pages without either layout (see the first two routes).
 const routes = [
+  // Login / register are full-screen (their own scene, no site header/footer);
+  // the logo on the card links back home.
+  { path: '/login', name: 'login', component: LoginView },
+  { path: '/register', name: 'register', component: RegisterView },
   {
     path: '/',
     component: PublicLayout,
@@ -57,8 +60,6 @@ const routes = [
       { path: 'about', name: 'about', component: PlaceholderView, props: { title: 'About Us' } },
       { path: 'blog', name: 'blog', component: BlogView },
       { path: 'blog/:id', name: 'blog-post', component: BlogPostDetailView },
-      { path: 'login', name: 'login', component: LoginView },
-      { path: 'register', name: 'register', component: RegisterView },
       {
         path: 'profile',
         name: 'profile',

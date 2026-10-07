@@ -50,11 +50,18 @@ const columns = [
       <!-- Link columns, with the thin line + diamond under the headings -->
       <div class="relative">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-x-8 md:gap-x-0 gap-y-8">
-          <div v-for="column in columns" :key="column.title">
+          <div v-for="(column, i) in columns" :key="column.title">
             <h3 class="text-lg mb-1 md:pr-6">{{ column.title }}</h3>
-            <div class="flex items-center mb-3" aria-hidden="true">
+            <!-- Fixed height = the diamond's size on every column, so the lines all sit at
+                 the same level whether or not their column shows a diamond. -->
+            <div class="flex items-center h-2 md:h-2.5 mb-3" aria-hidden="true">
               <span class="flex-1 h-px bg-white/80"></span>
-              <span class="w-2 h-2 bg-white rotate-45 -ml-1 md:hidden"></span>
+              <!-- Diamond inside the line's flex row, so items-center keeps it exactly level.
+                   Phones: every column has one. md+: the columns' lines join up, so only the last one. -->
+              <span
+                class="flex-shrink-0 w-2 h-2 md:w-2.5 md:h-2.5 bg-white rotate-45 -ml-1"
+                :class="{ 'md:hidden': i < columns.length - 1 }"
+              ></span>
             </div>
             <ul class="space-y-1.5 text-sm text-cream/90 md:pr-6">
               <li v-for="item in column.items" :key="item.label">
@@ -64,8 +71,6 @@ const columns = [
             </ul>
           </div>
         </div>
-        <!-- One continuous diamond at the end of the line on wide screens -->
-        <span class="hidden md:block absolute right-0 top-[2.15rem] w-2.5 h-2.5 bg-white rotate-45" aria-hidden="true"></span>
       </div>
     </div>
 
