@@ -41,7 +41,8 @@ function onTabKeydown(event, index) {
   <!-- Built from separate layers (not one flat image) so each part can adapt
        to the screen: olive diagonal + dots are CSS/background, the window
        artwork is a stacked set of transparent images, the text has its own column. -->
-  <section class="relative overflow-hidden bg-white shadow-[0_-4px_10px_-6px_rgba(0,0,0,0.25),0_6px_10px_-6px_rgba(0,0,0,0.25)]">
+  <!-- id="about": "About us" links (header, footer, hero) scroll here — there's no separate About page -->
+  <section id="about" class="scroll-mt-20 relative overflow-hidden bg-white shadow-[0_-4px_10px_-6px_rgba(0,0,0,0.25),0_6px_10px_-6px_rgba(0,0,0,0.25)]">
     <!-- Dot pattern on the right (behind the olive, so dots only show on white) -->
     <img
       src="/images/home/who-are-we/dots.webp"
@@ -150,14 +151,6 @@ function onTabKeydown(event, index) {
           </div>
         </div>
         </div>
-
-        <RouterLink
-          to="/about"
-          class="self-end pt-6 inline-flex items-center gap-2 text-sm md:text-xl font-semibold text-bark hover:text-olive reveal"
-          style="--delay: 0.95s"
-        >
-          Read more <AppIcon name="arrow-right" class="w-4 h-4 md:w-6 md:h-6" />
-        </RouterLink>
       </div>
     </div>
   </section>

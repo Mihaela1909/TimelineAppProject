@@ -37,7 +37,7 @@ const { currentUser } = useAuth()
       </p>
       <div class="flex flex-wrap justify-center gap-5 mt-3">
         <RouterLink
-          to="/about"
+          to="/#about"
           class="fade-up font-button min-w-[9rem] px-8 py-3 rounded-md bg-olive text-white text-lg shadow-md hover:bg-olive/90 transition-colors"
           style="--delay: 1.2s"
         >

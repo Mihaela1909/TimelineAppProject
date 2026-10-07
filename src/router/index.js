@@ -57,7 +57,8 @@ const routes = [
       { path: 'quizzes', name: 'quizzes', component: QuizzesView },
       { path: 'quizzes/:id', name: 'quiz-taking', component: QuizTakingView },
       { path: 'event-of-the-day', name: 'event-of-the-day', component: EventOfDayView },
-      { path: 'about', name: 'about', component: PlaceholderView, props: { title: 'About Us' } },
+      // No separate About page: "About us" is the home page's Who-are-we section.
+      { path: 'about', redirect: { path: '/', hash: '#about' } },
       { path: 'blog', name: 'blog', component: BlogView },
       { path: 'blog/:id', name: 'blog-post', component: BlogPostDetailView },
       {
@@ -129,6 +130,13 @@ const router = createRouter({
   // to the content every time.
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) return savedPosition
+    // "/#about" etc.: scroll to that section. Coming from another page, wait a
+    // moment so the home page has rendered (and its images have taken space).
+    if (to.hash) {
+      // top: 80 = the sticky header's height (h-20), so the section isn't hidden under it
+      const target = { el: to.hash, top: 80, behavior: 'smooth' }
+      return from.path === to.path ? target : new Promise((resolve) => setTimeout(() => resolve(target), 350))
+    }
     const sameCourseLessons = to.name === 'lesson-view' && from.name === 'lesson-view' && to.params.id === from.params.id
     if (sameCourseLessons) return false
     return { top: 0 }

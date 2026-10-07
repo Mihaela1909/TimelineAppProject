@@ -13,7 +13,7 @@ const columns = [
       { label: 'Courses', to: '/courses' },
       { label: 'Blog', to: '/blog' },
       { label: 'Quizzes', to: '/quizzes' },
-      { label: 'About us', to: '/about' },
+      { label: 'About us', to: '/#about' },
     ],
   },
   { title: 'Support', items: [{ label: 'Contact/Feedback' }, { label: 'FAQ' }] },

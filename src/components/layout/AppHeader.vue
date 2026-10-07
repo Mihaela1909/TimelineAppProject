@@ -11,7 +11,7 @@ const navLinks = [
   { label: 'Courses', to: '/courses' },
   { label: 'Quizzes', to: '/quizzes' },
   { label: 'Event of the day', to: '/event-of-the-day' },
-  { label: 'About us', to: '/about' },
+  { label: 'About us', to: '/#about', hash: '#about' }, // a section on the home page
   { label: 'Blog', to: '/blog' },
 ]
 
@@ -46,17 +46,22 @@ async function handleLogout() {
 </script>
 
 <template>
-  <header class="bg-olive relative z-30">
+  <!-- sticky: stays at the top while you scroll (z-40 keeps it above page content) -->
+  <header class="bg-olive sticky top-0 z-40 shadow-[0_2px_8px_rgba(0,0,0,0.25)]">
     <div class="max-w-7xl mx-auto px-5 md:px-8 h-20 flex items-center justify-between gap-6">
       <AppLogo size="base" />
 
       <nav class="hidden md:flex items-center gap-8 lg:gap-10 text-white" aria-label="Main">
+        <!-- Vue Router ignores the #hash when marking links active, so "About us" would
+             light up on every visit to the home page — for hash links, check the hash ourselves. -->
         <RouterLink
           v-for="link in navLinks"
-          :key="link.to"
+          :key="link.label"
           :to="link.to"
           class="nav-link relative py-1 text-base hover:text-cream transition-colors focus:outline-none focus-visible:text-cream"
-          active-class="is-active"
+          :active-class="link.hash ? '' : 'is-active'"
+          :exact-active-class="link.hash ? '' : 'is-active'"
+          :class="{ 'is-active': link.hash && route.path === '/' && route.hash === link.hash }"
         >
           {{ link.label }}
         </RouterLink>
@@ -143,10 +148,12 @@ async function handleLogout() {
     >
       <RouterLink
         v-for="link in navLinks"
-        :key="link.to"
+        :key="link.label"
         :to="link.to"
         class="block py-3 text-lg text-white border-b border-white/10"
-        active-class="font-semibold"
+        :active-class="link.hash ? '' : 'font-semibold'"
+        :exact-active-class="link.hash ? '' : 'font-semibold'"
+        :class="{ 'font-semibold': link.hash && route.path === '/' && route.hash === link.hash }"
       >
         {{ link.label }}
       </RouterLink>
