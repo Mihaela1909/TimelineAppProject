@@ -6,20 +6,14 @@ import SectionHeading from '../ui/SectionHeading.vue'
 import CardCarousel from '../ui/CardCarousel.vue'
 import HistoryCard from '../ui/HistoryCard.vue'
 import AppIcon from '../ui/AppIcon.vue'
+import { splitTitle, lessonsText } from '../../utils/text'
 
 const SHOWN = 8
 const { courses, loading, error, fetchPopularCourses } = useCourses()
 
 onMounted(() => fetchPopularCourses(SHOWN))
 
-// Mockup style: "Ancient" in the white band, "Egypt" in the olive band.
-// One-word titles go entirely in the olive band.
-function splitTitle(title = '') {
-  const [first, ...rest] = title.trim().split(/\s+/)
-  return rest.length ? { label: first, title: rest.join(' ') } : { label: '', title: first }
-}
 
-const lessonsText = (n) => (n ? `${n} lesson${n === 1 ? '' : 's'}` : '')
 </script>
 
 <template>

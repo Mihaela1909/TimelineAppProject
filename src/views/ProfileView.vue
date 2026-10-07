@@ -4,15 +4,18 @@ import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
 import { useProfileProgress } from '../composables/useProfileProgress'
 import { useProfileImages } from '../composables/useProfileImages'
-import { getImagePreviewUrl } from '../services/mediaService'
 import AvatarUpload from '../components/ui/AvatarUpload.vue'
 import ConfirmModal from '../components/ui/ConfirmModal.vue'
 import { useToast } from '../composables/useToast'
-import AppIcon from '../components/ui/AppIcon.vue'
 import { STAFF_ROLES } from '../constants/roles'
 import { useSavedPosts } from '../composables/useSavedPosts'
 import { useBlog } from '../composables/useBlog'
 import SavedPostsTab from '../components/profile/SavedPostsTab.vue'
+import ProfileHeader from '../components/profile/ProfileHeader.vue'
+import ProfileSection from '../components/profile/ProfileSection.vue'
+import ProfileCoursesTab from '../components/profile/ProfileCoursesTab.vue'
+import QuizHistoryTab from '../components/profile/QuizHistoryTab.vue'
+import AuthField from '../components/auth/AuthField.vue'
 
 const router = useRouter()
 const { currentUser, updateName, updateEmail, updatePassword, logout, loading: authLoading, error: authError } = useAuth()
@@ -58,8 +61,7 @@ const emailForm = ref('')
 const emailPassword = ref('')
 const currentPassword = ref('')
 const newPassword = ref('')
-const nameSaved = ref(false)
-const emailSaved = ref(false)
+const profileSaved = ref(false)
 const passwordSaved = ref(false)
 const confirmingDelete = ref(false)
 // Which settings card the current authError belongs to, so it shows in the right place.
@@ -75,8 +77,23 @@ onMounted(() => {
 // the router guard and Appwrite permissions still decide what they can do.
 const canOpenAdmin = computed(() => STAFF_ROLES.includes(currentUser.value?.role))
 
-const enrolledCount = computed(() => courseProgress.value.length)
-const completedCoursesCount = computed(() => completedCourses.value.length)
+const stats = computed(() => [
+  { value: courseProgress.value.length, label: 'Enrolled Courses' },
+  { value: completedCourses.value.length, label: 'Courses Completed' },
+  { value: quizStats.value.count, label: 'Quizzes taken' },
+  { value: `${quizStats.value.avg}%`, label: 'Avg. score' },
+])
+
+const TABS = [
+  { id: 'courses', label: 'My Courses' },
+  { id: 'history', label: 'Quiz History' },
+  { id: 'saved', label: 'Saved Posts' },
+  { id: 'settings', label: 'Settings' },
+]
+
+// Appwrite asks for the password only when the email changes, so that field
+// appears only then.
+const emailChanged = computed(() => emailForm.value.trim() !== (currentUser.value?.email || ''))
 
 // kind is 'avatar' | 'header'; fileId = null cancels a pending request.
 async function submitImage(kind, fileId) {
@@ -87,23 +104,18 @@ async function submitImage(kind, fileId) {
   }
 }
 
-async function saveName() {
-  errorFor.value = 'name'
-  nameSaved.value = false
-  if (await updateName(nameForm.value)) {
-    nameSaved.value = true
-    setTimeout(() => (nameSaved.value = false), 2500)
-  }
-}
-
-async function saveEmail() {
-  errorFor.value = 'email'
-  emailSaved.value = false
-  if (await updateEmail(emailForm.value, emailPassword.value)) {
-    emailSaved.value = true
+// One "Save Changes" for name + email: only what changed is sent, name first.
+async function saveProfile() {
+  errorFor.value = 'profile'
+  profileSaved.value = false
+  const nameChanged = nameForm.value.trim() !== (currentUser.value?.name || '')
+  if (nameChanged && !(await updateName(nameForm.value))) return
+  if (emailChanged.value) {
+    if (!(await updateEmail(emailForm.value, emailPassword.value))) return
     emailPassword.value = ''
-    setTimeout(() => (emailSaved.value = false), 2500)
   }
+  profileSaved.value = true
+  setTimeout(() => (profileSaved.value = false), 2500)
 }
 
 async function savePassword() {
@@ -126,236 +138,119 @@ async function confirmDeleteAccount() {
 </script>
 
 <template>
-  <div class="max-w-2xl mx-auto px-6 py-10">
-    <div
-      class="rounded-2xl p-6 flex items-center gap-4 mb-5 bg-bark bg-cover bg-center"
-      :style="currentUser?.headerImageId ? { backgroundImage: `url(${getImagePreviewUrl(currentUser.headerImageId)})` } : {}"
-    >
-      <div class="w-14 h-14 rounded-full overflow-hidden bg-sand flex items-center justify-center flex-shrink-0 ring-2 ring-white/40">
-        <img
-          v-if="currentUser?.avatarImageId"
-          :src="getImagePreviewUrl(currentUser.avatarImageId)"
-          alt=""
-          class="w-full h-full object-cover"
-        />
-        <span v-else class="text-bark text-xl font-semibold">{{ currentUser?.name?.charAt(0)?.toUpperCase() }}</span>
-      </div>
-      <div class="drop-shadow">
-        <div class="text-lg font-semibold text-white">{{ currentUser?.name }}</div>
-        <div class="text-xs text-cream/60">
-          Learning since
-          {{ currentUser?.registration ? new Date(currentUser.registration).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '' }}
-        </div>
-      </div>
-      <RouterLink
-        v-if="canOpenAdmin"
-        to="/admin"
-        class="ml-auto flex items-center gap-2 px-4 py-2 rounded-lg font-button bg-white/15 text-white text-sm font-semibold backdrop-blur-sm hover:bg-white/25 transition-colors"
-      >
-        <AppIcon name="home" class="w-4 h-4" />
-        Admin panel
-      </RouterLink>
-    </div>
-
-    <div class="grid grid-cols-4 gap-3 mb-6">
-      <div class="bg-white rounded-lg p-4 text-center border border-olive/30">
-        <div class="text-xl font-semibold text-bark">{{ enrolledCount }}</div>
-        <div class="text-[11px] text-bark/50">Enrolled</div>
-      </div>
-      <div class="bg-white rounded-lg p-4 text-center border border-olive/30">
-        <div class="text-xl font-semibold text-bark">{{ completedCoursesCount }}</div>
-        <div class="text-[11px] text-bark/50">Completed</div>
-      </div>
-      <div class="bg-white rounded-lg p-4 text-center border border-olive/30">
-        <div class="text-xl font-semibold text-bark">{{ quizStats.count }}</div>
-        <div class="text-[11px] text-bark/50">Quizzes taken</div>
-      </div>
-      <div class="bg-white rounded-lg p-4 text-center border border-olive/30">
-        <div class="text-xl font-semibold text-olive">{{ quizStats.avg }}%</div>
-        <div class="text-[11px] text-bark/50">Avg. score</div>
-      </div>
-    </div>
-
-    <div class="flex gap-4 border-b border-black/10 mb-5 text-sm overflow-x-auto whitespace-nowrap [scrollbar-width:none]">
-      <button class="pb-2 border-b-2" :class="activeTab === 'courses' ? 'border-olive text-olive font-semibold' : 'border-transparent text-bark/50'" @click="activeTab = 'courses'">My Courses</button>
-      <button class="pb-2 border-b-2" :class="activeTab === 'history' ? 'border-olive text-olive font-semibold' : 'border-transparent text-bark/50'" @click="activeTab = 'history'">Quiz History</button>
-      <button class="pb-2 border-b-2" :class="activeTab === 'saved' ? 'border-olive text-olive font-semibold' : 'border-transparent text-bark/50'" @click="activeTab = 'saved'">Saved Posts</button>
-      <button class="pb-2 border-b-2" :class="activeTab === 'settings' ? 'border-olive text-olive font-semibold' : 'border-transparent text-bark/50'" @click="activeTab = 'settings'">Settings</button>
-    </div>
-
-    <div v-if="activeTab === 'courses'">
-      <div v-if="dataLoading" class="grid grid-cols-3 gap-3" aria-live="polite">
-        <div v-for="n in 3" :key="n" class="h-32 bg-white rounded-lg animate-pulse"></div>
-      </div>
-      <div v-else-if="dataError" class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-6 text-center text-sm">
-        <p class="mb-3">{{ dataError }}</p>
-        <button class="px-4 py-2 rounded-md border border-red-400" @click="fetchFor(currentUser?.$id)">Retry</button>
-      </div>
-      <div v-else-if="courseProgress.length === 0" class="bg-white rounded-lg p-10 text-center text-sm text-bark/60">
-        Nothing started yet.
-        <RouterLink to="/courses" class="text-olive font-medium">Browse courses →</RouterLink>
-      </div>
-      <div v-else class="space-y-6">
-        <div v-if="inProgressCourses.length">
-          <div class="text-sm font-semibold text-bark mb-3">Continue on:</div>
-          <div class="grid grid-cols-3 gap-3">
-            <RouterLink
-              v-for="entry in inProgressCourses"
-              :key="entry.course.$id"
-              :to="`/courses/${entry.course.$id}`"
-              class="bg-white rounded-lg overflow-hidden hover:shadow-md transition-shadow"
-            >
-              <div class="relative">
-                <img
-                  v-if="entry.course.coverImageId"
-                  :src="getImagePreviewUrl(entry.course.coverImageId)"
-                  :alt="entry.course.title"
-                  class="h-20 w-full object-cover"
-                />
-                <div v-else class="h-20 bg-olive-light"></div>
-                <span class="absolute top-1.5 right-1.5 bg-butter text-bark text-[9px] font-semibold px-2 py-0.5 rounded-full">In Progress</span>
-              </div>
-              <div class="p-2.5">
-                <div class="text-xs font-medium text-bark leading-tight">{{ entry.course.title }}</div>
-                <div class="text-[10px] text-bark/50 mt-1">{{ entry.completedCount }}/{{ entry.total }} lessons</div>
-              </div>
-            </RouterLink>
-          </div>
-        </div>
-
-        <div v-if="completedCourses.length">
-          <div class="text-sm font-semibold text-bark mb-3">Completed:</div>
-          <div class="grid grid-cols-3 gap-3">
-            <RouterLink
-              v-for="entry in completedCourses"
-              :key="entry.course.$id"
-              :to="`/courses/${entry.course.$id}`"
-              class="bg-white rounded-lg overflow-hidden hover:shadow-md transition-shadow"
-            >
-              <div class="relative">
-                <img
-                  v-if="entry.course.coverImageId"
-                  :src="getImagePreviewUrl(entry.course.coverImageId)"
-                  :alt="entry.course.title"
-                  class="h-20 w-full object-cover"
-                />
-                <div v-else class="h-20 bg-olive-light"></div>
-                <span class="absolute top-1.5 right-1.5 bg-olive text-white text-[9px] font-semibold px-2 py-0.5 rounded-full">✓ Completed</span>
-              </div>
-              <div class="p-2.5">
-                <div class="text-xs font-medium text-bark leading-tight">{{ entry.course.title }}</div>
-                <div class="text-[10px] text-bark/50 mt-1">{{ entry.total }}/{{ entry.total }} lessons</div>
-              </div>
-            </RouterLink>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div v-else-if="activeTab === 'history'">
-      <div v-if="dataLoading" class="space-y-2" aria-live="polite">
-        <div v-for="n in 3" :key="n" class="h-14 bg-white rounded-lg animate-pulse"></div>
-      </div>
-      <div v-else-if="dataError" class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-6 text-center text-sm">
-        <p class="mb-3">{{ dataError }}</p>
-        <button class="px-4 py-2 rounded-md border border-red-400" @click="fetchFor(currentUser?.$id)">Retry</button>
-      </div>
-      <div v-else-if="attempts.length === 0" class="bg-white rounded-lg p-10 text-center text-sm text-bark/60">
-        You haven't taken any quizzes yet.
-        <RouterLink to="/quizzes" class="text-olive font-medium">Browse quizzes →</RouterLink>
-      </div>
-      <div v-else class="space-y-2">
-        <div v-for="attempt in attempts" :key="attempt.$id" class="flex items-center gap-3 bg-white px-4 py-3 rounded-lg text-sm">
-          <div class="flex-1">
-            <div class="font-medium text-bark">{{ quizById[attempt.quizId]?.title || 'Quiz' }}</div>
-            <div class="text-xs text-bark/50">{{ new Date(attempt.$createdAt).toLocaleDateString() }}</div>
-          </div>
-          <span
-            class="text-xs px-3 py-1 rounded-full font-medium"
-            :class="attempt.score / attempt.totalQuestions >= (quizById[attempt.quizId]?.passingScore || 70) / 100 ? 'bg-olive-light text-olive' : 'bg-butter text-bark'"
-          >
-            {{ attempt.score }}/{{ attempt.totalQuestions }}
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <SavedPostsTab
-      v-else-if="activeTab === 'saved'"
-      :posts="savedPosts"
-      :loading="savedLoading || blogLoading"
-      :error="savedError || blogError"
-      :busy="savedBusy"
-      @remove="removeSaved"
-      @retry="loadSaved"
+  <div class="pb-16">
+    <ProfileHeader
+      :name="currentUser?.name || ''"
+      :avatar-image-id="currentUser?.avatarImageId"
+      :header-image-id="currentUser?.headerImageId"
+      :show-admin-link="canOpenAdmin"
     />
 
-    <div v-else-if="activeTab === 'settings'" class="space-y-4">
-      <div class="bg-white rounded-xl p-5">
-        <div class="text-xs font-semibold text-bark mb-3">Profile Picture</div>
-        <AvatarUpload
-          :live-image-id="currentUser?.avatarImageId"
-          :pending-image-id="currentUser?.pendingAvatarImageId"
-          shape="circle"
-          @submit="submitImage('avatar', $event)"
-          @withdraw="submitImage('avatar', null)"
-        />
-      </div>
-
-      <div class="bg-white rounded-xl p-5">
-        <div class="text-xs font-semibold text-bark mb-3">Profile Header</div>
-        <AvatarUpload
-          :live-image-id="currentUser?.headerImageId"
-          :pending-image-id="currentUser?.pendingHeaderImageId"
-          shape="rectangle"
-          @submit="submitImage('header', $event)"
-          @withdraw="submitImage('header', null)"
-        />
-      </div>
-
-      <div class="bg-white rounded-xl p-5">
-        <div class="text-xs font-semibold text-bark mb-3">Profile Settings</div>
-        <div v-if="authError && errorFor === 'name'" class="bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2 mb-3">{{ authError }}</div>
-        <label class="text-xs text-bark/70 block mb-1">Display name</label>
-        <input v-model="nameForm" class="w-full px-3 py-2 border border-black/10 rounded-md text-sm mb-3" />
-        <button class="text-xs px-4 py-2 rounded-md bg-olive text-white disabled:opacity-60" :disabled="authLoading" @click="saveName">
-          Save Changes
-        </button>
-        <span v-if="nameSaved" class="text-xs text-olive ml-2">✓ Saved</span>
-      </div>
-
-      <div class="bg-white rounded-xl p-5">
-        <div class="text-xs font-semibold text-bark mb-3">Email</div>
-        <div v-if="authError && errorFor === 'email'" class="bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2 mb-3">{{ authError }}</div>
-        <label class="text-xs text-bark/70 block mb-1">Email</label>
-        <input v-model="emailForm" type="email" class="w-full px-3 py-2 border border-black/10 rounded-md text-sm mb-3" />
-        <label class="text-xs text-bark/70 block mb-1">Confirm with your password</label>
-        <input v-model="emailPassword" type="password" class="w-full px-3 py-2 border border-black/10 rounded-md text-sm mb-3" />
-        <button class="text-xs px-4 py-2 rounded-md bg-olive text-white disabled:opacity-60" :disabled="authLoading || !emailPassword" @click="saveEmail">
-          Save Email
-        </button>
-        <span v-if="emailSaved" class="text-xs text-olive ml-2">✓ Saved</span>
-      </div>
-
-      <div class="bg-white rounded-xl p-5">
-        <div class="text-xs font-semibold text-bark mb-3">Change password</div>
-        <div v-if="authError && errorFor === 'password'" class="bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2 mb-3">{{ authError }}</div>
-        <label class="text-xs text-bark/70 block mb-1">Current password</label>
-        <input v-model="currentPassword" type="password" class="w-full px-3 py-2 border border-black/10 rounded-md text-sm mb-3" />
-        <label class="text-xs text-bark/70 block mb-1">New password</label>
-        <input v-model="newPassword" type="password" class="w-full px-3 py-2 border border-black/10 rounded-md text-sm mb-3" />
-        <button class="text-xs px-4 py-2 rounded-md bg-olive text-white disabled:opacity-60" :disabled="authLoading || !currentPassword || !newPassword" @click="savePassword">
-          Update Password
-        </button>
-        <span v-if="passwordSaved" class="text-xs text-olive ml-2">✓ Updated</span>
-      </div>
-
-      <div class="bg-red-50 border border-red-200 rounded-xl p-5 flex justify-between items-center">
-        <div>
-          <div class="text-xs font-semibold text-red-700">Delete account</div>
-          <div class="text-xs text-red-600/80">This signs you out and removes your personal data.</div>
+    <div class="max-w-6xl mx-auto px-5 md:px-8">
+      <!-- Stat boxes (same style as the quiz intro) -->
+      <dl class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-4xl mx-auto mt-8 mb-10 text-center">
+        <div v-for="stat in stats" :key="stat.label" class="py-3 md:py-4 px-2 rounded-xl bg-white border-2 border-olive shadow-[0_4px_8px_rgba(0,0,0,0.3)]">
+          <dd class="text-3xl md:text-4xl font-bold text-olive">{{ dataLoading ? '–' : stat.value }}</dd>
+          <dt class="text-sm md:text-lg text-olive">{{ stat.label }}</dt>
         </div>
-        <button class="text-xs px-4 py-2 rounded-md bg-red-500 text-white" @click="confirmingDelete = true">Delete</button>
+      </dl>
+
+      <!-- Tabs: olive underline on the active one -->
+      <div class="flex gap-6 md:gap-10 mb-8 overflow-x-auto whitespace-nowrap [scrollbar-width:none]" role="tablist">
+        <button
+          v-for="tab in TABS"
+          :key="tab.id"
+          type="button"
+          role="tab"
+          :aria-selected="activeTab === tab.id"
+          class="font-sans pb-1.5 border-b-2 text-lg md:text-xl transition-colors"
+          :class="activeTab === tab.id ? 'border-olive text-olive font-semibold' : 'border-transparent text-bark/70 hover:text-bark'"
+          @click="activeTab = tab.id"
+        >
+          {{ tab.label }}
+        </button>
+      </div>
+
+      <ProfileCoursesTab
+        v-if="activeTab === 'courses'"
+        :in-progress="inProgressCourses"
+        :completed="completedCourses"
+        :loading="dataLoading"
+        :error="dataError"
+        @retry="fetchFor(currentUser?.$id)"
+      />
+
+      <QuizHistoryTab
+        v-else-if="activeTab === 'history'"
+        :attempts="attempts"
+        :quiz-by-id="quizById"
+        :loading="dataLoading"
+        :error="dataError"
+        @retry="fetchFor(currentUser?.$id)"
+      />
+
+      <ProfileSection v-else-if="activeTab === 'saved'" title="Saved for later:">
+        <SavedPostsTab
+          :posts="savedPosts"
+          :loading="savedLoading || blogLoading"
+          :error="savedError || blogError"
+          :busy="savedBusy"
+          @remove="removeSaved"
+          @retry="loadSaved"
+        />
+      </ProfileSection>
+
+      <div v-else-if="activeTab === 'settings'" class="space-y-8">
+        <ProfileSection title="Profile Settings">
+          <form class="max-w-3xl" @submit.prevent="saveProfile">
+            <div v-if="authError && errorFor === 'profile'" class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2 mb-4" role="alert">{{ authError }}</div>
+            <AuthField id="profile-name" v-model="nameForm" label="Display name" autocomplete="name" />
+            <AuthField id="profile-email" v-model="emailForm" label="Email" type="email" autocomplete="email" />
+            <AuthField v-if="emailChanged" id="profile-email-password" v-model="emailPassword" label="Confirm the new email with your password" type="password" autocomplete="current-password" />
+            <div class="flex items-center justify-end gap-3">
+              <span v-if="profileSaved" class="text-sm text-leaf font-semibold">✓ Saved</span>
+              <button type="submit" class="px-6 py-2.5 rounded-md bg-olive text-white shadow-[0_4px_8px_rgba(0,0,0,0.3)] hover:bg-olive/90 disabled:opacity-60" :disabled="authLoading || (emailChanged && !emailPassword)">
+                Save Changes
+              </button>
+            </div>
+          </form>
+        </ProfileSection>
+
+        <ProfileSection title="Profile Photos">
+          <p class="text-sm text-bark/70 mb-5">New photos appear once an admin approves them.</p>
+          <div class="grid md:grid-cols-[auto_1fr] gap-8">
+            <div>
+              <div class="text-sm text-bark mb-2">Profile picture</div>
+              <AvatarUpload :live-image-id="currentUser?.avatarImageId" :pending-image-id="currentUser?.pendingAvatarImageId" shape="circle" @submit="submitImage('avatar', $event)" @withdraw="submitImage('avatar', null)" />
+            </div>
+            <div>
+              <div class="text-sm text-bark mb-2">Profile header</div>
+              <AvatarUpload :live-image-id="currentUser?.headerImageId" :pending-image-id="currentUser?.pendingHeaderImageId" shape="rectangle" @submit="submitImage('header', $event)" @withdraw="submitImage('header', null)" />
+            </div>
+          </div>
+        </ProfileSection>
+
+        <ProfileSection title="Change Password">
+          <form class="max-w-3xl" @submit.prevent="savePassword">
+            <div v-if="authError && errorFor === 'password'" class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2 mb-4" role="alert">{{ authError }}</div>
+            <AuthField id="current-password" v-model="currentPassword" label="Current password" type="password" autocomplete="current-password" />
+            <AuthField id="new-password" v-model="newPassword" label="New password" type="password" autocomplete="new-password" />
+            <div class="flex items-center justify-end gap-3">
+              <span v-if="passwordSaved" class="text-sm text-leaf font-semibold">✓ Updated</span>
+              <button type="submit" class="px-6 py-2.5 rounded-md bg-olive text-white shadow-[0_4px_8px_rgba(0,0,0,0.3)] hover:bg-olive/90 disabled:opacity-60" :disabled="authLoading || !currentPassword || !newPassword">
+                Update Password
+              </button>
+            </div>
+          </form>
+        </ProfileSection>
+
+        <div class="bg-red-50 border border-red-200 rounded-xl px-5 py-5 md:px-14 flex flex-wrap gap-4 justify-between items-center">
+          <div>
+            <div class="font-semibold text-red-700 text-lg">Delete account</div>
+            <div class="text-sm text-red-700/80">This permanently removes your data.</div>
+          </div>
+          <button type="button" class="px-6 py-2.5 rounded-md bg-red-500 text-white hover:bg-red-600" @click="confirmingDelete = true">Delete</button>
+        </div>
       </div>
     </div>
 

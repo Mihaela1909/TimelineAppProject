@@ -16,7 +16,7 @@ const emit = defineEmits(['remove', 'retry'])
 
 <template>
   <div>
-    <div v-if="loading" class="grid sm:grid-cols-2 gap-4" aria-live="polite">
+    <div v-if="loading" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8" aria-live="polite">
       <div v-for="n in 2" :key="n" class="h-56 bg-white rounded-xl animate-pulse"></div>
     </div>
 
@@ -25,12 +25,12 @@ const emit = defineEmits(['remove', 'retry'])
       <button class="px-4 py-2 rounded-md border border-red-400" @click="emit('retry')">Retry</button>
     </div>
 
-    <div v-else-if="posts.length === 0" class="bg-white rounded-lg p-10 text-center text-sm text-bark/60">
+    <div v-else-if="posts.length === 0" class="text-center text-bark/70 py-6">
       No saved posts yet. Use <strong>Save</strong> on any blog post to keep it here.
       <RouterLink to="/blog" class="text-olive font-medium">Browse the blog →</RouterLink>
     </div>
 
-    <ul v-else class="grid sm:grid-cols-2 gap-4">
+    <ul v-else class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8">
       <li v-for="post in posts" :key="post.$id" class="flex flex-col gap-1.5">
         <HistoryCard
           layout="grid"

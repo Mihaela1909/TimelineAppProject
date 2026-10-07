@@ -8,6 +8,7 @@ import CoursesHero from '../components/courses/CoursesHero.vue'
 import HistoryCard from '../components/ui/HistoryCard.vue'
 import PaginationNav from '../components/ui/PaginationNav.vue'
 import AppIcon from '../components/ui/AppIcon.vue'
+import { splitTitle, lessonsText } from '../utils/text'
 
 const PAGE_SIZE = 6
 
@@ -63,12 +64,6 @@ watch([searchTerm, activeCategory, sortBy, page], () => {
 // RESET: any change to search / filter / sort starts again from page 1.
 watch([searchTerm, activeCategory, sortBy], () => (page.value = 1))
 
-// "Ancient Egypt" → white band "Ancient", olive band "Egypt" (same as the home page cards).
-function splitTitle(title = '') {
-  const [first, ...rest] = title.trim().split(/\s+/)
-  return rest.length ? { label: first, title: rest.join(' ') } : { label: '', title: first }
-}
-const lessonsText = (n) => (n ? `${n} lesson${n === 1 ? '' : 's'}` : '')
 
 function statusBadge(courseId) {
   const status = statusById.value[courseId]

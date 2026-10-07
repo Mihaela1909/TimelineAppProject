@@ -109,6 +109,12 @@ A user's upload does NOT go live until an admin approves it.
 - "Browse more" only renders when there's at least one other published post.
 - `formatDate` / `readTimeText` live in `utils/time.js`.
 
+## Profile page
+- `/profile` → `ProfileView.vue` (state from `useAuth`, `useProfileProgress`, `useProfileImages`, `useSavedPosts`) with dumb components in `components/profile/`: `ProfileHeader` (full-width grayscale header image + bark strip, round avatar with a bark border overlapping it, name; staff get an "Admin panel" link), `ProfileSection` (white card, dots on the right, title + diamond-ended line), `ProfileCoursesTab` ("Continue on:" / "Completed:" `HistoryCard` grids), `QuizHistoryTab` ("Review performance:"), `SavedPostsTab`.
+- Stat boxes reuse the quiz-intro style. Tabs: My Courses / Quiz History / Saved Posts / Settings.
+- Settings: one "Save Changes" for name + email (only changed fields are sent; the password field appears only when the email changed), a Profile Photos card (`AvatarUpload`, approval flow unchanged), Change Password, and the delete box (signs out only; real deletion needs a server function). Inputs reuse `components/auth/AuthField.vue` (`required` prop, default true).
+- `splitTitle` / `lessonsText` for course cards live in `utils/text.js`.
+
 ## Known gaps / next priorities
 1. Users can't remove a live photo themselves (they can only replace it, or cancel a pending one). Needs an admin-side "remove" or a pending "remove" request.
 2. Rejected/replaced files stay in the bucket (orphaned). Cleanup would need bucket `Delete` for label `admin`, then `deleteImage()` on reject/replace.
