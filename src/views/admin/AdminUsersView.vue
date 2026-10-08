@@ -13,7 +13,7 @@ const props = defineProps({
   inactiveOnly: { type: Boolean, default: false },
 })
 
-const { users, loading, error, fetchAll, setRole, setActive } = useAdminUsers()
+const { users, loading, error, updating, fetchAll, setRole, setActive } = useAdminUsers()
 const { currentUser } = useAuth()
 const toast = useToast()
 
@@ -91,7 +91,7 @@ async function reactivate(user) {
       <div v-for="n in 4" :key="n" class="h-10 bg-olive-light rounded animate-pulse"></div>
     </div>
 
-    <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center text-sm">
+    <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center text-sm" role="alert">
       <p class="mb-3">{{ error }}</p>
       <button class="px-4 py-2 rounded-md border border-red-400" @click="fetchAll">Retry</button>
     </div>
@@ -147,7 +147,7 @@ async function reactivate(user) {
               <button
                 type="button"
                 class="px-2 py-1 rounded-md text-bark font-bold tracking-widest hover:bg-olive-light disabled:opacity-30"
-                :disabled="isSelf(user)"
+                :disabled="isSelf(user) || updating"
                 :title="isSelf(user) ? 'You can’t change your own role or status' : 'Actions'"
                 :aria-expanded="openMenuId === user.$id"
                 @click="toggleMenu(user)"

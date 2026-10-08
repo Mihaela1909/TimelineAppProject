@@ -11,7 +11,7 @@ import AppIcon from '../../components/ui/AppIcon.vue'
 
 const route = useRoute()
 const router = useRouter()
-const { fetchOne, save, saving, error } = useAdminLessons()
+const { fetchOne, loadingOne, loadError, save, saving, error } = useAdminLessons()
 const { fetchOne: fetchCourse } = useAdminCourses()
 const toast = useToast()
 
@@ -27,13 +27,17 @@ const form = ref({
   published: false,
 })
 
+async function loadRow() {
+  const existing = await fetchOne(route.params.lessonId)
+  if (existing) form.value = { ...existing }
+}
+
 onMounted(async () => {
   const course = await fetchCourse(route.params.id)
   if (course) courseTitle.value = course.title
 
   if (isEditing.value) {
-    const existing = await fetchOne(route.params.lessonId)
-    if (existing) form.value = { ...existing }
+    await loadRow()
   }
 })
 
@@ -70,11 +74,31 @@ async function handleSubmit() {
     <h1 class="font-voice text-3xl md:text-5xl text-bark mb-6 md:mb-8">{{ isEditing ? 'Edit Lesson' : 'New Lesson' }}</h1>
 
     <div class="bg-white rounded-2xl p-8">
-      <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3 mb-5">
+      <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3 mb-5" role="alert">
         {{ error }}
       </div>
 
-      <form @submit.prevent="handleSubmit">
+      <!-- Editing: skeleton while the row loads, Retry box if it fails -->
+
+      <div v-if="loadingOne" class="space-y-4" aria-live="polite" aria-busy="true">
+
+        <div class="h-10 bg-olive-light rounded animate-pulse"></div>
+
+        <div class="h-28 bg-olive-light rounded animate-pulse"></div>
+
+        <div class="h-10 w-1/2 bg-olive-light rounded animate-pulse"></div>
+
+      </div>
+
+      <div v-else-if="loadError" class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-6 text-center text-sm" role="alert">
+
+        <p class="mb-3">{{ loadError }}</p>
+
+        <button type="button" class="px-4 py-2 rounded-md border border-red-400" @click="loadRow">Retry</button>
+
+      </div>
+
+      <form v-else @submit.prevent="handleSubmit">
         <div class="grid md:grid-cols-[1fr_12rem] gap-6 mb-5">
           <div>
             <label for="lesson-title" class="text-base text-bark block mb-1.5">

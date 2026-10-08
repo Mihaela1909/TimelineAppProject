@@ -11,13 +11,14 @@ import { useToast } from '../../composables/useToast'
 
 const route = useRoute()
 const router = useRouter()
-const { fetchOne, save, saving, error, categories, fetchAll } = useAdminCourses()
+const { fetchOne, loadingOne, loadError, save, saving, error, categories, fetchAll } = useAdminCourses()
 const toast = useToast()
 const {
   lessons,
   loading: lessonsLoading,
   fetchForCourse,
   remove: removeLesson,
+  deleting: deletingLesson,
 } = useAdminLessons()
 
 const isEditing = computed(() => !!route.params.id)
@@ -50,12 +51,16 @@ const descriptionTooShort = computed(
   () => form.value.description.length > 0 && form.value.description.length < 100
 )
 
+async function loadRow() {
+  const existing = await fetchOne(route.params.id)
+  if (existing) form.value = { ...existing }
+}
+
 onMounted(async () => {
   fetchAll() // existing courses → the list of categories already in use
   if (isEditing.value) {
-    const existing = await fetchOne(route.params.id)
-    if (existing) form.value = { ...existing }
-    if (activeTab.value === 'lessons') fetchForCourse(route.params.id)  // ← add this line
+    await loadRow()
+    if (activeTab.value === 'lessons') fetchForCourse(route.params.id)
   }
 })
 
@@ -107,12 +112,31 @@ async function handleSubmit() {
     <div v-if="activeTab === 'details'" class="bg-white rounded-xl p-4 md:p-6">
       <div
         v-if="error"
-        class="bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2 mb-4"
-      >
+        class="bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2 mb-4" role="alert">
         {{ error }}
       </div>
 
-      <form @submit.prevent="handleSubmit">
+      <!-- Editing: skeleton while the row loads, Retry box if it fails -->
+
+      <div v-if="loadingOne" class="space-y-4" aria-live="polite" aria-busy="true">
+
+        <div class="h-10 bg-olive-light rounded animate-pulse"></div>
+
+        <div class="h-28 bg-olive-light rounded animate-pulse"></div>
+
+        <div class="h-10 w-1/2 bg-olive-light rounded animate-pulse"></div>
+
+      </div>
+
+      <div v-else-if="loadError" class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-6 text-center text-sm" role="alert">
+
+        <p class="mb-3">{{ loadError }}</p>
+
+        <button type="button" class="px-4 py-2 rounded-md border border-red-400" @click="loadRow">Retry</button>
+
+      </div>
+
+      <form v-else @submit.prevent="handleSubmit">
         <label class="text-xs text-bark/70 block mb-1">Title *</label>
         <input
           v-model="form.title"
@@ -197,7 +221,7 @@ async function handleSubmit() {
           >
             ✎
           </RouterLink>
-          <button class="text-red-500 hover:text-red-700" @click="pendingDeleteLesson = lesson">🗑</button>
+          <button class="text-red-500 hover:text-red-700 disabled:opacity-40" :disabled="deletingLesson" @click="pendingDeleteLesson = lesson">🗑</button>
         </div>
       </div>
 

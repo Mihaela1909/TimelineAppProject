@@ -26,7 +26,7 @@ async function handleDecision(request, approve) {
       <div v-for="n in 3" :key="n" class="h-8 bg-olive-light rounded animate-pulse"></div>
     </div>
 
-    <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center text-sm">
+    <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center text-sm" role="alert">
       <p class="mb-3">{{ error }}</p>
       <button class="px-4 py-2 rounded-md border border-red-400" @click="fetchAll">Retry</button>
     </div>

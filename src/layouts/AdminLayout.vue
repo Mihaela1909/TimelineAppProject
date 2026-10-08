@@ -155,8 +155,8 @@ async function handleSignOut() {
         </button>
       </div>
     </aside>
-    <div class="flex-1 bg-cream p-4 sm:p-6 md:p-8 min-w-0 min-h-[calc(100vh-4rem)] md:min-h-0">
+    <main id="main" tabindex="-1" class="flex-1 bg-cream p-4 sm:p-6 md:p-8 min-w-0 min-h-[calc(100vh-4rem)] md:min-h-0 focus:outline-none">
       <RouterView />
-    </div>
+    </main>
   </div>
 </template>

@@ -4,7 +4,8 @@ import { listAllRows, deleteAllRows } from './rowHelpers'
 
 // Row Level Security is enabled on this table, same reasoning as
 // quiz_attempts: each row belongs to exactly one person, so we grant
-// read/update/delete to that specific user at creation time.
+// read/delete to that specific user at creation time (no update: nothing
+// edits a progress row, and it shouldn't be changeable after the fact).
 
 export async function markLessonComplete({ userId, courseId, lessonId }) {
   // Avoid creating duplicate rows if the lesson is somehow marked twice
@@ -23,7 +24,6 @@ export async function markLessonComplete({ userId, courseId, lessonId }) {
     data: { userId, courseId, lessonId },
     permissions: [
       Permission.read(Role.user(userId)),
-      Permission.update(Role.user(userId)),
       Permission.delete(Role.user(userId)),
     ],
   })

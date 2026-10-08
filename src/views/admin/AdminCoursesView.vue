@@ -4,7 +4,7 @@ import { useAdminCourses } from '../../composables/useAdminCourses'
 import ConfirmModal from '../../components/ui/ConfirmModal.vue'
 import { useToast } from '../../composables/useToast'
 
-const { courses, loading, error, fetchAll, remove } = useAdminCourses()
+const { courses, loading, error, deleting, fetchAll, remove } = useAdminCourses()
 const pendingDelete = ref(null)
 const toast = useToast()
 
@@ -36,7 +36,7 @@ async function confirmDelete() {
     </div>
 
     <!-- Error state -->
-    <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center text-sm">
+    <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center text-sm" role="alert">
       <p class="mb-3">{{ error }}</p>
       <button class="px-4 py-2 rounded-md border border-red-400" @click="fetchAll">Retry</button>
     </div>
@@ -74,7 +74,7 @@ async function confirmDelete() {
               <RouterLink :to="`/admin/courses/${course.$id}/edit`" class="mr-3 text-bark/60 hover:text-bark">
                 ✎
               </RouterLink>
-              <button class="text-red-500 hover:text-red-700" @click="pendingDelete = course">🗑</button>
+              <button class="text-red-500 hover:text-red-700 disabled:opacity-40" :disabled="deleting" @click="pendingDelete = course">🗑</button>
             </td>
           </tr>
         </tbody>

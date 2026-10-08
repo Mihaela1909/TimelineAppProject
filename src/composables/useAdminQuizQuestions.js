@@ -5,7 +5,10 @@ export function useAdminQuizQuestions() {
   const questions = ref([])
   const loading = ref(false)
   const error = ref(null)
+  const loadingOne = ref(false)
+  const loadError = ref(null)
   const saving = ref(false)
+  const deleting = ref(false) // separate from saving: a delete from the list isn't a form save
   const reordering = ref(false)
 
   async function fetchForQuiz(quizId) {
@@ -21,12 +24,19 @@ export function useAdminQuizQuestions() {
     }
   }
 
+  // Edit forms: loads the row being edited, with its own loading/error so the form
+  // can show a skeleton or a Retry box instead of an empty form.
   async function fetchOne(id) {
+    loadingOne.value = true
+    loadError.value = null
     try {
       return await questionService.getQuestionById(id)
     } catch (err) {
       console.error(err)
+      loadError.value = 'Could not load this question. Please try again.'
       return null
+    } finally {
+      loadingOne.value = false
     }
   }
 
@@ -48,6 +58,8 @@ export function useAdminQuizQuestions() {
   // Returns true/false; the caller shows the toast. Deliberately doesn't set
   // `error`, which is the page's load error and would replace the whole list.
   async function remove(id) {
+    if (deleting.value) return false // CHECK: a delete is already running (double-click)
+    deleting.value = true
     try {
       await questionService.deleteQuestion(id)
       questions.value = questions.value.filter((q) => q.$id !== id)
@@ -55,6 +67,8 @@ export function useAdminQuizQuestions() {
     } catch (err) {
       console.error(err)
       return false
+    } finally {
+      deleting.value = false // RESET: always, even on failure
     }
   }
 
@@ -87,5 +101,5 @@ export function useAdminQuizQuestions() {
     }
   }
 
-  return { questions, loading, error, saving, reordering, fetchForQuiz, fetchOne, save, remove, reorder }
+  return { questions, loading, error, saving, deleting, reordering, fetchForQuiz, fetchOne, loadingOne, loadError, save, remove, reorder }
 }

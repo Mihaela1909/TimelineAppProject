@@ -10,7 +10,10 @@ export function useAdminLessons() {
   const lessons = ref([])
   const loading = ref(false)
   const error = ref(null)
+  const loadingOne = ref(false)
+  const loadError = ref(null)
   const saving = ref(false)
+  const deleting = ref(false) // separate from saving: a delete from the list isn't a form save
 
   async function fetchForCourse(courseId) {
     loading.value = true
@@ -25,12 +28,19 @@ export function useAdminLessons() {
     }
   }
 
+  // Edit forms: loads the row being edited, with its own loading/error so the form
+  // can show a skeleton or a Retry box instead of an empty form.
   async function fetchOne(id) {
+    loadingOne.value = true
+    loadError.value = null
     try {
       return await lessonService.getLessonById(id)
     } catch (err) {
       console.error(err)
+      loadError.value = 'Could not load this lesson. Please try again.'
       return null
+    } finally {
+      loadingOne.value = false
     }
   }
 
@@ -56,6 +66,8 @@ export function useAdminLessons() {
   // Returns true/false; the caller shows the toast. Deliberately doesn't set
   // `error`, which is the page's load error and would replace the whole list.
   async function remove(id) {
+    if (deleting.value) return false // CHECK: a delete is already running (double-click)
+    deleting.value = true
     try {
       await lessonService.deleteLesson(id)
       lessons.value = lessons.value.filter((l) => l.$id !== id)
@@ -63,8 +75,10 @@ export function useAdminLessons() {
     } catch (err) {
       console.error(err)
       return false
+    } finally {
+      deleting.value = false // RESET: always, even on failure
     }
   }
 
-  return { lessons, loading, error, saving, fetchForCourse, fetchOne, save, remove }
+  return { lessons, loading, error, saving, deleting, fetchForCourse, fetchOne, loadingOne, loadError, save, remove }
 }

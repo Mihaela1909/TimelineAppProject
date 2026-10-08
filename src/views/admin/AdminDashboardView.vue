@@ -28,7 +28,7 @@ const visibleActivity = computed(() => (showAll.value ? activity.value : activit
   <div>
     <h1 class="font-voice text-3xl md:text-4xl text-bark mb-8">Dashboard</h1>
 
-    <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center text-sm mb-6">
+    <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center text-sm mb-6" role="alert">
       <p class="mb-3">{{ error }}</p>
       <button class="px-4 py-2 rounded-md border border-red-400" @click="fetchAll">Retry</button>
     </div>

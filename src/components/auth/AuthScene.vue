@@ -16,7 +16,7 @@ onMounted(() => requestAnimationFrame(() => (playing.value = true)))
 </script>
 
 <template>
-  <main class="relative min-h-screen overflow-hidden bg-white flex items-center">
+  <main id="main" tabindex="-1" class="focus:outline-none relative min-h-screen overflow-hidden bg-white flex items-center">
     <!-- Background: big dots on the left, olive diagonal on the right -->
     <img src="/images/home/who-are-we/dots.webp" alt="" class="absolute left-0 top-0 h-full w-auto max-w-none -scale-x-100 opacity-90 pointer-events-none" />
     <div class="hidden xl:block absolute inset-0 bg-olive [clip-path:polygon(93%_0,100%_0,100%_100%,37.6%_100%)]" aria-hidden="true"></div>

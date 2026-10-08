@@ -10,7 +10,7 @@ import { useToast } from '../../composables/useToast'
 
 const route = useRoute()
 const router = useRouter()
-const { fetchOne, save, saving, error, categories, fetchAll } = useAdminBlogPosts()
+const { fetchOne, loadingOne, loadError, save, saving, error, categories, fetchAll } = useAdminBlogPosts()
 const toast = useToast()
 
 const isEditing = computed(() => !!route.params.id)
@@ -25,11 +25,15 @@ const form = ref({
   published: false,
 })
 
+async function loadRow() {
+  const existing = await fetchOne(route.params.id)
+  if (existing) form.value = { ...existing }
+}
+
 onMounted(async () => {
   fetchAll() // existing posts → the list of categories already in use
   if (isEditing.value) {
-    const existing = await fetchOne(route.params.id)
-    if (existing) form.value = { ...existing }
+    await loadRow()
   }
 })
 
@@ -56,11 +60,31 @@ async function handleSubmit() {
     <h1 class="font-voice text-3xl text-bark mb-4">{{ isEditing ? 'Edit Blog Post' : 'New Blog Post' }}</h1>
 
     <div class="bg-white rounded-xl p-4 md:p-6">
-      <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2 mb-4">
+      <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2 mb-4" role="alert">
         {{ error }}
       </div>
 
-      <form @submit.prevent="handleSubmit">
+      <!-- Editing: skeleton while the row loads, Retry box if it fails -->
+
+      <div v-if="loadingOne" class="space-y-4" aria-live="polite" aria-busy="true">
+
+        <div class="h-10 bg-olive-light rounded animate-pulse"></div>
+
+        <div class="h-28 bg-olive-light rounded animate-pulse"></div>
+
+        <div class="h-10 w-1/2 bg-olive-light rounded animate-pulse"></div>
+
+      </div>
+
+      <div v-else-if="loadError" class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-6 text-center text-sm" role="alert">
+
+        <p class="mb-3">{{ loadError }}</p>
+
+        <button type="button" class="px-4 py-2 rounded-md border border-red-400" @click="loadRow">Retry</button>
+
+      </div>
+
+      <form v-else @submit.prevent="handleSubmit">
         <label class="text-xs text-bark/70 block mb-1">Title *</label>
         <input
           v-model="form.title"

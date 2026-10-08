@@ -13,7 +13,10 @@ export function useAdminCourses() {
   const courses = ref([])
   const loading = ref(false)
   const error = ref(null)
+  const loadingOne = ref(false)
+  const loadError = ref(null)
   const saving = ref(false)
+  const deleting = ref(false) // separate from saving: a delete from the list isn't a form save
 
   async function fetchAll() {
     loading.value = true
@@ -28,17 +31,19 @@ export function useAdminCourses() {
     }
   }
 
+  // Edit forms: loads the row being edited, with its own loading/error so the form
+  // can show a skeleton or a Retry box instead of an empty form.
   async function fetchOne(id) {
-    loading.value = true
-    error.value = null
+    loadingOne.value = true
+    loadError.value = null
     try {
       return await courseService.getCourseById(id)
     } catch (err) {
-      error.value = 'Could not load this course.'
       console.error(err)
+      loadError.value = 'Could not load this course. Please try again.'
       return null
     } finally {
-      loading.value = false
+      loadingOne.value = false
     }
   }
 
@@ -66,6 +71,8 @@ export function useAdminCourses() {
   // Returns true/false; the caller shows the toast. Deliberately doesn't set
   // `error`, which is the page's load error and would replace the whole list.
   async function remove(id) {
+    if (deleting.value) return false // CHECK: a delete is already running (double-click)
+    deleting.value = true
     try {
       await courseService.deleteCourse(id)
       courses.value = courses.value.filter((c) => c.$id !== id)
@@ -73,11 +80,13 @@ export function useAdminCourses() {
     } catch (err) {
       console.error(err)
       return false
+    } finally {
+      deleting.value = false // RESET: always, even on failure
     }
   }
 
   // Every category used by an existing course (CategoryPicker dedupes and sorts).
   const categories = computed(() => courses.value.map((c) => c.category))
 
-  return { courses, categories, loading, error, saving, fetchAll, fetchOne, save, remove }
+  return { courses, categories, loading, error, saving, deleting, fetchAll, fetchOne, loadingOne, loadError, save, remove }
 }

@@ -5,7 +5,7 @@ import { useAdminCourses } from '../../composables/useAdminCourses'
 import ConfirmModal from '../../components/ui/ConfirmModal.vue'
 import { useToast } from '../../composables/useToast'
 
-const { quizzes, loading, error, fetchAll, remove } = useAdminQuizzes()
+const { quizzes, loading, error, deleting, fetchAll, remove } = useAdminQuizzes()
 const { courses, fetchAll: fetchCourses } = useAdminCourses()
 const pendingDelete = ref(null)
 const toast = useToast()
@@ -48,7 +48,7 @@ async function confirmDelete() {
       <div v-for="n in 3" :key="n" class="h-8 bg-olive-light rounded animate-pulse"></div>
     </div>
 
-    <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center text-sm">
+    <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center text-sm" role="alert">
       <p class="mb-3">{{ error }}</p>
       <button class="px-4 py-2 rounded-md border border-red-400" @click="fetchAll">Retry</button>
     </div>
@@ -84,7 +84,7 @@ async function confirmDelete() {
               <RouterLink :to="`/admin/quizzes/${quiz.$id}/edit`" class="mr-3 text-bark/60 hover:text-bark">
                 ✎
               </RouterLink>
-              <button class="text-red-500 hover:text-red-700" @click="pendingDelete = quiz">🗑</button>
+              <button class="text-red-500 hover:text-red-700 disabled:opacity-40" :disabled="deleting" @click="pendingDelete = quiz">🗑</button>
             </td>
           </tr>
         </tbody>

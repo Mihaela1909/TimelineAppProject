@@ -41,7 +41,7 @@ const learnerMax = computed(() => Math.max(1, ...(stats.value?.courses.map((c) =
       </button>
     </div>
 
-    <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center text-sm">
+    <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center text-sm" role="alert">
       <p class="mb-3">{{ error }}</p>
       <button class="px-4 py-2 rounded-md border border-red-400" @click="fetchAll">Retry</button>
     </div>

@@ -53,7 +53,7 @@ A user's upload does NOT go live until an admin approves it.
 ## Listing & deleting rows
 - Appwrite `listRows` returns only 25 rows by default. Any "get all" read must use `listAllRows()` from `services/rowHelpers.js` (cursor pagination). Only use raw `listRows` with an explicit `Query.limit`.
 - Deletes cascade in the services: `deleteCourse` → its lessons (+ their progress), quizzes (+ questions, attempts), remaining progress; `deleteQuiz` → questions + attempts; `deleteLesson` → its progress. Children are deleted first, so a failure leaves the parent in place to retry.
-- Cascades need table-level `Delete` for label `admin` on lessons, quizzes, quiz_questions, quiz_attempts, progress.
+- Cascades need table-level `Delete` for labels `admin` AND `editor` on lessons, quizzes, quiz_questions, quiz_attempts, progress (editors can delete courses/quizzes too).
 
 ## Categories
 - Course and blog post categories are plain strings on each row. There's no categories table, so a new category exists once a row is saved with it.
@@ -81,7 +81,7 @@ A user's upload does NOT go live until an admin approves it.
 ## Course + lesson pages
 - `/courses/:id` → `CourseDetailView.vue`; `/courses/:id/lessons/:lessonId` → `LessonView.vue`. Both use `components/courses/CourseBanner.vue` (header image, falling back to cover, grayscale + umber fade).
 - Overview: the main button is "Start course" / "Continue · Lesson N" / "Review course". Lesson rows are done (parchment + ✓) / current = first not-done (ochre) / upcoming (white). The course quiz (from `useCourseDetail().quiz`) unlocks once all lessons are done; the lock is UX only, the quiz page itself stays public.
-- Lesson page: the "Lesson N of M" bar shows position in the course; Mark as Complete via `useCourseProgress`. "Undo" on the Completed bar calls `unmarkComplete` → `progressService.unmarkLessonComplete` (deletes the user's own progress row; rows grant delete to their owner). Requires **Row Security ON** for `progress`, otherwise Appwrite ignores the row permissions and returns 401. Never give `users` table-level Delete. Router `scrollBehavior` keeps the scroll position when moving between lessons of the same course.
+- Lesson page: the "Lesson N of M" bar shows position in the course; Mark as Complete via `useCourseProgress`. "Undo" on the Completed bar calls `unmarkComplete` → `progressService.unmarkLessonComplete` (deletes the user's own progress row; rows grant delete to their owner). Requires **Row Security ON** for `progress`, otherwise Appwrite ignores the row permissions and returns 401. Never give `users` table-level Delete. `progress` and `quiz_attempts` rows grant their owner Read + Delete only (no Update), so users can't edit their own scores/progress via the API; never give `users` table-level Update on them either. Router `scrollBehavior` keeps the scroll position when moving between lessons of the same course.
 
 ## Quizzes page
 - `/quizzes` → `QuizzesView.vue` + `components/quizzes/QuizzesHero.vue` (Thinker + "Eureka!", Tesla + "Hmmm..", fitted against the 1459×540 mockup like CoursesHero; background `bg-bottom`; figures rise, then bubbles pop) + `components/quizzes/QuizCard.vue`.
@@ -115,6 +115,12 @@ A user's upload does NOT go live until an admin approves it.
 - Stat boxes reuse the quiz-intro style. Tabs: My Courses / Quiz History / Saved Posts / Settings.
 - Settings: one "Save Changes" for name + email (only changed fields are sent; the password field appears only when the email changed), a Profile Photos card (`AvatarUpload`, approval flow unchanged), Change Password, and the delete box (signs out only; real deletion needs a server function). Inputs reuse `components/auth/AuthField.vue` (`required` prop, default true).
 - `splitTitle` / `lessonsText` for course cards live in `utils/text.js`.
+
+## Accessibility & UI states
+- `App.vue` has a "Skip to main content" link (visible on first Tab) → `<main id="main">` in `PublicLayout`, `AdminLayout` and `AuthScene`.
+- `ToastContainer` is a `role="status"` live region, so toasts are announced. Error boxes use `role="alert"`, skeletons `aria-live="polite"`.
+- `ConfirmModal` is an `alertdialog`: focus goes to Cancel on open, Tab is trapped, Escape / backdrop click cancel, focus returns on close.
+- Admin edit forms: `fetchOne` in the admin composables has its own `loadingOne` / `loadError`, so the form shows a skeleton or a Retry box instead of an empty form. Deletes use `deleting`, user changes `updating` (double-click guards).
 
 ## Known gaps / next priorities
 1. Users can't remove a live photo themselves (they can only replace it, or cancel a pending one). Needs an admin-side "remove" or a pending "remove" request.

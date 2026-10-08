@@ -11,7 +11,10 @@ export function useAdminBlogPosts() {
   const posts = ref([])
   const loading = ref(false)
   const error = ref(null)
+  const loadingOne = ref(false)
+  const loadError = ref(null)
   const saving = ref(false)
+  const deleting = ref(false) // separate from saving: a delete from the list isn't a form save
 
   async function fetchAll() {
     loading.value = true
@@ -26,12 +29,19 @@ export function useAdminBlogPosts() {
     }
   }
 
+  // Edit forms: loads the row being edited, with its own loading/error so the form
+  // can show a skeleton or a Retry box instead of an empty form.
   async function fetchOne(id) {
+    loadingOne.value = true
+    loadError.value = null
     try {
       return await blogPostService.getBlogPostById(id)
     } catch (err) {
       console.error(err)
+      loadError.value = 'Could not load this blog post. Please try again.'
       return null
+    } finally {
+      loadingOne.value = false
     }
   }
 
@@ -56,6 +66,8 @@ export function useAdminBlogPosts() {
   // Returns true/false; the caller shows the toast. Deliberately doesn't set
   // `error`, which is the page's load error and would replace the whole list.
   async function remove(id) {
+    if (deleting.value) return false // CHECK: a delete is already running (double-click)
+    deleting.value = true
     try {
       await blogPostService.deleteBlogPost(id)
       posts.value = posts.value.filter((p) => p.$id !== id)
@@ -63,6 +75,8 @@ export function useAdminBlogPosts() {
     } catch (err) {
       console.error(err)
       return false
+    } finally {
+      deleting.value = false // RESET: always, even on failure
     }
   }
 
@@ -70,5 +84,5 @@ export function useAdminBlogPosts() {
   // them yet). CategoryPicker dedupes and sorts.
   const categories = computed(() => [...Object.keys(CATEGORY_STYLES), ...posts.value.map((p) => p.category)])
 
-  return { posts, categories, loading, error, saving, fetchAll, fetchOne, save, remove }
+  return { posts, categories, loading, error, saving, deleting, fetchAll, fetchOne, loadingOne, loadError, save, remove }
 }

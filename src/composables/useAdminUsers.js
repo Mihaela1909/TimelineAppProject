@@ -8,6 +8,7 @@ export function useAdminUsers() {
   const users = ref([])
   const loading = ref(false)
   const error = ref(null)
+  const updating = ref(false)
 
   async function fetchAll() {
     loading.value = true
@@ -25,6 +26,8 @@ export function useAdminUsers() {
   // Shared by role changes and (de)activation — updates Appwrite, then
   // patches the local row so the table updates without a refetch.
   async function update(user, data) {
+    if (updating.value) return false // CHECK: a change is already running (double-click)
+    updating.value = true
     try {
       const updated = await profileService.updateProfile(user.$id, data)
       users.value = users.value.map((u) => (u.$id === user.$id ? updated : u))
@@ -32,11 +35,13 @@ export function useAdminUsers() {
     } catch (err) {
       console.error(err)
       return false
+    } finally {
+      updating.value = false // RESET: always, even on failure
     }
   }
 
   const setRole = (user, role) => update(user, { role })
   const setActive = (user, active) => update(user, { active })
 
-  return { users, loading, error, fetchAll, setRole, setActive }
+  return { users, loading, error, updating, fetchAll, setRole, setActive }
 }

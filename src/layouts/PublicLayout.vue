@@ -5,7 +5,7 @@ import AppFooter from '../components/layout/AppFooter.vue'
 
 <template>
   <AppHeader />
-  <main>
+  <main id="main" tabindex="-1" class="focus:outline-none">
     <RouterView />
   </main>
   <AppFooter />
