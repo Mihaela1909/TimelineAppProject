@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
 import { useProfileProgress } from '../composables/useProfileProgress'
 import { useProfileImages } from '../composables/useProfileImages'
-import AvatarUpload from '../components/ui/AvatarUpload.vue'
 import ConfirmModal from '../components/ui/ConfirmModal.vue'
 import { useToast } from '../composables/useToast'
 import { STAFF_ROLES } from '../constants/roles'
@@ -16,6 +15,9 @@ import ProfileSection from '../components/profile/ProfileSection.vue'
 import ProfileCoursesTab from '../components/profile/ProfileCoursesTab.vue'
 import QuizHistoryTab from '../components/profile/QuizHistoryTab.vue'
 import AuthField from '../components/auth/AuthField.vue'
+import StatBoxes from '../components/ui/StatBoxes.vue'
+import ProfileTabs from '../components/profile/ProfileTabs.vue'
+import ProfilePhotosCard from '../components/profile/ProfilePhotosCard.vue'
 
 const router = useRouter()
 const { currentUser, updateName, updateEmail, updatePassword, logout, loading: authLoading, error: authError } = useAuth()
@@ -77,12 +79,16 @@ onMounted(() => {
 // the router guard and Appwrite permissions still decide what they can do.
 const canOpenAdmin = computed(() => STAFF_ROLES.includes(currentUser.value?.role))
 
-const stats = computed(() => [
-  { value: courseProgress.value.length, label: 'Enrolled Courses' },
-  { value: completedCourses.value.length, label: 'Courses Completed' },
-  { value: quizStats.value.count, label: 'Quizzes taken' },
-  { value: `${quizStats.value.avg}%`, label: 'Avg. score' },
-])
+// '–' while loading, so the boxes don't flash 0 first
+const stats = computed(() => {
+  const value = (v) => (dataLoading.value ? '–' : v)
+  return [
+    { value: value(courseProgress.value.length), label: 'Enrolled Courses' },
+    { value: value(completedCourses.value.length), label: 'Courses Completed' },
+    { value: value(quizStats.value.count), label: 'Quizzes taken' },
+    { value: value(`${quizStats.value.avg}%`), label: 'Avg. score' },
+  ]
+})
 
 const TABS = [
   { id: 'courses', label: 'My Courses' },
@@ -148,28 +154,9 @@ async function confirmDeleteAccount() {
 
     <div class="max-w-6xl mx-auto px-5 md:px-8">
       <!-- Stat boxes (same style as the quiz intro) -->
-      <dl class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-4xl mx-auto mt-8 mb-10 text-center">
-        <div v-for="stat in stats" :key="stat.label" class="py-3 md:py-4 px-2 rounded-xl bg-white border-2 border-olive shadow-[0_4px_8px_rgba(0,0,0,0.3)]">
-          <dd class="text-3xl md:text-4xl font-bold text-olive">{{ dataLoading ? '–' : stat.value }}</dd>
-          <dt class="text-sm md:text-lg text-olive">{{ stat.label }}</dt>
-        </div>
-      </dl>
+      <StatBoxes class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-4xl mx-auto mt-8 mb-10" :stats="stats" />
 
-      <!-- Tabs: olive underline on the active one -->
-      <div class="flex gap-6 md:gap-10 mb-8 overflow-x-auto whitespace-nowrap [scrollbar-width:none]" role="tablist">
-        <button
-          v-for="tab in TABS"
-          :key="tab.id"
-          type="button"
-          role="tab"
-          :aria-selected="activeTab === tab.id"
-          class="font-sans pb-1.5 border-b-2 text-lg md:text-xl transition-colors"
-          :class="activeTab === tab.id ? 'border-olive text-olive font-semibold' : 'border-transparent text-bark/70 hover:text-bark'"
-          @click="activeTab = tab.id"
-        >
-          {{ tab.label }}
-        </button>
-      </div>
+      <ProfileTabs v-model="activeTab" :tabs="TABS" />
 
       <ProfileCoursesTab
         v-if="activeTab === 'courses'"
@@ -216,19 +203,7 @@ async function confirmDeleteAccount() {
           </form>
         </ProfileSection>
 
-        <ProfileSection title="Profile Photos">
-          <p class="text-sm text-bark/70 mb-5">New photos appear once an admin approves them.</p>
-          <div class="grid md:grid-cols-[auto_1fr] gap-8">
-            <div>
-              <div class="text-sm text-bark mb-2">Profile picture</div>
-              <AvatarUpload :live-image-id="currentUser?.avatarImageId" :pending-image-id="currentUser?.pendingAvatarImageId" shape="circle" @submit="submitImage('avatar', $event)" @withdraw="submitImage('avatar', null)" />
-            </div>
-            <div>
-              <div class="text-sm text-bark mb-2">Profile header</div>
-              <AvatarUpload :live-image-id="currentUser?.headerImageId" :pending-image-id="currentUser?.pendingHeaderImageId" shape="rectangle" @submit="submitImage('header', $event)" @withdraw="submitImage('header', null)" />
-            </div>
-          </div>
-        </ProfileSection>
+        <ProfilePhotosCard v-if="currentUser" :user="currentUser" @submit="submitImage" />
 
         <ProfileSection title="Change Password">
           <form class="max-w-3xl" @submit.prevent="savePassword">

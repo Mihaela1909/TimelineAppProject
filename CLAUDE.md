@@ -111,10 +111,14 @@ A user's upload does NOT go live until an admin approves it.
 - `formatDate` / `readTimeText` live in `utils/time.js`.
 
 ## Profile page
-- `/profile` → `ProfileView.vue` (state from `useAuth`, `useProfileProgress`, `useProfileImages`, `useSavedPosts`) with dumb components in `components/profile/`: `ProfileHeader` (full-width grayscale header image + bark strip, round avatar with a bark border overlapping it, name; staff get an "Admin panel" link), `ProfileSection` (white card, dots on the right, title + diamond-ended line), `ProfileCoursesTab` ("Continue on:" / "Completed:" `HistoryCard` grids), `QuizHistoryTab` ("Review performance:"), `SavedPostsTab`.
-- Stat boxes reuse the quiz-intro style. Tabs: My Courses / Quiz History / Saved Posts / Settings.
+- `/profile` → `ProfileView.vue` (state from `useAuth`, `useProfileProgress`, `useProfileImages`, `useSavedPosts`) with dumb components in `components/profile/`: `ProfileHeader` (full-width grayscale header image + bark strip, round avatar with a bark border overlapping it, name; staff get an "Admin panel" link), `ProfileSection` (white card, dots on the right, title + diamond-ended line), `ProfileCoursesTab` ("Continue on:" / "Completed:" `HistoryCard` grids), `QuizHistoryTab` ("Review performance:"), `SavedPostsTab`, `ProfileTabs` (v-model tab bar), `ProfilePhotosCard`.
+- Stat boxes: shared `components/ui/StatBoxes.vue` (also used by `QuizIntro`); the parent's class sets the layout. Tabs: My Courses / Quiz History / Saved Posts / Settings.
 - Settings: one "Save Changes" for name + email (only changed fields are sent; the password field appears only when the email changed), a Profile Photos card (`AvatarUpload`, approval flow unchanged), Change Password, and the delete box (signs out only; real deletion needs a server function). Inputs reuse `components/auth/AuthField.vue` (`required` prop, default true).
 - `splitTitle` / `lessonsText` for course cards live in `utils/text.js`.
+
+## 404 page
+- `NotFoundView.vue` (lazy): unknown URLs AND routes the guard blocks for the user's role (so the admin area isn't advertised). Dot waves, "Lost in time", Back to home / Browse courses.
+- Quiz editor's question list (drag + keyboard reorder) is `components/admin/QuizQuestionList.vue`; it emits `move(from, to)` / `delete(question)`.
 
 ## Accessibility & UI states
 - `App.vue` has a "Skip to main content" link (visible on first Tab) → `<main id="main">` in `PublicLayout`, `AdminLayout` and `AuthScene`.

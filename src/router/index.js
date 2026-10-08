@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import PublicLayout from '../layouts/PublicLayout.vue'
 import HomeView from '../views/HomeView.vue'
-import PlaceholderView from '../views/PlaceholderView.vue'
 import { ROLES, STAFF_ROLES } from '../constants/roles'
 import { useAuth } from '../composables/useAuth'
 
@@ -37,6 +36,7 @@ const AdminImageApprovalsView = () => import('../views/admin/AdminImageApprovals
 const AdminDashboardView = () => import('../views/admin/AdminDashboardView.vue')
 const AdminUsersView = () => import('../views/admin/AdminUsersView.vue')
 const AdminStatisticsView = () => import('../views/admin/AdminStatisticsView.vue')
+const NotFoundView = () => import('../views/NotFoundView.vue')
 
 // Every route lives under one of two layouts. Public pages share the
 // header/footer; admin pages share the sidebar. Auth pages (login/register)
@@ -118,7 +118,7 @@ const routes = [
   {
     path: '/:pathMatch(.*)*',
     component: PublicLayout,
-    children: [{ path: '', name: 'not-found', component: PlaceholderView, props: { title: 'Page not found' } }],
+    children: [{ path: '', name: 'not-found', component: NotFoundView }],
   },
 ]
 

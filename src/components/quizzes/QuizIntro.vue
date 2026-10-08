@@ -1,4 +1,6 @@
 <script setup>
+import StatBoxes from '../ui/StatBoxes.vue'
+
 // Quiz start screen (mockup): status pill, title, description, 3 stat boxes,
 // Start/Retake button, then either "Your history with this quiz" or the
 // linked course's progress. Dumb component — the page passes everything in.
@@ -35,16 +37,15 @@ const TONES = { leaf: 'bg-leaf', ochre: 'bg-ochre', wine: 'bg-wine', taupe: 'bg-
     <div v-else class="mb-8"></div>
 
     <!-- Stat boxes -->
-    <dl class="flex justify-center gap-4 md:gap-8 mb-10">
-      <div v-for="stat in [
+    <StatBoxes
+      class="flex justify-center gap-4 md:gap-8 mb-10"
+      item-class="w-24 md:w-36"
+      :stats="[
         { value: questionCount, label: questionCount === 1 ? 'Question' : 'Questions' },
         { value: `~${minutes} min`, label: 'Est. time' },
         { value: `${passingScore}%`, label: 'To pass' },
-      ]" :key="stat.label" class="w-24 md:w-36 py-3 md:py-4 rounded-xl bg-white border-2 border-olive shadow-[0_4px_8px_rgba(0,0,0,0.3)]">
-        <dd class="text-2xl md:text-4xl font-bold text-olive">{{ stat.value }}</dd>
-        <dt class="text-sm md:text-lg text-olive">{{ stat.label }}</dt>
-      </div>
-    </dl>
+      ]"
+    />
 
     <button
       type="button"
