@@ -19,7 +19,7 @@ A user's upload does NOT go live until an admin approves it.
 - **Pending** IDs: `profile_settings.pendingAvatarImageId` / `pendingHeaderImageId`. Each user can read/update their own row.
 - **Live** IDs: `profiles.avatarImageId` / `profiles.headerImageId`. Users can read but NOT update `profiles` (it also holds `role`).
 - Why split across tables: Appwrite permissions are per-row, not per-column. If the live ID sat in a user-writable row, anyone could set it via the API and skip approval. Never move live image IDs into `profile_settings`.
-- Flow: `ProfileView` → `submitPendingImage(userId, 'avatar'|'header', fileId)` (null = cancel). Admin page `/admin/image-approvals` (`AdminImageApprovalsView.vue`, admin role only) → `approvePendingImage` copies pending → `profiles` via `profileService.setProfileImage`, then clears pending; `rejectPendingImage` just clears it.
+- Flow: `ProfileView` → `submitPendingImage(userId, 'avatar'|'header', fileId)` (null = cancel). Removing a photo is also a request: the pending value is `REMOVE_IMAGE` (`constants/images.js`); approving it sets the live ID to null. `AvatarUpload` shows "Remove photo" only when there's a live photo and no open request, and the approvals page shows a "Remove photo" box instead of a preview. Admin page `/admin/image-approvals` (`AdminImageApprovalsView.vue`, admin role only) → `approvePendingImage` copies pending → `profiles` via `profileService.setProfileImage`, then clears pending; `rejectPendingImage` just clears it.
 - `useAuth().currentUser` exposes `avatarImageId`, `headerImageId`, `pendingAvatarImageId`, `pendingHeaderImageId`.
 
 ### Required Appwrite console setup
@@ -81,7 +81,7 @@ A user's upload does NOT go live until an admin approves it.
 ## Course + lesson pages
 - `/courses/:id` → `CourseDetailView.vue`; `/courses/:id/lessons/:lessonId` → `LessonView.vue`. Both use `components/courses/CourseBanner.vue` (header image, falling back to cover, grayscale + umber fade).
 - Overview: the main button is "Start course" / "Continue · Lesson N" / "Review course". Lesson rows are done (parchment + ✓) / current = first not-done (ochre) / upcoming (white). The course quiz (from `useCourseDetail().quiz`) unlocks once all lessons are done; the lock is UX only, the quiz page itself stays public.
-- Lesson page: the "Lesson N of M" bar shows position in the course; Mark as Complete via `useCourseProgress`. "Undo" on the Completed bar calls `unmarkComplete` → `progressService.unmarkLessonComplete` (deletes the user's own progress row; rows grant delete to their owner). Requires **Row Security ON** for `progress`, otherwise Appwrite ignores the row permissions and returns 401. Never give `users` table-level Delete. `progress` and `quiz_attempts` rows grant their owner Read + Delete only (no Update), so users can't edit their own scores/progress via the API; never give `users` table-level Update on them either. Router `scrollBehavior` keeps the scroll position when moving between lessons of the same course.
+- Lesson page: the "Lesson N of M" bar shows position in the course; Mark as Complete via `useCourseProgress`. "Undo" on the Completed bar calls `unmarkComplete` → `progressService.unmarkLessonComplete` (deletes the user's own progress row; rows grant delete to their owner). Requires **Row Security ON** for `progress`, otherwise Appwrite ignores the row permissions and returns 401. Never give `users` table-level Delete. `progress` and `quiz_attempts` rows grant their owner Read + Delete only (no Update), so users can't edit their own scores/progress via the API; never give `users` table-level Update on them either. Moving to another lesson scrolls to the top (normal `scrollBehavior`). `components/courses/LessonSelect.vue` (native `<select>`, ✓ on done lessons) next to the "Lesson N of M" bar jumps to any lesson. Lesson content uses the shared `.reading-content` typography (see Blog pages).
 
 ## Quizzes page
 - `/quizzes` → `QuizzesView.vue` + `components/quizzes/QuizzesHero.vue` (Thinker + "Eureka!", Tesla + "Hmmm..", fitted against the 1459×540 mockup like CoursesHero; background `bg-bottom`; figures rise, then bubbles pop) + `components/quizzes/QuizCard.vue`.
@@ -105,7 +105,7 @@ A user's upload does NOT go live until an admin approves it.
 
 ## Blog pages
 - `/blog` → `BlogView.vue` + `components/blog/BlogHero.vue` (Fitzgerald + Woolf, Camus + Kafka, fitted against the 1408×520 mockup like the other heroes; background `public/images/blog/hero-bg.webp`, unfiltered since its brightness already matches the mockup). 2×2 `HistoryCard` grid (`date` prop: date left, read time right), 4 per page. Sort: Newest / Oldest / A–Z (no "Popular": no view counts).
-- `/blog/:id` → `BlogPostDetailView.vue`: grayscale cover banner, dot waves, category pill, intro box (date / read time), diamond divider, content (serif h2/h3 via scoped `:deep` on `.post-content`), Share, then a "Browse more" carousel (same category first).
+- `/blog/:id` → `BlogPostDetailView.vue`: grayscale cover banner, dot waves, category pill, intro box (date / read time), diamond divider, content (`.reading-content` in `style.css`: Amethysta h2/h3, roomier paragraphs; shared with lessons), Share, then a "Browse more" carousel (same category first).
 - Saved posts: `saved_posts` table (`userId`, `postId`, both String required), env `VITE_APPWRITE_SAVED_POSTS_TABLE_ID`. **Row Security ON**, table-level Create → Users only; each row grants Read + Delete to its owner (set in `savedPostService.savePost`). `useSavedPosts` is module-scope state shared by the post page's Save/Saved button and the profile's "Saved Posts" tab (`components/profile/SavedPostsTab.vue`). Guests clicking Save go to login and come back.
 - "Browse more" only renders when there's at least one other published post.
 - `formatDate` / `readTimeText` live in `utils/time.js`.
@@ -127,6 +127,5 @@ A user's upload does NOT go live until an admin approves it.
 - Admin edit forms: `fetchOne` in the admin composables has its own `loadingOne` / `loadError`, so the form shows a skeleton or a Retry box instead of an empty form. Deletes use `deleting`, user changes `updating` (double-click guards).
 
 ## Known gaps / next priorities
-1. Users can't remove a live photo themselves (they can only replace it, or cancel a pending one). Needs an admin-side "remove" or a pending "remove" request.
-2. Rejected/replaced files stay in the bucket (orphaned). Cleanup would need bucket `Delete` for label `admin`, then `deleteImage()` on reject/replace.
-3. Role/label sync and hard user blocking need an Appwrite Function (server SDK + API key).
+1. Rejected/replaced files stay in the bucket (orphaned). Cleanup would need bucket `Delete` for label `admin`, then `deleteImage()` on reject/replace.
+2. Role/label sync and hard user blocking need an Appwrite Function (server SDK + API key).

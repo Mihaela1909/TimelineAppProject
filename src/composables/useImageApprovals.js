@@ -5,6 +5,7 @@ import {
   rejectPendingImage,
 } from '../services/profileSettingsService'
 import { listProfiles } from '../services/profileService'
+import { REMOVE_IMAGE } from '../constants/images'
 
 // APPLICATION LOGIC for the admin Image Approvals page.
 export function useImageApprovals() {
@@ -27,6 +28,7 @@ export function useImageApprovals() {
           row,
           kind,
           fileId,
+          removal: fileId === REMOVE_IMAGE, // "remove my photo" rather than a new one
           userName: nameByUserId[row.userId] || null,
         }))
     )

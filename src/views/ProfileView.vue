@@ -15,6 +15,7 @@ import ProfileSection from '../components/profile/ProfileSection.vue'
 import ProfileCoursesTab from '../components/profile/ProfileCoursesTab.vue'
 import QuizHistoryTab from '../components/profile/QuizHistoryTab.vue'
 import AuthField from '../components/auth/AuthField.vue'
+import { REMOVE_IMAGE } from '../constants/images'
 import StatBoxes from '../components/ui/StatBoxes.vue'
 import ProfileTabs from '../components/profile/ProfileTabs.vue'
 import ProfilePhotosCard from '../components/profile/ProfilePhotosCard.vue'
@@ -101,10 +102,15 @@ const TABS = [
 // appears only then.
 const emailChanged = computed(() => emailForm.value.trim() !== (currentUser.value?.email || ''))
 
-// kind is 'avatar' | 'header'; fileId = null cancels a pending request.
+// kind is 'avatar' | 'header'; fileId = a new photo, REMOVE_IMAGE, or null to cancel.
 async function submitImage(kind, fileId) {
   if (await submitPendingImage(kind, fileId)) {
-    toast.success(fileId ? 'Photo submitted — an admin will review it soon' : 'Request cancelled')
+    const message = !fileId
+      ? 'Request cancelled'
+      : fileId === REMOVE_IMAGE
+        ? 'Removal requested — an admin will review it soon'
+        : 'Photo submitted — an admin will review it soon'
+    toast.success(message)
   } else {
     toast.error('Could not save your photo. Please try again.')
   }

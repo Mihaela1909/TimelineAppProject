@@ -137,8 +137,6 @@ const router = createRouter({
       const target = { el: to.hash, top: 80, behavior: 'smooth' }
       return from.path === to.path ? target : new Promise((resolve) => setTimeout(() => resolve(target), 350))
     }
-    const sameCourseLessons = to.name === 'lesson-view' && from.name === 'lesson-view' && to.params.id === from.params.id
-    if (sameCourseLessons) return false
     return { top: 0 }
   },
 })

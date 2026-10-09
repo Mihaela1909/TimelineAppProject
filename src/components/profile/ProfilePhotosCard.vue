@@ -1,9 +1,11 @@
 <script setup>
 import AvatarUpload from '../ui/AvatarUpload.vue'
 import ProfileSection from './ProfileSection.vue'
+import { REMOVE_IMAGE } from '../../constants/images'
 
 // Settings → "Profile Photos": avatar + header uploads. New photos go to admin
-// approval; the page handles it via submit(kind, fileId), fileId null = cancel.
+// approval, and so does removing one; the page handles both via
+// submit(kind, fileId): a file ID, REMOVE_IMAGE, or null = cancel the request.
 defineProps({
   user: { type: Object, required: true }, // currentUser (live + pending image IDs)
 })
@@ -21,6 +23,7 @@ const emit = defineEmits(['submit'])
           :pending-image-id="user.pendingAvatarImageId"
           shape="circle"
           @submit="emit('submit', 'avatar', $event)"
+          @remove="emit('submit', 'avatar', REMOVE_IMAGE)"
           @withdraw="emit('submit', 'avatar', null)"
         />
       </div>
@@ -31,6 +34,7 @@ const emit = defineEmits(['submit'])
           :pending-image-id="user.pendingHeaderImageId"
           shape="rectangle"
           @submit="emit('submit', 'header', $event)"
+          @remove="emit('submit', 'header', REMOVE_IMAGE)"
           @withdraw="emit('submit', 'header', null)"
         />
       </div>

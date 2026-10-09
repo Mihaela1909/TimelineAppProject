@@ -112,7 +112,7 @@ async function share() {
               <span class="w-2.5 h-2.5 bg-bark rotate-45 -ml-1"></span>
             </div>
 
-            <div class="post-content lesson-editor-content text-bark text-base md:text-lg mb-10" v-html="post.content"></div>
+            <div class="reading-content lesson-editor-content text-bark text-base md:text-lg mb-10" v-html="post.content"></div>
 
             <div class="flex flex-wrap gap-3">
               <button
@@ -168,23 +168,6 @@ async function share() {
 </template>
 
 <style scoped>
-/* Article typography from the mockup: serif section headings, roomier paragraphs.
-   :deep because the content is HTML from the rich-text editor (v-html). */
-.post-content :deep(h2),
-.post-content :deep(h3) {
-  font-family: 'Amethysta', serif;
-  font-weight: 400;
-  color: rgb(var(--color-bark));
-  line-height: 1.2;
-  margin: 1.6em 0 0.4em;
-}
-.post-content :deep(h2) { font-size: 1.75rem; }
-.post-content :deep(h3) { font-size: 1.4rem; }
-.post-content :deep(p) {
-  margin: 0 0 1em;
-  line-height: 1.55;
-}
-
 /* Opening another post (same page component): the article fades in */
 .swap {
   animation: swap-in 0.35s ease-out;

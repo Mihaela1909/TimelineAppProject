@@ -8,6 +8,7 @@ import { useCourseProgress } from '../composables/useCourseProgress'
 import { useToast } from '../composables/useToast'
 import CourseBanner from '../components/courses/CourseBanner.vue'
 import AppIcon from '../components/ui/AppIcon.vue'
+import LessonSelect from '../components/courses/LessonSelect.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -70,6 +71,7 @@ const bannerUrl = computed(() => {
 })
 
 function goTo(lessonId) {
+  if (lessonId === route.params.lessonId) return
   router.push(`/courses/${route.params.id}/lessons/${lessonId}`)
 }
 </script>
@@ -104,8 +106,15 @@ function goTo(lessonId) {
       </div>
 
       <article v-else class="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.2)] px-5 py-6 md:px-24 md:py-12">
-        <!-- Position in the course -->
-        <div class="flex items-center gap-4 mb-6">
+        <!-- Jump to any lesson + position in the course -->
+        <div class="flex flex-wrap sm:flex-nowrap items-center gap-x-4 gap-y-3 mb-6">
+          <LessonSelect
+            class="w-full sm:w-auto"
+            :lessons="lessons"
+            :current-id="route.params.lessonId"
+            :completed-ids="completedLessonIds"
+            @select="goTo"
+          />
           <span class="text-taupe-dark md:text-lg whitespace-nowrap">Lesson {{ currentIndex + 1 }} of {{ lessons.length }}</span>
           <div
             class="flex-1 h-1.5 bg-black/10 rounded-full overflow-hidden"
@@ -130,7 +139,7 @@ function goTo(lessonId) {
           class="w-full max-h-[26rem] object-cover rounded-xl grayscale shadow-[0_4px_12px_rgba(0,0,0,0.3)] mb-8"
         />
 
-        <div class="lesson-editor-content text-bark text-base md:text-lg mb-10" v-html="currentLesson.content"></div>
+        <div class="reading-content lesson-editor-content text-bark text-base md:text-lg mb-10" v-html="currentLesson.content"></div>
 
         <!-- Progress -->
         <div v-if="currentUser" class="mb-10">

@@ -2,6 +2,7 @@ import { ID, Query, Permission, Role } from 'appwrite'
 import { tablesDB, DB_ID, TABLES } from './appwrite'
 import { setProfileImage } from './profileService'
 import { listAllRows } from './rowHelpers'
+import { REMOVE_IMAGE } from '../constants/images'
 
 // Deliberately a separate table from `profiles`. `profiles` holds `role`
 // and the APPROVED avatar/header IDs, none of which may be user-writable.
@@ -46,7 +47,8 @@ async function updateSetting(userId, field, value) {
   })
 }
 
-// USER side — submit a new photo for review, or withdraw one (fileId = null).
+// USER side — submit a new photo for review, ask for removal (REMOVE_IMAGE),
+// or withdraw the request (fileId = null).
 export async function submitPendingImage(userId, kind, fileId) {
   return updateSetting(userId, FIELDS[kind].pending, fileId)
 }
@@ -63,7 +65,9 @@ export async function approvePendingImage(row, kind) {
   const { pending, live } = FIELDS[kind]
   // Publish first, then clear — if the second call fails the photo is
   // live and the request just shows up again, rather than being lost.
-  await setProfileImage(row.userId, live, row[pending])
+  // A removal request clears the live photo instead of replacing it.
+  const fileId = row[pending] === REMOVE_IMAGE ? null : row[pending]
+  await setProfileImage(row.userId, live, fileId)
   return clearPending(row, kind)
 }
 

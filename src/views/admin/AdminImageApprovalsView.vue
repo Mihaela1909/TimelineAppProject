@@ -48,7 +48,15 @@ async function handleDecision(request, approve) {
         <tbody>
           <tr v-for="request in requests" :key="request.key" class="border-b border-black/5 last:border-0">
             <td class="py-3 px-3 md:px-5">
-              <a :href="getImagePreviewUrl(request.fileId)" target="_blank" rel="noopener">
+              <!-- Removal request: no new image, the live one gets cleared -->
+              <div
+                v-if="request.removal"
+                class="flex items-center justify-center text-center text-xs font-semibold text-wine bg-wine/10 border border-dashed border-wine/40"
+                :class="request.kind === 'avatar' ? 'w-14 h-14 rounded-full' : 'w-20 sm:w-32 h-14 rounded-lg'"
+              >
+                Remove photo
+              </div>
+              <a v-else :href="getImagePreviewUrl(request.fileId)" target="_blank" rel="noopener">
                 <img
                   :src="getImagePreviewUrl(request.fileId)"
                   alt=""
