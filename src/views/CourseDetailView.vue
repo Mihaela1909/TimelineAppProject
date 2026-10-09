@@ -7,9 +7,18 @@ import { useCourseProgress } from '../composables/useCourseProgress'
 import { getImagePreviewUrl } from '../services/mediaService'
 import CourseBanner from '../components/courses/CourseBanner.vue'
 import AppIcon from '../components/ui/AppIcon.vue'
+import { usePageMeta } from '../composables/usePageMeta'
+import { toDescription } from '../utils/pageMeta'
 
 const route = useRoute()
 const { course, lessons, quiz, loading, error, fetchCourseAndLessons } = useCourseDetail()
+usePageMeta(() =>
+  course.value && {
+    title: course.value.title,
+    description: toDescription(course.value.description),
+    image: course.value.coverImageId ? getImagePreviewUrl(course.value.coverImageId) : null,
+  }
+)
 const { currentUser } = useAuth()
 const { completedLessonIds, fetchCompleted } = useCourseProgress()
 

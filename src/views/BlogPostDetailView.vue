@@ -11,11 +11,20 @@ import SectionHeading from '../components/ui/SectionHeading.vue'
 import CardCarousel from '../components/ui/CardCarousel.vue'
 import HistoryCard from '../components/ui/HistoryCard.vue'
 import AppIcon from '../components/ui/AppIcon.vue'
+import { usePageMeta } from '../composables/usePageMeta'
+import { toDescription } from '../utils/pageMeta'
 
 const route = useRoute()
 const toast = useToast()
 
 const { post, posts, relatedPosts, loading, error, fetchPost } = useBlog()
+usePageMeta(() =>
+  post.value && {
+    title: post.value.title,
+    description: toDescription(post.value.introduction || post.value.content),
+    image: post.value.coverImageId ? getImagePreviewUrl(post.value.coverImageId) : null,
+  }
+)
 
 const { currentUser } = useAuth()
 const { isSaved, busy: saveBusy, fetchFor: fetchSaved, loadedFor, toggle } = useSavedPosts()

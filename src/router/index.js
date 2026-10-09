@@ -3,6 +3,7 @@ import PublicLayout from '../layouts/PublicLayout.vue'
 import HomeView from '../views/HomeView.vue'
 import { ROLES, STAFF_ROLES } from '../constants/roles'
 import { useAuth } from '../composables/useAuth'
+import { setPageMeta } from '../utils/pageMeta'
 
 // CODE SPLITTING: only the home page (+ its layout) is in the main bundle.
 // Every other page is a lazy `() => import(...)`, so Vite builds it as a
@@ -44,35 +45,55 @@ const NotFoundView = () => import('../views/NotFoundView.vue')
 const routes = [
   // Login / register are full-screen (their own scene, no site header/footer);
   // the logo on the card links back home.
-  { path: '/login', name: 'login', component: LoginView },
-  { path: '/register', name: 'register', component: RegisterView },
+  { path: '/login', name: 'login', component: LoginView, meta: { title: 'Log in', noindex: true } },
+  { path: '/register', name: 'register', component: RegisterView, meta: { title: 'Sign up', noindex: true } },
   {
     path: '/',
     component: PublicLayout,
     children: [
       { path: '', name: 'home', component: HomeView },
-      { path: 'courses', name: 'courses', component: CoursesView },
+      {
+        path: 'courses',
+        name: 'courses',
+        component: CoursesView,
+        meta: { title: 'All Courses', description: 'Free history courses from prehistory to the modern age, each with illustrated lessons and a quiz to test what you learned.' },
+      },
       { path: 'courses/:id', name: 'course-detail', component: CourseDetailView },
       { path: 'courses/:id/lessons/:lessonId', name: 'lesson-view', component: LessonView },
-      { path: 'quizzes', name: 'quizzes', component: QuizzesView },
+      {
+        path: 'quizzes',
+        name: 'quizzes',
+        component: QuizzesView,
+        meta: { title: 'All Quizzes', description: 'Test your history knowledge with free quizzes on ancient, medieval and modern history.' },
+      },
       { path: 'quizzes/:id', name: 'quiz-taking', component: QuizTakingView },
-      { path: 'event-of-the-day', name: 'event-of-the-day', component: EventOfDayView },
+      {
+        path: 'event-of-the-day',
+        name: 'event-of-the-day',
+        component: EventOfDayView,
+        meta: { title: 'Event of the Day', description: 'What happened on this day in history? Browse any date for a featured historical event, births and more.' },
+      },
       // No separate About page: "About us" is the home page's Who-are-we section.
       { path: 'about', redirect: { path: '/', hash: '#about' } },
-      { path: 'blog', name: 'blog', component: BlogView },
+      {
+        path: 'blog',
+        name: 'blog',
+        component: BlogView,
+        meta: { title: 'Blog', description: 'History articles, myth-busting and lists from the Timeline community.' },
+      },
       { path: 'blog/:id', name: 'blog-post', component: BlogPostDetailView },
       {
         path: 'profile',
         name: 'profile',
         component: ProfileView,
-        meta: { requiresAuth: true },
+        meta: { requiresAuth: true, title: 'My profile', noindex: true },
       },
     ],
   },
   {
     path: '/admin',
     component: AdminLayout,
-    meta: { requiresAuth: true, requiresRole: STAFF_ROLES },
+    meta: { requiresAuth: true, requiresRole: STAFF_ROLES, title: 'Admin', noindex: true },
     children: [
       { path: '', name: 'admin-dashboard', component: AdminDashboardView },
       { path: 'courses', name: 'admin-courses', component: AdminCoursesView },
@@ -118,7 +139,7 @@ const routes = [
   {
     path: '/:pathMatch(.*)*',
     component: PublicLayout,
-    children: [{ path: '', name: 'not-found', component: NotFoundView }],
+    children: [{ path: '', name: 'not-found', component: NotFoundView, meta: { title: 'Page not found', noindex: true } }],
   },
 ]
 
@@ -166,6 +187,17 @@ router.beforeEach(async (to) => {
   }
 
   return true
+})
+
+// SEO: title, description, link previews and robots for every page, from route meta.
+// Pages with loaded data (course, lesson, quiz, blog post) refine this once it's loaded.
+router.afterEach((to) => {
+  setPageMeta({
+    title: to.meta.title,
+    description: to.meta.description,
+    path: to.path,
+    noindex: !!to.meta.noindex,
+  })
 })
 
 export default router

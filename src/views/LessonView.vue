@@ -9,6 +9,8 @@ import { useToast } from '../composables/useToast'
 import CourseBanner from '../components/courses/CourseBanner.vue'
 import AppIcon from '../components/ui/AppIcon.vue'
 import LessonSelect from '../components/courses/LessonSelect.vue'
+import { usePageMeta } from '../composables/usePageMeta'
+import { toDescription } from '../utils/pageMeta'
 
 const route = useRoute()
 const router = useRouter()
@@ -64,6 +66,16 @@ const currentIndex = computed(() => lessons.value.findIndex((l) => l.$id === rou
 const currentLesson = computed(() => lessons.value[currentIndex.value])
 const prevLesson = computed(() => lessons.value[currentIndex.value - 1])
 const nextLesson = computed(() => lessons.value[currentIndex.value + 1])
+
+usePageMeta(() => {
+  const lesson = currentLesson.value
+  if (!lesson || !course.value) return null
+  return {
+    title: `${lesson.title} · ${course.value.title}`,
+    description: toDescription(lesson.content),
+    image: lesson.imageId ? getImagePreviewUrl(lesson.imageId) : null,
+  }
+})
 
 const bannerUrl = computed(() => {
   const id = course.value?.headerImageId || course.value?.coverImageId

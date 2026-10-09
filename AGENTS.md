@@ -126,6 +126,7 @@ async function save(id, data) {
 - Services: `get…`, `list…`, `create…`, `update…`, `delete…`, `set…`.
 - Composables: `use<Feature>` returning `{ data refs, loading, error, actions }`.
 - Views: `<Name>View.vue`; admin views `Admin<Name>View.vue`.
+- Components PascalCase (`HistoryCard.vue`); service files `<table>Service.js`; route names kebab-case (`course-detail`, `admin-courses`).
 - Constants instead of magic strings (`ROLES.ADMIN`, not `'admin'`).
 
 ## 7. Before you finish a change

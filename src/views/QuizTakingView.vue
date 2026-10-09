@@ -10,6 +10,7 @@ import QuizIntro from '../components/quizzes/QuizIntro.vue'
 import QuizQuestion from '../components/quizzes/QuizQuestion.vue'
 import QuizResults from '../components/quizzes/QuizResults.vue'
 import AppIcon from '../components/ui/AppIcon.vue'
+import { usePageMeta } from '../composables/usePageMeta'
 
 const DEFAULT_PASSING_SCORE = 70
 const MINUTES_PER_QUESTION = 0.4
@@ -38,6 +39,12 @@ const {
   nextQuestion,
   retake,
 } = useQuizTaking()
+usePageMeta(() =>
+  quiz.value && {
+    title: quiz.value.title,
+    description: `Test what you learned${course.value ? ` in ${course.value.title}` : ''} with ${questions.value.length || 'a few'} multiple-choice questions on Timeline.`,
+  }
+)
 const { completedLessonIds, fetchCompleted } = useCourseProgress()
 
 async function load() {

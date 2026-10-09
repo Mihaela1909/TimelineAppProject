@@ -110,14 +110,16 @@ function onTabKeydown(event, index) {
              takes up space, so the card keeps the same height on both tabs.
              Switching tabs cross-fades them (.tab-panel / .is-hidden below). -->
         <div class="grid">
-        <!-- Values -->
-        <ul
+        <!-- Values. The tabpanel is a wrapper <div>: putting role="tabpanel" on the <ul>
+             itself would replace its list role and leave the <li>s without a list. -->
+        <div
           id="who-panel-values"
           role="tabpanel"
           aria-labelledby="who-tab-values"
-          class="tab-panel [grid-area:1/1] space-y-4 md:space-y-4"
+          class="tab-panel [grid-area:1/1]"
           :class="{ 'is-hidden': activeTab !== 'values' }"
         >
+        <ul class="space-y-4 md:space-y-4">
           <li
             v-for="(value, i) in values"
             :key="value.title"
@@ -133,6 +135,7 @@ function onTabKeydown(event, index) {
             </p>
           </li>
         </ul>
+        </div>
 
         <!-- Dev note -->
         <div

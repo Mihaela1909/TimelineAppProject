@@ -1,0 +1,8 @@
+# Timeline — https://timeline.appwrite.network
+User-agent: *
+Allow: /
+# Private areas (behind login anyway; also marked noindex in the page itself)
+Disallow: /admin
+Disallow: /profile
+
+Sitemap: https://timeline.appwrite.network/sitemap.xml
