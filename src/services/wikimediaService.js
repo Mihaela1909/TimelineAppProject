@@ -5,6 +5,9 @@
 const BASE_URL = 'https://en.wikipedia.org/api/rest_v1/feed/onthisday/events'
 
 // Returns this date's historical events as { year, text, url }.
+// Links from the API are shown as <a href>: only accept real Wikipedia https URLs.
+const wikipediaUrl = (url) => (/^https:\/\/[a-z-]+\.wikipedia\.org\//.test(url || '') ? url : null)
+
 export async function getEventsOnThisDay(month, day) {
   const mm = String(month).padStart(2, '0')
   const dd = String(day).padStart(2, '0')
@@ -19,7 +22,7 @@ export async function getEventsOnThisDay(month, day) {
   return (data.events || []).map((event) => ({
     year: event.year,
     text: event.text,
-    url: event.pages?.[0]?.content_urls?.desktop?.page || null,
+    url: wikipediaUrl(event.pages?.[0]?.content_urls?.desktop?.page),
   }))
 }
 
@@ -37,7 +40,7 @@ export async function getOnThisDay(month, day) {
     year: entry.year,
     text: entry.text,
     kind,
-    url: entry.pages?.[0]?.content_urls?.desktop?.page || null,
+    url: wikipediaUrl(entry.pages?.[0]?.content_urls?.desktop?.page),
   })
   return {
     events: (data.events || []).map(toItem('event')),

@@ -13,6 +13,7 @@ import HistoryCard from '../components/ui/HistoryCard.vue'
 import AppIcon from '../components/ui/AppIcon.vue'
 import { usePageMeta } from '../composables/usePageMeta'
 import { toDescription } from '../utils/pageMeta'
+import { sanitizeHtml } from '../utils/sanitizeHtml'
 
 const route = useRoute()
 const toast = useToast()
@@ -40,6 +41,9 @@ async function handleSave() {
   if (nowSaved === null) toast.error('Could not update your saved posts. Please try again.')
   else toast.success(nowSaved ? 'Saved to your profile' : 'Removed from saved posts')
 }
+// Rich text from the database is sanitized before v-html (XSS protection).
+const safeContent = computed(() => sanitizeHtml(post.value?.content))
+
 // Clicking another post reuses this same component, so reload on id change.
 watch(() => route.params.id, (id) => id && fetchPost(id))
 
@@ -121,7 +125,7 @@ async function share() {
               <span class="w-2.5 h-2.5 bg-bark rotate-45 -ml-1"></span>
             </div>
 
-            <div class="reading-content lesson-editor-content text-bark text-base md:text-lg mb-10" v-html="post.content"></div>
+            <div class="reading-content lesson-editor-content text-bark text-base md:text-lg mb-10" v-html="safeContent"></div>
 
             <div class="flex flex-wrap gap-3">
               <button

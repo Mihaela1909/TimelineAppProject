@@ -172,6 +172,8 @@ src/
 - **`profiles` holds `role`:** users can read their own row but **not update it**, so nobody can make themselves admin. `createProfile` sets explicit permissions, because Appwrite's default would give the creator update rights.
 - **Photo approval can't be skipped:** live photo IDs are in `profiles`, which users can't write. Users only write *pending* IDs in `profile_settings`, which is a separate table because Appwrite permissions apply to whole rows, not single columns.
 - **Personal rows** (`progress`, `quiz_attempts`, `saved_posts`): Row Security is on, and each row grants Read (+ Delete) only to its owner. There is no Update, so users can't edit their own scores.
+- **XSS:** Vue escapes all normal output. The only raw HTML (lesson and blog content) is passed through an allow-list sanitizer (`utils/sanitizeHtml.js`) before `v-html`, so `<script>`, event handlers and `javascript:` links are removed even if written straight to the database.
+- **CSRF and brute force:** Appwrite only accepts requests from the registered web platforms (other origins get 403) and with the project header, and it rate-limits login attempts (429 after 10 tries).
 - **No secrets in the repo:** `.env` is git-ignored. Its values are public IDs that end up in the browser bundle anyway. No Appwrite API key is used anywhere in the front end.
 
 ---

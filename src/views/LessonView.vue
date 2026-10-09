@@ -11,6 +11,7 @@ import AppIcon from '../components/ui/AppIcon.vue'
 import LessonSelect from '../components/courses/LessonSelect.vue'
 import { usePageMeta } from '../composables/usePageMeta'
 import { toDescription } from '../utils/pageMeta'
+import { sanitizeHtml } from '../utils/sanitizeHtml'
 
 const route = useRoute()
 const router = useRouter()
@@ -66,6 +67,8 @@ const currentIndex = computed(() => lessons.value.findIndex((l) => l.$id === rou
 const currentLesson = computed(() => lessons.value[currentIndex.value])
 const prevLesson = computed(() => lessons.value[currentIndex.value - 1])
 const nextLesson = computed(() => lessons.value[currentIndex.value + 1])
+// Rich text from the database is sanitized before v-html (XSS protection).
+const safeContent = computed(() => sanitizeHtml(currentLesson.value?.content))
 
 usePageMeta(() => {
   const lesson = currentLesson.value
@@ -151,7 +154,7 @@ function goTo(lessonId) {
           class="w-full max-h-[26rem] object-cover rounded-xl grayscale shadow-[0_4px_12px_rgba(0,0,0,0.3)] mb-8"
         />
 
-        <div class="reading-content lesson-editor-content text-bark text-base md:text-lg mb-10" v-html="currentLesson.content"></div>
+        <div class="reading-content lesson-editor-content text-bark text-base md:text-lg mb-10" v-html="safeContent"></div>
 
         <!-- Progress -->
         <div v-if="currentUser" class="mb-10">
