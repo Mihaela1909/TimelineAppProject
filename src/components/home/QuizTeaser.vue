@@ -82,6 +82,10 @@ const { inView: textInView } = useInView(textCol, { threshold: 0.3, once: false 
       <div ref="art" class="relative aspect-[1168/852]" :class="{ 'is-revealed': inView }">
         <img
           src="/images/home/test-quiz/building.webp"
+          srcset="/images/home/test-quiz/building-sm.webp 800w, /images/home/test-quiz/building.webp 1611w"
+          sizes="(min-width: 768px) 45vw, 90vw"
+          width="1611"
+          height="1055"
           alt="Collage of the Manhattan Bridge beside a brick building"
           class="absolute left-[8.8%] top-[11.2%] w-[91.2%] transition-[transform,opacity] duration-[1200ms] ease-out motion-reduce:transition-none motion-reduce:transform-none motion-reduce:opacity-100"
           :class="inView ? 'translate-x-0 opacity-100' : 'translate-x-[25%] opacity-0'"

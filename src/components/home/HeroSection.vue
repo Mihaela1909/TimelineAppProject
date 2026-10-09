@@ -16,7 +16,7 @@ const { currentUser } = useAuth()
     class="relative overflow-hidden bg-bark text-white text-center px-5 py-24 md:py-28 min-h-[28rem] md:min-h-[34rem] flex items-center justify-center shadow-[0_6px_10px_-4px_rgba(0,0,0,0.35)]"
   >
     <!-- Background photo on its own layer so it can slowly zoom -->
-    <div class="hero-bg absolute inset-0 bg-cover bg-center" style="background-image: url('/images/home/hero.webp')" aria-hidden="true"></div>
+    <div class="hero-bg absolute inset-0 bg-cover bg-center" aria-hidden="true"></div>
     <!-- Bottom gradient stays fixed on top of the zooming photo -->
     <div
       class="absolute inset-0"
@@ -82,8 +82,15 @@ const { currentUser } = useAuth()
 }
 
 /* Very slow zoom on the clock photo (barely noticeable, makes the hero feel alive). */
+/* Phones get a 900px-wide version (~1/3 the bytes); both are preloaded in index.html. */
 .hero-bg {
+  background-image: url('/images/home/hero-sm.webp');
   animation: slow-zoom 20s ease-out both;
+}
+@media (min-width: 768px) {
+  .hero-bg {
+    background-image: url('/images/home/hero.webp');
+  }
 }
 
 @keyframes slow-zoom {

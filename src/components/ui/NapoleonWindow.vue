@@ -22,7 +22,14 @@ const LAYOUTS = {
     <img src="/images/home/who-are-we/ring-back.webp" alt="" class="ring-pop absolute" :class="LAYOUTS[layout].back" />
     <!-- drop-shadow follows the window's outline (not its box), matching the
          paper-cut shadow baked into the Napoleon image: down and to the left -->
-    <img src="/images/home/who-are-we/window.webp" alt="" class="absolute inset-0 w-full h-full [filter:drop-shadow(-0.5rem_0.75rem_0.75rem_rgba(0,0,0,0.35))]" />
+    <img
+      src="/images/home/who-are-we/window.webp"
+      srcset="/images/home/who-are-we/window-sm.webp 760w, /images/home/who-are-we/window.webp 1395w"
+      sizes="(min-width: 768px) 45vw, 90vw"
+      width="1395"
+      height="1395"
+      alt=""
+      class="absolute inset-0 w-full h-full [filter:drop-shadow(-0.5rem_0.75rem_0.75rem_rgba(0,0,0,0.35))]" />
 
     <!-- Napoleon is clipped only on the RIGHT (outer edge of the right column,
          84.7% — measured from window.webp) and BOTTOM (sill line, 85%), so he
@@ -31,6 +38,10 @@ const LAYOUTS = {
     <div class="absolute inset-0 [clip-path:inset(-50%_15.3%_15%_-50%)]">
       <img
         src="/images/home/who-are-we/napoleon.webp"
+        srcset="/images/home/who-are-we/napoleon-sm.webp 640w, /images/home/who-are-we/napoleon.webp 1068w"
+        sizes="(min-width: 768px) 32vw, 65vw"
+        width="1068"
+        height="1113"
         alt="Napoleon on a rearing horse, emerging from a stone window"
         class="rider absolute"
         :class="LAYOUTS[layout].rider"

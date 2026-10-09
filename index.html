@@ -4,12 +4,17 @@
     <meta charset="UTF-8" />
     <link rel="icon" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- The hero background is the first big thing on screen: start downloading it
-         immediately instead of waiting for the CSS/JS to ask for it. -->
-    <link rel="preload" as="image" href="/images/home/hero.webp" type="image/webp">
+    <!-- The hero background is the first big thing on screen (the LCP element): start
+         downloading it immediately, at high priority, in the size this screen uses. -->
+    <link rel="preload" as="image" href="/images/home/hero-sm.webp" type="image/webp" media="(max-width: 767px)" fetchpriority="high">
+    <link rel="preload" as="image" href="/images/home/hero.webp" type="image/webp" media="(min-width: 768px)" fetchpriority="high">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Amethysta&family=Metamorphous&family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts loaded without blocking the first paint: fetched as a preload, then
+         switched to a stylesheet once it arrives (text shows in a fallback font until then,
+         thanks to display=swap). <noscript> keeps it working with JS off. -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Amethysta&family=Metamorphous&family=Raleway:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amethysta&family=Metamorphous&family=Raleway:wght@400;500;600;700&display=swap"></noscript>
     <title>Timeline — Free History Courses</title>
     <!-- SEO + link previews. These are the defaults (what crawlers and social apps see
          before JS runs); the router updates them per page (src/utils/pageMeta.js). -->

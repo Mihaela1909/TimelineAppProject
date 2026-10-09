@@ -22,6 +22,6 @@ const SIZES = {
     :class="size === 'fill' ? 'block w-full' : 'inline-block'"
     :aria-label="link ? 'Timeline — home' : undefined"
   >
-    <img src="/images/logo.webp" alt="Timeline" :class="SIZES[size]" />
+    <img src="/images/logo.webp" alt="Timeline" width="1233" height="464" :class="SIZES[size]" />
   </component>
 </template>

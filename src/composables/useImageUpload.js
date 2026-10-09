@@ -1,8 +1,10 @@
 import { ref } from 'vue'
 import { uploadImage } from '../services/mediaService'
+import { compressImage } from '../utils/compressImage'
 
 // APPLICATION LOGIC shared by ImageUpload (admin content) and AvatarUpload
-// (personal photos): checks the file, uploads it, tracks uploading/error.
+// (personal photos): checks the file, shrinks it, uploads it, tracks uploading/error.
+// The size limit applies AFTER compression, so big phone photos are fine.
 const MAX_SIZE_MB = 5
 
 export function useImageUpload() {
@@ -17,14 +19,15 @@ export function useImageUpload() {
       error.value = 'Please choose an image file.'
       return null
     }
-    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-      error.value = `Image is too large — maximum ${MAX_SIZE_MB} MB.`
-      return null
-    }
 
     uploading.value = true
     try {
-      return await uploadImage(file)
+      const compressed = await compressImage(file)
+      if (compressed.size > MAX_SIZE_MB * 1024 * 1024) {
+        error.value = `Image is too large — maximum ${MAX_SIZE_MB} MB.`
+        return null
+      }
+      return await uploadImage(compressed)
     } catch (err) {
       console.error(err)
       error.value = 'Upload failed. Please try again.'

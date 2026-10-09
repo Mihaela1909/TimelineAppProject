@@ -22,9 +22,21 @@ const { inView } = useInView(root, { threshold: 0.4, once: false })
 // Don't start "writing" before Metamorphous has loaded, or the letters
 // would be traced in a fallback font and then jump.
 const fontReady = ref(false)
+// The Google Fonts stylesheet loads without blocking the page (see index.html), so
+// Metamorphous may not be declared yet: wait for its @font-face to appear first
+// (max ~3s), then for the font file itself.
+async function waitForFont(family, timeoutMs = 3000) {
+  const start = Date.now()
+  while (![...document.fonts].some((f) => f.family.replace(/["']/g, '') === family)) {
+    if (Date.now() - start > timeoutMs) return
+    await new Promise((resolve) => setTimeout(resolve, 50))
+  }
+  await document.fonts.load(`62px ${family}`)
+}
+
 onMounted(async () => {
   try {
-    await document.fonts.load('62px Metamorphous')
+    await waitForFont('Metamorphous')
   } catch {
     /* still animate with whatever font is available */
   }

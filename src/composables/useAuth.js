@@ -10,6 +10,8 @@ import { getSettingsByUserId } from '../services/profileSettingsService'
 // the profile page all agree on who's logged in without a Pinia store.
 const currentUser = ref(null)
 const authChecked = ref(false)
+let refreshing = null // the in-flight refreshCurrentUser() request, if any
+let latestLoad = 0
 
 // Friendly login messages per Appwrite error type — so a correct password
 // that's refused for another reason doesn't show "Incorrect password".
@@ -47,7 +49,7 @@ export function useAuth() {
     loading.value = true
     try {
       await authService.registerUser({ email, password, name })
-      await refreshCurrentUser()
+      await refreshCurrentUser({ force: true })
     } catch (err) {
       console.error(err)
       // 409 = Appwrite "already exists". Never show raw API text to users.
@@ -75,7 +77,7 @@ export function useAuth() {
           (err.code === 401 ? LOGIN_ERRORS.user_invalid_credentials : 'Could not log in. Please try again.')
         throw err
       }
-      await refreshCurrentUser()
+      await refreshCurrentUser({ force: true })
       // Correct password but no user afterwards = the account is
       // deactivated (refreshCurrentUser signed them straight back out).
       if (!currentUser.value) {
@@ -98,7 +100,7 @@ export function useAuth() {
     loading.value = true
     try {
       await authService.updateDisplayName(name)
-      await refreshCurrentUser()
+      await refreshCurrentUser({ force: true })
       return true
     } catch (err) {
       error.value = 'Could not update your name.'
@@ -120,7 +122,7 @@ export function useAuth() {
     loading.value = true
     try {
       await authService.updateUserEmail(email, password)
-      await refreshCurrentUser()
+      await refreshCurrentUser({ force: true })
       return true
     } catch (err) {
       error.value = 'Could not update email — check your password is correct.'
@@ -160,7 +162,20 @@ export function useAuth() {
     currentUser.value = null
   }
 
-  async function refreshCurrentUser() {
+  // Several callers may ask at once (router guard, header): they share one request.
+  // force = after login/register/profile changes, always load fresh; `latestLoad`
+  // makes sure an older, slower check can't overwrite the newer result.
+  function refreshCurrentUser({ force = false } = {}) {
+    if (refreshing && !force) return refreshing
+    const load = loadCurrentUser(++latestLoad).finally(() => {
+      if (refreshing === load) refreshing = null
+    })
+    refreshing = load
+    return load
+  }
+
+  async function loadCurrentUser(loadId) {
+    const isLatest = () => loadId === latestLoad
     try {
       // account.get() is the one call that MUST succeed for someone to be
       // considered logged in. If this throws, they're genuinely not
@@ -170,21 +185,20 @@ export function useAuth() {
       // Role and avatar are secondary enrichment, each fetched from our
       // own tables. A problem with either one (missing table, bad env var,
       // etc.) should NOT undo a successful login — so each gets its own
-      // try/catch and degrades to null instead of failing the whole thing.
+      // .catch and degrades to null instead of failing the whole thing.
       // Live (admin-approved) images live on `profiles`; pending
       // submissions awaiting approval live on `profile_settings`.
-      let role = null
-      let avatarImageId = null
-      let headerImageId = null
-      let profile = null
-      try {
-        profile = await getProfileByUserId(account.$id)
-        role = profile?.role || null
-        avatarImageId = profile?.avatarImageId || null
-        headerImageId = profile?.headerImageId || null
-      } catch (err) {
-        console.error('Could not load profiles row:', err)
-      }
+      // Both rows are fetched in parallel (one round trip instead of two).
+      const [profile, settings] = await Promise.all([
+        getProfileByUserId(account.$id).catch((err) => {
+          console.error('Could not load profiles row:', err)
+          return null
+        }),
+        getSettingsByUserId(account.$id).catch((err) => {
+          console.error('Could not load profile_settings row:', err)
+          return null
+        }),
+      ])
 
       // Deactivated by an admin → end the session. Only an explicit
       // `false` counts; rows from before the `active` column are null.
@@ -193,16 +207,13 @@ export function useAuth() {
         throw new Error('Account deactivated')
       }
 
-      let pendingAvatarImageId = null
-      let pendingHeaderImageId = null
-      try {
-        const settings = await getSettingsByUserId(account.$id)
-        pendingAvatarImageId = settings?.pendingAvatarImageId || null
-        pendingHeaderImageId = settings?.pendingHeaderImageId || null
-      } catch (err) {
-        console.error('Could not load profile_settings row:', err)
-      }
+      const role = profile?.role || null
+      const avatarImageId = profile?.avatarImageId || null
+      const headerImageId = profile?.headerImageId || null
+      const pendingAvatarImageId = settings?.pendingAvatarImageId || null
+      const pendingHeaderImageId = settings?.pendingHeaderImageId || null
 
+      if (!isLatest()) return
       currentUser.value = {
         ...account,
         role,
@@ -212,9 +223,9 @@ export function useAuth() {
         pendingHeaderImageId,
       }
     } catch {
-      currentUser.value = null
+      if (isLatest()) currentUser.value = null
     } finally {
-      authChecked.value = true
+      if (isLatest()) authChecked.value = true
     }
   }
 

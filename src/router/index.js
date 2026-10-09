@@ -51,7 +51,7 @@ const routes = [
     path: '/',
     component: PublicLayout,
     children: [
-      { path: '', name: 'home', component: HomeView },
+      { path: '', name: 'home', component: HomeView, meta: { authOptional: true } },
       {
         path: 'courses',
         name: 'courses',
@@ -71,7 +71,7 @@ const routes = [
         path: 'event-of-the-day',
         name: 'event-of-the-day',
         component: EventOfDayView,
-        meta: { title: 'Event of the Day', description: 'What happened on this day in history? Browse any date for a featured historical event, births and more.' },
+        meta: { authOptional: true, title: 'Event of the Day', description: 'What happened on this day in history? Browse any date for a featured historical event, births and more.' },
       },
       // No separate About page: "About us" is the home page's Who-are-we section.
       { path: 'about', redirect: { path: '/', hash: '#about' } },
@@ -79,7 +79,7 @@ const routes = [
         path: 'blog',
         name: 'blog',
         component: BlogView,
-        meta: { title: 'Blog', description: 'History articles, myth-busting and lists from the Timeline community.' },
+        meta: { authOptional: true, title: 'Blog', description: 'History articles, myth-busting and lists from the Timeline community.' },
       },
       { path: 'blog/:id', name: 'blog-post', component: BlogPostDetailView },
       {
@@ -172,7 +172,11 @@ router.beforeEach(async (to) => {
   // On first navigation after a page load, we haven't asked Appwrite
   // who's logged in yet — do that once before deciding anything.
   if (!authChecked.value) {
-    await refreshCurrentUser()
+    // Pages that don't need to know the user when they open (home, blog, event of the
+    // day) render straight away while the check finishes in the background; the header
+    // updates when it does. Every other page waits, so it loads the right user's data.
+    if (to.meta.authOptional) refreshCurrentUser()
+    else await refreshCurrentUser()
   }
 
   if (to.meta.requiresAuth && !currentUser.value) {

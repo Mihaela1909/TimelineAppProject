@@ -116,7 +116,12 @@ async function share() {
           <section :key="isoValue" class="swap relative grid md:grid-cols-[minmax(0,22rem)_1fr] gap-6 md:gap-8 items-center bg-cream border border-ochre rounded-xl shadow-[0_4px_8px_rgba(0,0,0,0.2)] p-5 md:p-8 mb-16 md:mb-20" aria-label="Featured event">
             <!-- The home page frame image, cropped to the frame (no megaphone): x 6–69%, y 8.4–87.6% -->
             <div class="relative w-full max-w-[18rem] md:max-w-none mx-auto aspect-[683/657] overflow-hidden">
-              <img src="/images/home/event-of-the-day.webp" alt="" class="absolute max-w-none w-[158.7%] left-[-9.5%] top-[-10.6%]" />
+              <img
+                src="/images/home/event-of-the-day.webp"
+                srcset="/images/home/event-of-the-day-sm.webp 700w, /images/home/event-of-the-day.webp 1084w"
+                sizes="(min-width: 768px) 560px, 460px"
+                alt=""
+                class="absolute max-w-none w-[158.7%] left-[-9.5%] top-[-10.6%]" />
               <div class="absolute left-[15.9%] top-[9.6%] w-[68.3%] h-[77%] flex flex-col items-center justify-center gap-[0.15em] text-olive font-voice text-center leading-none">
                 <span class="text-2xl md:text-3xl">{{ date.year }}</span>
                 <span class="text-6xl md:text-7xl">{{ date.day }}</span>

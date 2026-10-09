@@ -24,7 +24,15 @@ const { inView } = useInView(stage, { threshold: 0.35, once: false })
     <div ref="stage" class="grid md:grid-cols-[minmax(0,43%)_1fr] gap-12 md:gap-6 items-start" :class="{ 'is-playing': inView }">
       <!-- Today's date inside the picture frame -->
       <div class="relative w-full max-w-md mx-auto md:max-w-none md:mx-0">
-        <img src="/images/home/event-of-the-day.webp" alt="" class="shout w-full h-auto" />
+        <img
+          src="/images/home/event-of-the-day.webp"
+          srcset="/images/home/event-of-the-day-sm.webp 700w, /images/home/event-of-the-day.webp 1084w"
+          sizes="(min-width: 768px) 43vw, 90vw"
+          width="1084"
+          height="829"
+          alt=""
+          class="shout w-full h-auto"
+        />
         <!-- Positioned over the frame's inner window (measured from the artwork) -->
         <div class="absolute left-[16%] top-[16%] w-[43%] h-[61%] flex flex-col items-center justify-center gap-[0.15em] text-olive font-voice text-center leading-none">
           <span class="text-2xl md:text-[clamp(1.25rem,2.4vw,2.25rem)]">{{ date.year }}</span>
