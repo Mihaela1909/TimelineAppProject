@@ -1,0 +1,97 @@
+erDiagram
+    AUTH_USER ||--|| profiles : "has"
+    AUTH_USER ||--o| profile_settings : "has"
+    AUTH_USER ||--o{ progress : "completes lessons"
+    AUTH_USER ||--o{ quiz_attempts : "takes quizzes"
+    AUTH_USER ||--o{ saved_posts : "bookmarks"
+
+    courses ||--o{ lessons : "contains"
+    courses ||--o| quizzes : "has quiz"
+    quizzes ||--o{ quiz_questions : "contains"
+    lessons ||--o{ progress : "tracked by"
+    courses ||--o{ progress : "groups"
+    quizzes ||--o{ quiz_attempts : "results of"
+    blog_posts ||--o{ saved_posts : "saved as"
+
+    AUTH_USER {
+        string id PK "Appwrite Auth"
+        string name
+        string email
+        string password "hashed by Appwrite, never readable"
+        string labels "admin / editor"
+    }
+    profiles {
+        string userId FK "Row Security: owner read-only"
+        string name
+        string email
+        string role "user / editor / admin"
+        boolean active
+        string avatarImageId "live photo -> Storage"
+        string headerImageId "live photo -> Storage"
+    }
+    profile_settings {
+        string userId FK "owner read + update"
+        string pendingAvatarImageId "awaiting approval"
+        string pendingHeaderImageId "awaiting approval"
+    }
+    courses {
+        string id PK "public read"
+        string title
+        string description
+        string category
+        int lessonCount
+        string coverImageId "-> Storage"
+        string headerImageId "-> Storage"
+        boolean published
+    }
+    lessons {
+        string id PK
+        string courseId FK
+        string title
+        int order
+        string content "rich text (sanitized on display)"
+        string imageId "-> Storage"
+        boolean published
+    }
+    quizzes {
+        string id PK
+        string courseId FK
+        string title
+        int passingScore
+        string coverImageId "-> Storage"
+        string headerImageId "-> Storage"
+        boolean published
+    }
+    quiz_questions {
+        string id PK
+        string quizId FK
+        string questionText
+        string_array options
+        int correctOptionIndex
+        int order
+    }
+    blog_posts {
+        string id PK "public read"
+        string title
+        string category
+        string introduction
+        string content "rich text (sanitized on display)"
+        string readTime
+        string coverImageId "-> Storage"
+        boolean published
+    }
+    progress {
+        string userId FK "owner read + delete"
+        string courseId FK
+        string lessonId FK
+    }
+    quiz_attempts {
+        string userId FK "owner read + delete"
+        string quizId FK
+        int score
+        int totalQuestions
+    }
+    saved_posts {
+        string userId FK "owner read + delete"
+        string postId FK
+    }

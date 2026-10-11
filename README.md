@@ -11,17 +11,54 @@
 
 ## Contents
 
-1. [Features](#features)
-2. [Roles and permissions](#roles-and-permissions)
-3. [Tech stack](#tech-stack)
-4. [Running it locally](#running-it-locally)
-5. [Appwrite setup](#appwrite-setup)
-6. [Architecture](#architecture)
-7. [Security model](#security-model)
-8. [UX and accessibility](#ux-and-accessibility)
-9. [Known limitations](#known-limitations)
-10. [AI-assisted development](#ai-assisted-development)
-11. [Screenshots](#screenshots)
+1. [Planning](#planning)
+2. [Features](#features)
+3. [Roles and permissions](#roles-and-permissions)
+4. [Tech stack](#tech-stack)
+5. [Running it locally](#running-it-locally)
+6. [Appwrite setup](#appwrite-setup)
+7. [Architecture](#architecture)
+8. [Security model](#security-model)
+9. [UX and accessibility](#ux-and-accessibility)
+10. [Known limitations](#known-limitations)
+11. [AI-assisted development](#ai-assisted-development)
+12. [Screenshots](#screenshots)
+
+---
+
+## Planning
+
+The app was planned before it was built: a target persona, a MoSCoW scope, the data model, and Figma mockups for every page, which the finished pages follow.
+
+### Persona
+
+![Persona: Mia Hemsworth](docs/planning/persona-mia.png)
+
+How the app answers Mia's needs:
+
+| Mia's pain point / gain | How Timeline answers it |
+|---|---|
+| No patience for signup walls | Guests can browse every course and lesson and take quizzes without an account. An account is only needed to *save* progress or posts. |
+| Self-conscious about wrong answers | Instant, private feedback with retakes; guest attempts aren't saved; saved results are visible only to her (Row Security) |
+| Tired and easily distracted, needs scannable content | Short lessons, "Lesson N of M" with a progress bar, a lesson selector, clear headings and images |
+| A reason to come back | Saved progress, "Continue · Lesson N", and a profile with what's in progress |
+| Skeptical of "free" | No paywall anywhere ("Free, always" in the About section) |
+| Trusts peer recommendations | Share buttons and link previews (Open Graph) on posts and events |
+
+### MoSCoW
+
+![MoSCoW prioritisation](docs/planning/moscow.png)
+
+**Outcome**
+- **Must** (the MVP): all built.
+- **Should**: all built.
+- **Could**: Event of the Day, the soft-locked quiz ("Finish Course" / "Start anyway"), saved posts and the quiz-based course recommendation (the level check) are built. Achievement badges were left out.
+- **Won't**: as planned. Also deliberately out of scope, because they need server-side code (an Appwrite Function): server-side quiz grading, full account deletion and automatic role/label sync (see [Known limitations](#known-limitations)).
+- **Added during development:** profile photos with admin approval, user management (roles, deactivation), statistics, a 404 page, and accessibility, SEO and performance work.
+
+### Data model
+
+See the diagram under [Appwrite setup](#data-model).
 
 ---
 
@@ -31,6 +68,7 @@
 - **Courses:** search, filter by category, sort, paginate. Each course has an overview page and lessons with rich-text content and images.
 - **Quizzes:** one per course, with multiple-choice questions, instant feedback and a results screen.
 - **Blog:** articles with categories, read time, sharing, and a "Browse more" carousel.
+- **Level check:** a quick mixed quiz with 2 random questions from every course's quiz. It shows your history level (Beginner / Explorer / Historian), a score per course, and recommends the course you'd learn most from. No account needed, and nothing is saved.
 - **Event of the Day:** a historical event for any date (Wikipedia "On this day" API), with prev/next day, a date picker and a random date. The date lives in the URL, so it can be shared.
 - An animated home page with popular courses, a quiz teaser, the event of the day, an "About us" section and a blog preview.
 
@@ -108,6 +146,12 @@ Staff accounts need an Appwrite **user label** (Auth → user → Labels), becau
 - `editor`: content only
 
 Their `profiles.role` should match (`admin` / `editor`); the app uses it to show the right pages.
+
+### Data model
+
+![Data model](docs/data-model.png)
+
+Source: [docs/data-model.mmd](docs/data-model.mmd) (Mermaid). Edit it there and re-render if the tables change.
 
 ### Tables
 
