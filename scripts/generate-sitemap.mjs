@@ -6,7 +6,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 
 const SITE_URL = 'https://timeline.appwrite.network'
-const STATIC_PAGES = ['/', '/courses', '/quizzes', '/blog', '/event-of-the-day']
+const STATIC_PAGES = ['/', '/courses', '/quizzes', '/quizzes/level-check', '/blog', '/event-of-the-day']
 
 // Appwrite Sites passes the VITE_* variables as real environment variables;
 // locally they live in .env.

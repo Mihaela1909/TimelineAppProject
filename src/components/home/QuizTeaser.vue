@@ -1,18 +1,9 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { useQuizzes } from '../../composables/useQuizzes'
+import { ref } from 'vue'
 import { useInView } from '../../composables/useInView'
 
-// "Start Quiz" opens a random published quiz (falls back to the quiz list
-// while loading or if there are none).
-const { quizzes, fetchPublished } = useQuizzes()
-onMounted(fetchPublished)
-
-const startLink = computed(() => {
-  if (!quizzes.value.length) return '/quizzes'
-  const pick = quizzes.value[Math.floor(Math.random() * quizzes.value.length)]
-  return `/quizzes/${pick.$id}`
-})
+// "Start Quiz" opens the level check: a mixed quiz from every course that ends
+// with your history level and a recommended course (LevelQuizView).
 
 // The bridge collage slides in from the right each time the section scrolls into view.
 const art = ref(null)
@@ -52,7 +43,7 @@ const { inView: textInView } = useInView(textCol, { threshold: 0.3, once: false 
         </p>
         <div class="flex flex-wrap gap-3">
           <RouterLink
-            :to="startLink"
+            to="/quizzes/level-check"
             style="--delay: 0.5s"
             class="reveal font-button px-6 lg:px-10 py-2.5 lg:py-3 rounded-md bg-olive text-white lg:text-lg shadow-[0_4px_8px_rgba(0,0,0,0.45)] hover:bg-olive/90 transition-colors"
           >

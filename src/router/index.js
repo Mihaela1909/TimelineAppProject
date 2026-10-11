@@ -38,6 +38,7 @@ const AdminDashboardView = () => import('../views/admin/AdminDashboardView.vue')
 const AdminUsersView = () => import('../views/admin/AdminUsersView.vue')
 const AdminStatisticsView = () => import('../views/admin/AdminStatisticsView.vue')
 const NotFoundView = () => import('../views/NotFoundView.vue')
+const LevelQuizView = () => import('../views/LevelQuizView.vue')
 
 // Every route lives under one of two layouts. Public pages share the
 // header/footer; admin pages share the sidebar. Auth pages (login/register)
@@ -60,6 +61,13 @@ const routes = [
       },
       { path: 'courses/:id', name: 'course-detail', component: CourseDetailView },
       { path: 'courses/:id/lessons/:lessonId', name: 'lesson-view', component: LessonView },
+      {
+        // Static path, so it wins over 'quizzes/:id' below.
+        path: 'quizzes/level-check',
+        name: 'level-quiz',
+        component: LevelQuizView,
+        meta: { title: "What's your history level?", description: 'A quick mixed quiz from every Timeline course: find your history level and get a course recommendation. No account needed.' },
+      },
       {
         path: 'quizzes',
         name: 'quizzes',

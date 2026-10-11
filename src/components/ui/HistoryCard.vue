@@ -19,7 +19,7 @@ defineProps({
 const BADGE_TONES = { olive: 'bg-olive', ochre: 'bg-ochre', leaf: 'bg-leaf' }
 const LAYOUTS = {
   carousel: 'snap-start flex-shrink-0 w-[78%] sm:w-[45%] lg:w-[calc((100%-2.5rem)/3)]',
-  grid: 'w-full',
+  grid: 'block w-full', // block: the card is an <a>, so outside a grid/flex parent it would be inline
 }
 </script>
 

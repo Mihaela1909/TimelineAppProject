@@ -69,7 +69,7 @@ A user's upload does NOT go live until an admin approves it.
 - Hero logo: `components/layout/AnimatedLogo.vue`, an inline SVG built from "timeline logo.svg" (big version). Act 1: the small mark assembles in the centre (circle fades up, birds fly in, diamond drops, "I" rises). Act 2: everything slides left (`.slide`, 100 units) while the underline grows and "imeline" (live text in Metamorphous) is traced and filled. Only translate/opacity are animated (no scale/rotate) to avoid SVG transform-origin issues. It waits for the font, replays on scroll-in (`useInView`), and has no motion with reduced-motion settings. Header, footer and sidebar still use `logo.webp` via `AppLogo`.
 - No separate About page: the Who-are-we section has `id="about"`, and every "About us" link (header, footer, hero) goes to `/#about`. `/about` redirects there. Router `scrollBehavior` smooth-scrolls to `to.hash` (waits 350ms when coming from another page). The header checks the hash itself for the active underline, because Vue Router ignores hashes when marking links active.
 - Event of the Day: `services/wikimediaService.js` (Wikipedia "On this day" REST API, no key, CORS OK) → `useEventOfDay.js` picks one pre-1900 event by day-of-year, so it's the same all day.
-- "Start Quiz" opens a random published quiz. The "recommended course" quiz in the copy doesn't exist yet.
+- "Start Quiz" opens the level check (see Level-check quiz).
 - "Most Popular Courses" shows the first published courses, not real popularity; guests can't read progress, so there's no popularity data.
 
 ## Courses page
@@ -92,6 +92,13 @@ A user's upload does NOT go live until an admin approves it.
 - `/quizzes/:id` → `QuizTakingView.vue` (state in `useQuizTaking`, which also loads the course's published lesson count) with three dumb components in `components/quizzes/`: `QuizIntro` (status pill, stat boxes, Start/Retake, history OR course progress), `QuizQuestion` (2×2 answers, feedback, Next), `QuizResults`. The phases swap with a `<Transition>`. The card body reuses `images/home/who-are-we/dots.webp`.
 - Optional fields shown if present: `quiz.description` (fallback "Test what you learned in <course>.") and `question.explanation` (fallback: the correct answer on a wrong pick). Neither column exists yet; add String columns + admin form fields to use them.
 - Est. time = 0.4 min per question. `timeAgo` lives in `utils/time.js`.
+
+## Level-check quiz
+- `/quizzes/level-check` → `LevelQuizView.vue` + `useLevelQuiz.js` + `components/quizzes/LevelQuizResults.vue`; reuses `QuizQuestion` and `StatBoxes`. Linked from the home page's "Start Quiz".
+- Built from the existing course quizzes: `QUESTIONS_PER_COURSE` (2) random questions from each published course's published quiz (`quizQuestionService.getQuestionsForQuizzes`, one read), shuffled. New courses/quizzes are included automatically; no extra tables or admin work.
+- Pure functions `pickLevelQuestions()` and `scoreLevelQuiz()`: level by % (`LEVELS`: Historian ≥75, Explorer ≥40, Beginner), per-course score, and the recommendation = lowest-scoring course, ties → not completed, then not started (`useCourseStatuses` for logged-in users). At 100% → first course not completed yet.
+- Nothing is saved (decided: low-pressure, guest-friendly). Retake picks new questions.
+- `HistoryCard` `layout="grid"` is `block w-full`: it's an `<a>`, so outside a grid/flex parent it was inline and its olive band didn't paint.
 
 ## Event of the Day page
 - `/event-of-the-day?date=YYYY-MM-DD` → `EventOfDayView.vue`. The date lives in the URL (shareable, back button works); an invalid or missing date means today. Prev/next day, a native date picker (transparent `<input type=date>` over the date), and "Get a random date" (same year).

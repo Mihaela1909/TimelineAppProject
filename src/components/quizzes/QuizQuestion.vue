@@ -37,6 +37,7 @@ function optionClass(i) {
       <div class="whitespace-nowrap">
         <div class="text-bark text-lg md:text-xl">Question {{ index + 1 }} of {{ total }}</div>
         <RouterLink v-if="courseTitle && courseTo" :to="courseTo" class="text-xs text-ochre underline hover:text-bark">{{ courseTitle }}</RouterLink>
+        <span v-else-if="courseTitle" class="text-xs text-bark/70">From: {{ courseTitle }}</span>
       </div>
       <div class="flex-1 h-2 mt-3 bg-black/10 rounded-full overflow-hidden" role="progressbar" :aria-valuenow="index + 1" aria-valuemin="1" :aria-valuemax="total" aria-label="Quiz progress">
         <div class="h-full bg-leaf rounded-full transition-[width] duration-500" :style="{ width: `${((index + 1) / total) * 100}%` }"></div>
