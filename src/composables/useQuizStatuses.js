@@ -1,12 +1,11 @@
 import { ref } from 'vue'
 import { getAllAttemptsForUser } from '../services/quizAttemptService'
 import { useCourseStatuses } from './useCourseStatuses'
+import { scorePercent, passingScoreOf } from '../utils/quizScore'
 
 // APPLICATION LOGIC: the logged-in user's result for every quiz at once
 // (best score + passed?), and which courses they've finished — for the
 // status pills on the quiz list. Guests get nothing (no attempts/progress).
-const DEFAULT_PASSING_SCORE = 70
-
 export function useQuizStatuses() {
   const attemptsByQuiz = ref({}) // quizId → { best: 0–100 }
   const { statusById: courseStatusById, fetchFor: fetchCourseStatuses } = useCourseStatuses()
@@ -18,7 +17,7 @@ export function useQuizStatuses() {
       const [attempts] = await Promise.all([getAllAttemptsForUser(userId), fetchCourseStatuses(userId)])
       const byQuiz = {}
       attempts.forEach((a) => {
-        const pct = a.totalQuestions ? Math.round((a.score / a.totalQuestions) * 100) : 0
+        const pct = Math.round(scorePercent(a))
         byQuiz[a.quizId] = { best: Math.max(byQuiz[a.quizId]?.best ?? 0, pct) }
       })
       attemptsByQuiz.value = byQuiz
@@ -33,8 +32,7 @@ export function useQuizStatuses() {
     if (!isLoggedIn) return null
     const attempt = attemptsByQuiz.value[quiz.$id]
     if (attempt) {
-      const passing = quiz.passingScore || DEFAULT_PASSING_SCORE
-      return { state: attempt.best >= passing ? 'passed' : 'failed', score: attempt.best }
+      return { state: attempt.best >= passingScoreOf(quiz) ? 'passed' : 'failed', score: attempt.best }
     }
     const courseDone = courseStatusById.value[quiz.courseId]?.state === 'completed'
     if (quiz.courseId && !courseDone) return { state: 'course-unfinished' }

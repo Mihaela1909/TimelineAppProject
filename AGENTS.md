@@ -29,6 +29,8 @@ Each layer has ONE kind of job. Data flows one way: **view → composable → se
   - pagination/bulk delete → `services/rowHelpers.js`
   - required-field messages → `utils/formChecks.js`; each composable declares its own `REQUIRED_IMAGES`
   - roles → `constants/roles.js`
+  - quiz scores / passing score → `utils/quizScore.js`
+  - list search / filter / sort / pagination → `useListControls` + `ListControls.vue`
   - icons → `components/ui/AppIcon.vue`
 
   Don't re-implement them.

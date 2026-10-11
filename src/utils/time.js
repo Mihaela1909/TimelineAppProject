@@ -23,5 +23,7 @@ export function formatDate(date) {
 
 // Blog readTime is free text in the admin form ("4 min", "5 mins read"…) → "4 min read".
 export function readTimeText(t) {
-  return !t ? '' : /read/i.test(t) ? t : `${t} read`
+  if (!t) return ''
+  if (/read/i.test(t)) return t // already says "read"
+  return `${t} read`
 }

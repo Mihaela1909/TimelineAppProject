@@ -11,9 +11,7 @@ import QuizQuestion from '../components/quizzes/QuizQuestion.vue'
 import QuizResults from '../components/quizzes/QuizResults.vue'
 import AppIcon from '../components/ui/AppIcon.vue'
 import { usePageMeta } from '../composables/usePageMeta'
-
-const DEFAULT_PASSING_SCORE = 70
-const MINUTES_PER_QUESTION = 0.4
+import { scorePercent, passingScoreOf, estimatedMinutes } from '../utils/quizScore'
 
 const route = useRoute()
 const { currentUser } = useAuth()
@@ -54,7 +52,7 @@ async function load() {
 onMounted(load)
 
 const isLoggedIn = computed(() => !!currentUser.value)
-const passingScore = computed(() => quiz.value?.passingScore || DEFAULT_PASSING_SCORE)
+const passingScore = computed(() => passingScoreOf(quiz.value))
 const courseTo = computed(() => (course.value ? `/courses/${course.value.$id}` : ''))
 const banner = computed(() => {
   const id = quiz.value?.headerImageId || quiz.value?.coverImageId || course.value?.headerImageId || course.value?.coverImageId
@@ -70,9 +68,9 @@ const courseUnfinished = computed(
 // Best attempt (by %) + summary for "Your history with this quiz".
 const history = computed(() => {
   if (!pastAttempts.value.length) return null
-  const pctOf = (a) => (a.totalQuestions ? Math.round((a.score / a.totalQuestions) * 100) : 0)
+  const pctOf = (a) => Math.round(scorePercent(a))
   const best = pastAttempts.value.reduce((b, a) => (pctOf(a) > pctOf(b) ? a : b))
-  const last = pastAttempts.value.reduce((l, a) => (new Date(a.$createdAt) > new Date(l.$createdAt) ? a : l))
+  const last = pastAttempts.value[0] // newest first (sorted by the service, new attempts are added at the front)
   return { best: best.score, bestOf: best.totalQuestions, bestPct: pctOf(best), attempts: pastAttempts.value.length, last: timeAgo(last.$createdAt) }
 })
 
@@ -133,7 +131,7 @@ const description = computed(() => quiz.value?.description || (course.value ? `T
               :description="description"
               :status="status"
               :question-count="questions.length"
-              :minutes="Math.max(1, Math.round(questions.length * MINUTES_PER_QUESTION))"
+              :minutes="estimatedMinutes(questions.length)"
               :passing-score="passingScore"
               :button-label="history ? 'Retake Quiz' : 'Start Quiz'"
               :finish-course-to="courseUnfinished ? courseTo : ''"
@@ -173,25 +171,3 @@ const description = computed(() => quiz.value?.description || (course.value ? `T
     </article>
   </div>
 </template>
-
-<style scoped>
-.phase-enter-active {
-  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-}
-.phase-leave-active {
-  transition: opacity 0.15s ease-in;
-}
-.phase-enter-from {
-  opacity: 0;
-  transform: translateY(10px);
-}
-.phase-leave-to {
-  opacity: 0;
-}
-@media (prefers-reduced-motion: reduce) {
-  .phase-enter-active,
-  .phase-leave-active {
-    transition: none;
-  }
-}
-</style>

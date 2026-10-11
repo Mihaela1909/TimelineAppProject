@@ -1,6 +1,7 @@
 <script setup>
 import { formatDate } from '../../utils/time'
 import ProfileSection from './ProfileSection.vue'
+import { scorePercent, passingScoreOf } from '../../utils/quizScore'
 
 // Profile → "Quiz History". Dumb: attempts + a quiz lookup from useProfileProgress.
 const props = defineProps({
@@ -11,8 +12,8 @@ const props = defineProps({
 })
 const emit = defineEmits(['retry'])
 
-const percent = (a) => Math.round((a.score / a.totalQuestions) * 100)
-const passed = (a) => percent(a) >= (props.quizById[a.quizId]?.passingScore || 70)
+const percent = (a) => Math.round(scorePercent(a))
+const passed = (a) => percent(a) >= passingScoreOf(props.quizById[a.quizId])
 </script>
 
 <template>

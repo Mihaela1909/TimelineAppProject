@@ -9,11 +9,9 @@ import AppIcon from '../ui/AppIcon.vue'
 import { splitTitle, lessonsText } from '../../utils/text'
 
 const SHOWN = 8
-const { courses, loading, error, fetchPopularCourses } = useCourses()
+const { courses, loading, error, fetchPublished } = useCourses()
 
-onMounted(() => fetchPopularCourses(SHOWN))
-
-
+onMounted(() => fetchPublished(SHOWN))
 </script>
 
 <template>
@@ -26,7 +24,7 @@ onMounted(() => fetchPopularCourses(SHOWN))
 
     <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-6 text-center text-sm" role="alert">
       <p class="mb-3">{{ error }}</p>
-      <button class="px-4 py-2 rounded-md border border-red-400 hover:bg-red-100" @click="fetchPopularCourses(SHOWN)">Retry</button>
+      <button class="px-4 py-2 rounded-md border border-red-400 hover:bg-red-100" @click="fetchPublished(SHOWN)">Retry</button>
     </div>
 
     <div v-else-if="courses.length === 0" class="bg-white rounded-lg p-10 text-center text-sm text-bark/60">

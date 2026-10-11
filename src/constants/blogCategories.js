@@ -7,7 +7,7 @@ export const CATEGORY_STYLES = Object.freeze({
   Digest: 'bg-cyan-100 text-cyan-700',
 })
 
-export const DEFAULT_CATEGORY_STYLE = 'bg-gray-100 text-gray-700'
+const DEFAULT_CATEGORY_STYLE = 'bg-gray-100 text-gray-700'
 
 // Admins can create new categories, which have no colour above — they
 // fall back to a neutral grey badge instead of showing no badge at all.

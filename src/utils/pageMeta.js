@@ -3,9 +3,9 @@
 // a blog post…) call setPageMeta again once the data is there.
 // Plain DOM helper: no Vue, no Appwrite.
 
-export const SITE_URL = 'https://timeline.appwrite.network'
+const SITE_URL = 'https://timeline.appwrite.network'
 const SITE_NAME = 'Timeline'
-export const DEFAULT_DESCRIPTION =
+const DEFAULT_DESCRIPTION =
   'Learn history for free with Timeline: courses with illustrated lessons, quizzes to test yourself, a history blog and a daily "on this day" event.'
 const DEFAULT_IMAGE = `${SITE_URL}/og-image.jpg`
 

@@ -10,6 +10,7 @@ import PublishToggle from '../../components/ui/PublishToggle.vue'
 import AppIcon from '../../components/ui/AppIcon.vue'
 import QuizQuestionList from '../../components/admin/QuizQuestionList.vue'
 import { useToast } from '../../composables/useToast'
+import { DEFAULT_PASSING_SCORE } from '../../utils/quizScore'
 
 const route = useRoute()
 const router = useRouter()
@@ -32,7 +33,7 @@ const pendingDeleteQuestion = ref(null)
 const form = ref({
   title: '',
   courseId: '',
-  passingScore: 70,
+  passingScore: DEFAULT_PASSING_SCORE,
   coverImageId: null,
   headerImageId: null,
   published: false,

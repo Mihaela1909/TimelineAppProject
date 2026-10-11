@@ -18,6 +18,16 @@ function contentEvents(rows, kind, label, editPath) {
   }))
 }
 
+function signupEvents(rows) {
+  return rows.map((row) => ({
+    id: `user-${row.$id}`,
+    icon: 'user',
+    text: `New user signed up — ${row.name || 'unnamed user'}`,
+    date: row.$createdAt,
+    to: null,
+  }))
+}
+
 export function useAdminDashboard() {
   const stats = ref({ courses: 0, quizzes: 0, blogPosts: 0, users: 0 })
   const activity = ref([])
@@ -48,13 +58,7 @@ export function useAdminDashboard() {
         ...contentEvents(latestCourses, 'course', 'Course', (r) => `/admin/courses/${r.$id}/edit`),
         ...contentEvents(latestQuizzes, 'quiz', 'Quiz', (r) => `/admin/quizzes/${r.$id}/edit`),
         ...contentEvents(latestPosts, 'post', 'Post', (r) => `/admin/blog-posts/${r.$id}/edit`),
-        ...latestUsers.map((row) => ({
-          id: `user-${row.$id}`,
-          icon: 'user',
-          text: `New user signed up — ${row.name || 'unnamed user'}`,
-          date: row.$createdAt,
-          to: null,
-        })),
+        ...signupEvents(latestUsers),
       ]
         .sort((a, b) => new Date(b.date) - new Date(a.date))
         .slice(0, PER_TABLE * 2)
@@ -68,6 +72,3 @@ export function useAdminDashboard() {
 
   return { stats, activity, loading, error, fetchAll }
 }
-
-// Moved to utils/time.js (also used by the quiz page); re-exported for existing imports.
-export { timeAgo } from '../utils/time'

@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { getStatisticsData } from '../services/statsService'
 import { ROLES } from '../constants/roles'
+import { scorePercent, passingScoreOf } from '../utils/quizScore'
 
 // APPLICATION LOGIC for the admin Statistics page: turns raw rows into
 // the numbers each tile/chart shows. Pure computation lives in
@@ -8,9 +9,6 @@ import { ROLES } from '../constants/roles'
 
 const MONTHS_SHOWN = 6
 const ACTIVE_WINDOW_DAYS = 30
-const DEFAULT_PASSING_SCORE = 70
-
-const percent = (a) => (a.totalQuestions ? (a.score / a.totalQuestions) * 100 : 0)
 const average = (values) => (values.length ? values.reduce((s, v) => s + v, 0) / values.length : 0)
 const monthKey = (date) => `${date.getFullYear()}-${date.getMonth()}`
 
@@ -71,13 +69,13 @@ function quizPerformance(quizzes, attempts) {
   return quizzes
     .map((quiz) => {
       const rows = byQuiz[quiz.$id] || []
-      const passing = quiz.passingScore || DEFAULT_PASSING_SCORE
+      const passing = passingScoreOf(quiz)
       return {
         id: quiz.$id,
         title: quiz.title,
         attempts: rows.length,
-        avgScore: Math.round(average(rows.map(percent))),
-        passRate: rows.length ? Math.round((rows.filter((a) => percent(a) >= passing).length / rows.length) * 100) : 0,
+        avgScore: Math.round(average(rows.map(scorePercent))),
+        passRate: rows.length ? Math.round((rows.filter((a) => scorePercent(a) >= passing).length / rows.length) * 100) : 0,
       }
     })
     .sort((a, b) => b.attempts - a.attempts)
@@ -100,7 +98,7 @@ export function buildStatistics({ profiles, courses, lessons, quizzes, progress,
       activeLearners,
       lessonsCompleted: progress.length,
       quizAttempts: attempts.length,
-      avgQuizScore: Math.round(average(attempts.map(percent))),
+      avgQuizScore: Math.round(average(attempts.map(scorePercent))),
     },
     signups: months,
     courses: courseEngagement(courses, lessons, progress),

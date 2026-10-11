@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { useAdminDashboard, timeAgo } from '../../composables/useAdminDashboard'
+import { useAdminDashboard } from '../../composables/useAdminDashboard'
+import { timeAgo } from '../../utils/time'
 import AppIcon from '../../components/ui/AppIcon.vue'
 
 const { stats, activity, loading, error, fetchAll } = useAdminDashboard()

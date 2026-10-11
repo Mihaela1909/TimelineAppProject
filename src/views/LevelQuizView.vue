@@ -6,11 +6,10 @@ import AppIcon from '../components/ui/AppIcon.vue'
 import StatBoxes from '../components/ui/StatBoxes.vue'
 import QuizQuestion from '../components/quizzes/QuizQuestion.vue'
 import LevelQuizResults from '../components/quizzes/LevelQuizResults.vue'
+import { estimatedMinutes } from '../utils/quizScore'
 
 // "Test your knowledge" from the home page: a mixed quiz from every course,
 // ending with a level and a recommended course. Same look as a normal quiz page.
-const MINUTES_PER_QUESTION = 0.4
-
 const { currentUser } = useAuth()
 const {
   questions,
@@ -82,7 +81,7 @@ onMounted(reload)
                 item-class="w-24 md:w-36"
                 :stats="[
                   { value: questions.length, label: 'Questions' },
-                  { value: `~${Math.max(1, Math.round(questions.length * MINUTES_PER_QUESTION))} min`, label: 'Est. time' },
+                  { value: `~${estimatedMinutes(questions.length)} min`, label: 'Est. time' },
                   { value: courseCount, label: courseCount === 1 ? 'Course' : 'Courses' },
                 ]"
               />
@@ -118,25 +117,3 @@ onMounted(reload)
     </article>
   </div>
 </template>
-
-<style scoped>
-.phase-enter-active {
-  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-}
-.phase-leave-active {
-  transition: opacity 0.15s ease-in;
-}
-.phase-enter-from {
-  opacity: 0;
-  transform: translateY(10px);
-}
-.phase-leave-to {
-  opacity: 0;
-}
-@media (prefers-reduced-motion: reduce) {
-  .phase-enter-active,
-  .phase-leave-active {
-    transition: none;
-  }
-}
-</style>

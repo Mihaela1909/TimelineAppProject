@@ -19,8 +19,3 @@ export function getImagePreviewUrl(fileId) {
   // feature — getFileView() serves the raw file and works on every plan.
   return String(storage.getFileView(BUCKETS.MEDIA, fileId))
 }
-
-export async function deleteImage(fileId) {
-  if (!fileId) return
-  return storage.deleteFile(BUCKETS.MEDIA, fileId)
-}

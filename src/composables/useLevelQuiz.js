@@ -59,7 +59,13 @@ export function scoreLevelQuiz(questions, answers, courses, statusById = {}) {
     entry.total++
     if (answers[i] === q.correctOptionIndex) entry.correct++
   })
-  const progressRank = (id) => ({ completed: 2, 'in-progress': 1 })[statusById[id]?.state] ?? 0
+  // 0 = not started, 1 = in progress, 2 = completed (used to break ties)
+  function progressRank(courseId) {
+    const state = statusById[courseId]?.state
+    if (state === 'completed') return 2
+    if (state === 'in-progress') return 1
+    return 0
+  }
   const byCourse = courses
     .filter((c) => perCourse[c.$id])
     .map((course) => ({ course, ...perCourse[course.$id], ratio: perCourse[course.$id].correct / perCourse[course.$id].total }))

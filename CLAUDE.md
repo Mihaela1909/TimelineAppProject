@@ -78,6 +78,11 @@ A user's upload does NOT go live until an admin approves it.
 - Status badges ("In Progress" with a bar / "Completed") come from `useCourseStatuses` (2 reads: the user's progress + all published lessons). Guests see none.
 - Sort options: Newest / A–Z / Most lessons. There's no "Popular", because there's no popularity data. 6 per page via `components/ui/PaginationNav.vue`. `HistoryCard` has `layout="grid"` for grids.
 
+## Shared list + quiz helpers
+- Courses / quizzes / blog list pages share `composables/useListControls.js` (search, category pills, sort, pagination, grid animation key; `byNewest` / `byTitle` comparers) and `components/ui/ListControls.vue` (the search box + sort menu + pills, v-model:search/sort/category). Each page only defines its `SORTS` ({ value, label, compare }) and `PAGE_SIZE`. The card animation classes (`cards-stagger` / `cards-swap`) and the quiz `phase` transition live in `style.css`.
+- Quiz scores: `utils/quizScore.js` (`DEFAULT_PASSING_SCORE` 70, `scorePercent(attempt)`, `passingScoreOf(quiz)`, `estimatedMinutes(n)`). Don't re-type 70 or score/total maths.
+- `useCourses().fetchPublished(limit?)` serves the home (limit), courses and quizzes pages.
+
 ## Course + lesson pages
 - `/courses/:id` → `CourseDetailView.vue`; `/courses/:id/lessons/:lessonId` → `LessonView.vue`. Both use `components/courses/CourseBanner.vue` (header image, falling back to cover, grayscale + umber fade).
 - Overview: the main button is "Start course" / "Continue · Lesson N" / "Review course". Lesson rows are done (parchment + ✓) / current = first not-done (ochre) / upcoming (white). The course quiz (from `useCourseDetail().quiz`) unlocks once all lessons are done; the lock is UX only, the quiz page itself stays public.
@@ -153,5 +158,5 @@ A user's upload does NOT go live until an admin approves it.
 - Admin edit forms: `fetchOne` in the admin composables has its own `loadingOne` / `loadError`, so the form shows a skeleton or a Retry box instead of an empty form. Deletes use `deleting`, user changes `updating` (double-click guards).
 
 ## Known gaps / next priorities
-1. Rejected/replaced files stay in the bucket (orphaned). Cleanup would need bucket `Delete` for label `admin`, then `deleteImage()` on reject/replace.
+1. Rejected/replaced files stay in the bucket (orphaned). Cleanup would need bucket `Delete` for label `admin`, plus a `storage.deleteFile` helper in `mediaService` called on reject/replace.
 2. Role/label sync and hard user blocking need an Appwrite Function (server SDK + API key).

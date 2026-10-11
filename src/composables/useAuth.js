@@ -10,8 +10,7 @@ import { getSettingsByUserId } from '../services/profileSettingsService'
 // the profile page all agree on who's logged in without a Pinia store.
 const currentUser = ref(null)
 const authChecked = ref(false)
-let refreshing = null // the in-flight refreshCurrentUser() request, if any
-let latestLoad = 0
+let pendingCheck = null // the 'who is logged in?' request while it's running
 
 // Friendly login messages per Appwrite error type — so a correct password
 // that's refused for another reason doesn't show "Incorrect password".
@@ -24,6 +23,14 @@ const LOGIN_ERRORS = {
 
 // Appwrite's own minimum — checked here first so the user gets a clear
 // message instead of a raw API error.
+// Turns an Appwrite login error into the message shown to the user.
+function loginErrorMessage(err) {
+  if (LOGIN_ERRORS[err.type]) return LOGIN_ERRORS[err.type]
+  if (err.code === 429) return LOGIN_ERRORS.general_rate_limit_exceeded
+  if (err.code === 401) return LOGIN_ERRORS.user_invalid_credentials
+  return 'Could not log in. Please try again.'
+}
+
 const MIN_PASSWORD_LENGTH = 8
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -49,7 +56,7 @@ export function useAuth() {
     loading.value = true
     try {
       await authService.registerUser({ email, password, name })
-      await refreshCurrentUser({ force: true })
+      await refreshCurrentUser()
     } catch (err) {
       console.error(err)
       // 409 = Appwrite "already exists". Never show raw API text to users.
@@ -67,17 +74,12 @@ export function useAuth() {
 
     loading.value = true
     try {
-      try {
-        await authService.loginUser({ email, password })
-      } catch (err) {
+      await authService.loginUser({ email, password }).catch((err) => {
         console.error(err)
-        error.value =
-          LOGIN_ERRORS[err.type] ||
-          (err.code === 429 ? LOGIN_ERRORS.general_rate_limit_exceeded : null) ||
-          (err.code === 401 ? LOGIN_ERRORS.user_invalid_credentials : 'Could not log in. Please try again.')
+        error.value = loginErrorMessage(err)
         throw err
-      }
-      await refreshCurrentUser({ force: true })
+      })
+      await refreshCurrentUser()
       // Correct password but no user afterwards = the account is
       // deactivated (refreshCurrentUser signed them straight back out).
       if (!currentUser.value) {
@@ -100,7 +102,7 @@ export function useAuth() {
     loading.value = true
     try {
       await authService.updateDisplayName(name)
-      await refreshCurrentUser({ force: true })
+      await refreshCurrentUser()
       return true
     } catch (err) {
       error.value = 'Could not update your name.'
@@ -122,7 +124,7 @@ export function useAuth() {
     loading.value = true
     try {
       await authService.updateUserEmail(email, password)
-      await refreshCurrentUser({ force: true })
+      await refreshCurrentUser()
       return true
     } catch (err) {
       error.value = 'Could not update email — check your password is correct.'
@@ -162,33 +164,23 @@ export function useAuth() {
     currentUser.value = null
   }
 
-  // Several callers may ask at once (router guard, header): they share one request.
-  // force = after login/register/profile changes, always load fresh; `latestLoad`
-  // makes sure an older, slower check can't overwrite the newer result.
-  function refreshCurrentUser({ force = false } = {}) {
-    if (refreshing && !force) return refreshing
-    const load = loadCurrentUser(++latestLoad).finally(() => {
-      if (refreshing === load) refreshing = null
-    })
-    refreshing = load
-    return load
+  // If a check is already running (e.g. started in the background by the router),
+  // wait for that one instead of sending a second request.
+  function refreshCurrentUser() {
+    if (!pendingCheck) pendingCheck = loadCurrentUser().finally(() => (pendingCheck = null))
+    return pendingCheck
   }
 
-  async function loadCurrentUser(loadId) {
-    const isLatest = () => loadId === latestLoad
+  async function loadCurrentUser() {
     try {
       // account.get() is the one call that MUST succeed for someone to be
       // considered logged in. If this throws, they're genuinely not
       // authenticated — currentUser correctly becomes null.
       const account = await authService.getCurrentUser()
 
-      // Role and avatar are secondary enrichment, each fetched from our
-      // own tables. A problem with either one (missing table, bad env var,
-      // etc.) should NOT undo a successful login — so each gets its own
-      // .catch and degrades to null instead of failing the whole thing.
-      // Live (admin-approved) images live on `profiles`; pending
-      // submissions awaiting approval live on `profile_settings`.
-      // Both rows are fetched in parallel (one round trip instead of two).
+      // Role and photos come from our own tables (live photos on `profiles`,
+      // pending ones on `profile_settings`), loaded in parallel. A problem with
+      // either should NOT undo a successful login, so each falls back to null.
       const [profile, settings] = await Promise.all([
         getProfileByUserId(account.$id).catch((err) => {
           console.error('Could not load profiles row:', err)
@@ -207,25 +199,18 @@ export function useAuth() {
         throw new Error('Account deactivated')
       }
 
-      const role = profile?.role || null
-      const avatarImageId = profile?.avatarImageId || null
-      const headerImageId = profile?.headerImageId || null
-      const pendingAvatarImageId = settings?.pendingAvatarImageId || null
-      const pendingHeaderImageId = settings?.pendingHeaderImageId || null
-
-      if (!isLatest()) return
       currentUser.value = {
         ...account,
-        role,
-        avatarImageId,
-        headerImageId,
-        pendingAvatarImageId,
-        pendingHeaderImageId,
+        role: profile?.role || null,
+        avatarImageId: profile?.avatarImageId || null,
+        headerImageId: profile?.headerImageId || null,
+        pendingAvatarImageId: settings?.pendingAvatarImageId || null,
+        pendingHeaderImageId: settings?.pendingHeaderImageId || null,
       }
     } catch {
-      if (isLatest()) currentUser.value = null
+      currentUser.value = null
     } finally {
-      if (isLatest()) authChecked.value = true
+      authChecked.value = true
     }
   }
 

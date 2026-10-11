@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useAuth } from '../../composables/useAuth'
 import { getImagePreviewUrl } from '../../services/mediaService'
@@ -15,7 +15,7 @@ const navLinks = [
   { label: 'Blog', to: '/blog' },
 ]
 
-const { currentUser, authChecked, refreshCurrentUser, logout } = useAuth()
+const { currentUser, logout } = useAuth()
 const route = useRoute()
 const router = useRouter()
 
@@ -23,10 +23,6 @@ const mobileOpen = ref(false) // hamburger panel (small screens)
 const accountOpen = ref(false) // profile-circle dropdown (logged in)
 
 const isStaff = computed(() => STAFF_ROLES.includes(currentUser.value?.role))
-
-onMounted(() => {
-  if (!authChecked.value) refreshCurrentUser()
-})
 
 // RESET: close any open menu after navigating.
 watch(
