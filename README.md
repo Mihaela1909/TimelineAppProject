@@ -118,40 +118,30 @@ No backend code, no state library (shared state uses module-level composables), 
 
 ## Running it locally
 
-Requirements: Node 20.19+ (Vite 8) and an Appwrite project set up as described below.
+Requirements: Node 20.19+ and a `.env` file with the Appwrite endpoint, project, database, bucket and table IDs (`VITE_APPWRITE_…`, read in `src/services/appwrite.js`).
 
 ```bash
-git clone https://github.com/Mihaela1909/TimelineAppProject.git
-cd TimelineAppProject
 npm install
-cp .env.example .env      # then fill in your Appwrite IDs
-npm run dev               # http://localhost:5173
+npm run dev     # http://localhost:5173
+npm run build   # generates sitemap.xml, then builds into dist/
 ```
 
-| Script | |
-|---|---|
-| `npm run dev` | dev server |
-| `npm run build` | generates `public/sitemap.xml` from published content, then builds into `dist/` |
-| `npm run preview` | serve the production build |
-
-**Deploying to Appwrite Sites:** connect the GitHub repo, use build command `npm run build` and output directory `dist`, add the same `VITE_…` environment variables in the Site's settings, and set the **fallback file to `index.html`**, so deep links like `/courses/123` work on refresh. Vite bakes the variables in at build time, so redeploy after changing them.
+Deployed on **Appwrite Sites** from this repository (build command `npm run build`, output `dist`).
 
 ---
 
 ## Appwrite setup
 
-### Auth labels
-Staff accounts need an Appwrite **user label** (Auth → user → Labels), because labels are what table permissions check:
+### Roles
+Staff accounts have an Appwrite **user label**, which is what the table permissions check:
 - `admin`: full access
 - `editor`: content only
 
-Their `profiles.role` should match (`admin` / `editor`); the app uses it to show the right pages.
+`profiles.role` (`user` / `editor` / `admin`) decides which pages the app shows.
 
 ### Data model
 
 ![Data model](docs/data-model.png)
-
-Source: [docs/data-model.mmd](docs/data-model.mmd) (Mermaid). Edit it there and re-render if the tables change.
 
 ### Tables
 
@@ -170,13 +160,13 @@ All rows reference each other by ID (e.g. `lessons.courseId`). "Row Security ON"
 | `quiz_attempts` | `userId`, `quizId`, `score`, `totalQuestions` | **ON** | Create → Users · Read → `admin` · Delete → `admin`, `editor` |
 | `saved_posts` | `userId`, `postId` | **ON** | Create → Users |
 
-**Storage:** one `media` bucket with File Security **off**: Read → Any, Create → Users. Images are shown with `getFileView()`, because `getFilePreview()` needs a paid plan.
+**Storage:** one `media` bucket: Read → Any, Create → Users. Uploads are compressed in the browser before upload.
 
 ---
 
 ## Architecture
 
-The full rules are in **[AGENTS.md](AGENTS.md)**: layers, SRP/SoC, the check-and-reset pattern, and Vue and design conventions. Project decisions and history are in **[CLAUDE.md](CLAUDE.md)**.
+The coding rules are in **[AGENTS.md](AGENTS.md)**: layers, SRP/SoC, the check-and-reset pattern, and Vue and design conventions. Project decisions are in **[CLAUDE.md](CLAUDE.md)**.
 
 **Data flows one way: view → composable → service → Appwrite.**
 
@@ -199,7 +189,7 @@ src/
 2. `useSavedPosts().toggle()`, which has a busy guard and updates the shared state, which calls
 3. `savedPostService.savePost()`, which checks for a duplicate and then runs `createRow` with permissions for that user only.
 
-**Patterns worth noting**
+**Patterns**
 - **Check and reset:** every user action blocks double submits, validates and trims input, clears the previous error, always resets its busy flag in `finally`, returns `true` / `false`, and shows a toast.
 - **Pure logic kept separate:** e.g. `buildStatistics()` takes plain data and returns the stats, with no loading or Vue involved.
 - **Full reads page through results:** Appwrite returns only 25 rows by default, so every "get all" uses `listAllRows()` (cursor pagination).
@@ -247,23 +237,51 @@ src/
 
 ## Known limitations
 
-These need server-side code (an Appwrite Function with an API key), which is out of scope for a front-end-only project:
+These need server-side code (an Appwrite Function with an API key), which is out of scope for this front-end-only project:
 
 - **Role vs. label:** changing a user's role in the app updates `profiles.role`, but the matching Appwrite label still has to be added in the console.
 - **Deactivation** is enforced by the app (the user is signed out on the next page load). A hard block uses the console's "Block user".
 - **Quiz grading happens in the browser,** so a determined user could submit a fake attempt through the API.
 - **Deleting an account** only signs the user out; removing an Auth account needs the server SDK.
-- **Rejected or replaced images stay in the bucket** (no cleanup yet).
-- **Statistics are calculated in the browser** from full table reads. This is fine at this size; it would move to a Function for large data.
+- **Rejected or replaced images stay in the bucket.**
+- **Statistics are calculated in the browser** from full table reads.
 - "Most Popular Courses" shows the first published courses, because guests can't read progress, so there's no popularity data.
 
 ---
 
 ## AI-assisted development
 
-<!-- To be completed: tools used, what for, and examples of reviewing / correcting AI suggestions. -->
+### Tools
+**Claude Code** (Anthropic, Claude Opus model) inside VS Code. It can read the project, run the build and edit files; every change was reviewed and tested before committing. To keep it consistent with my architecture, it follows two files I maintain:
+- [AGENTS.md](AGENTS.md): layers, SRP/SoC, check-and-reset, Vue and design rules
+- [CLAUDE.md](CLAUDE.md): project decisions, Appwrite setup and their reasons
 
-AI (Claude Code) was used during development. Its work was guided and constrained by the project rules in [AGENTS.md](AGENTS.md), with decisions recorded in [CLAUDE.md](CLAUDE.md). All changes were reviewed, and security-relevant permissions were set and tested by hand in the Appwrite console.
+### What AI was used for
+- **Implementation:** turning the Figma mockups into Vue components, and the Appwrite integration (services, composables, permissions).
+- **Debugging:** e.g. 401 errors from Row Security, images not loading, a page transition crashing the quiz page.
+- **Reviews:** security (XSS, CSRF, brute force, permissions), accessibility, performance (Lighthouse), SEO, and a final pass for unnecessary or duplicated code.
+- **Documentation:** this README and the data model diagram.
+
+Planning stayed mine: the persona, the MoSCoW prioritisation and the Figma mockups.
+
+### Where AI helped
+- **Finding a data leak.** A security check sent requests to Appwrite as a logged-out visitor and found that the `profiles` table was readable by anyone: every user's name, email and role. The UI never showed it, so I hadn't noticed. I fixed the table permissions, and a re-test returned 0 rows.
+- **XSS.** It pointed out that lesson and blog content was rendered with `v-html` straight from the database. It added an allow-list sanitizer (`utils/sanitizeHtml.js`), and none of the 10 attack payloads we tested ran.
+- **Performance.** Lighthouse scored the home page 77. The page was waiting for the login check and the Google Fonts before rendering, and served oversized images. After the fixes, a local build scored 98.
+
+### Where I had to correct or reject AI suggestions
+- **A permission hole.** The generated code gave users *update* permission on their own quiz attempts and progress, so anyone could raise their own score through the API. I caught it while reviewing the data requirements, and it was removed; users can now only read and delete their own rows (see `quizAttemptService.js`).
+- **A design that didn't work.** The first image setup used per-file permissions. Images kept failing to load, so I dropped it in favour of one bucket with simple rules, with moderation in the app instead: photos only go live after admin approval.
+- **Wrong API for my plan.** It used `getFilePreview()`, which needs Appwrite's paid plan, so it was switched to `getFileView()`.
+- **Design details.** It follows instructions literally, so I compared every page with my mockups and corrected things: white cards instead of cream, no hover colour effect, thinner lines, smaller headings, and design-only changes that don't touch the logic.
+- **Too much complexity.** Its first version of the faster login check was hard to follow. In the final clean-up I asked for code an average person can read, and it was reduced to a few lines with the same behaviour.
+
+### Reflection
+AI made development much faster and was good at repetitive work, at explaining errors, and at checking things I wouldn't have thought to check (XSS, robots.txt, image sizes). Human evaluation was still essential:
+- **Security:** generated code contained a permission hole, and only testing with real requests revealed the public `profiles` table. Hidden buttons and router guards *look* secure, so I always verified the permissions in the Appwrite console myself.
+- **Design:** matching the mockups needed my eye, page by page.
+- **Architecture and readability:** without the AGENTS.md rules, the code drifted towards mixing layers or adding complexity. I decided what was simple enough and which duplication was acceptable.
+- **Scope:** AI will keep adding features; the MoSCoW decided what got built.
 
 ---
 
