@@ -1,6 +1,8 @@
 <script setup>
 import { ref } from 'vue'
 import { useInView } from '../../composables/useInView'
+import { useImagesReady } from '../../composables/useImagesReady'
+import { heroImage } from '../../utils/heroImage'
 
 // "All Quizzes" banner: the Thinker (+ "Eureka!") bottom-left and Tesla
 // (+ "Hmmm..") bottom-right, on the spiral background. Positions were fitted
@@ -24,6 +26,11 @@ const rightGroup = [
 const hero = ref(null)
 const { inView } = useInView(hero, { threshold: 0.3, once: false })
 
+// Wait for the background and every figure before playing, so they all appear together.
+const BACKGROUND = heroImage('/images/quizzes/quizbg.webp')
+const figureUrl = (f) => heroImage(`${IMG}/${f.src}.webp`)
+const { ready } = useImagesReady([BACKGROUND, ...[...leftGroup, ...rightGroup].map(figureUrl)], { timeout: 8000 })
+
 const place = (f) => ({
   left: `${f.left}%`,
   top: `${f.top}%`,
@@ -35,18 +42,23 @@ const place = (f) => ({
 <template>
   <section
     ref="hero"
-    :class="{ 'is-playing': inView }"
+    :class="{ 'is-playing': inView && ready }"
     class="relative overflow-hidden bg-umber h-[95vw] max-h-[34rem] md:h-auto md:max-h-none md:aspect-[1459/540]"
   >
     <!-- bg-bottom: matches the mockup (fitted) -->
-    <div class="absolute inset-0 bg-cover bg-bottom" style="background-image: url('/images/quizzes/quizbg.webp')" aria-hidden="true"></div>
+    <div
+      class="absolute inset-0 bg-cover bg-bottom transition-opacity duration-500 motion-reduce:transition-none"
+      :class="ready ? 'opacity-100' : 'opacity-0'"
+      :style="{ backgroundImage: `url(${BACKGROUND})` }"
+      aria-hidden="true"
+    ></div>
 
     <!-- Group boxes = mockup regions x 0–494 / 998–1459, from y 44 / 68 to the bottom (px of 1459×540) -->
     <div class="absolute left-0 bottom-0 w-[50%] md:w-[33.86%] aspect-[494/496]" aria-hidden="true">
-      <img v-for="f in leftGroup" :key="f.src" :src="`${IMG}/${f.src}.webp`" alt="" class="absolute h-auto max-w-none" :class="f.kind" :style="place(f)" />
+      <img v-for="f in leftGroup" :key="f.src" :src="figureUrl(f)" alt="" class="absolute h-auto max-w-none" :class="f.kind" :style="place(f)" />
     </div>
     <div class="absolute right-0 bottom-0 w-[48%] md:w-[31.6%] aspect-[461/472]" aria-hidden="true">
-      <img v-for="f in rightGroup" :key="f.src" :src="`${IMG}/${f.src}.webp`" alt="" class="absolute h-auto max-w-none" :class="f.kind" :style="place(f)" />
+      <img v-for="f in rightGroup" :key="f.src" :src="figureUrl(f)" alt="" class="absolute h-auto max-w-none" :class="f.kind" :style="place(f)" />
     </div>
 
     <!-- Short bottom fade, like the courses hero -->

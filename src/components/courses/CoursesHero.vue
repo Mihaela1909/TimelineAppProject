@@ -1,6 +1,8 @@
 <script setup>
 import { ref } from 'vue'
 import { useInView } from '../../composables/useInView'
+import { useImagesReady } from '../../composables/useImagesReady'
+import { heroImage } from '../../utils/heroImage'
 
 // "All Courses" banner: a stone-hall background with two groups of historical
 // figures, measured from the Figma mockup (1648×604 frame).
@@ -36,6 +38,11 @@ const ROW_DELAY = 0.28 // seconds between rows
 const hero = ref(null)
 const { inView } = useInView(hero, { threshold: 0.3, once: false })
 
+// Wait for the background and every figure before playing, so they all appear together.
+const BACKGROUND = heroImage('/images/courses/hero-bg.webp')
+const figureUrl = (f) => heroImage(`${FIGURES}/${f.src}.webp`)
+const { ready } = useImagesReady([BACKGROUND, ...[...leftGroup, ...rightGroup].map(figureUrl)], { timeout: 8000 })
+
 const place = (f) => ({
   left: `${f.left}%`,
   top: `${f.top}%`,
@@ -47,11 +54,16 @@ const place = (f) => ({
 <template>
   <section
     ref="hero"
-    :class="{ 'is-playing': inView }"
+    :class="{ 'is-playing': inView && ready }"
     class="relative overflow-hidden bg-umber h-[95vw] max-h-[34rem] md:h-auto md:max-h-none md:aspect-[1648/604]"
   >
     <!-- Background: stone hall -->
-    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/images/courses/hero-bg.webp')" aria-hidden="true"></div>
+    <div
+      class="absolute inset-0 bg-cover bg-center transition-opacity duration-500 motion-reduce:transition-none"
+      :class="ready ? 'opacity-100' : 'opacity-0'"
+      :style="{ backgroundImage: `url(${BACKGROUND})` }"
+      aria-hidden="true"
+    ></div>
 
     <!-- Left group (bottom-left corner) -->
     <!-- Group boxes = mockup regions x 0–560 / 1000–1648, y 100–604 (px of 1648×604) -->
@@ -59,7 +71,7 @@ const place = (f) => ({
       <img
         v-for="f in leftGroup"
         :key="f.src"
-        :src="`${FIGURES}/${f.src}.webp`"
+        :src="figureUrl(f)"
         alt=""
         class="figure absolute h-auto max-w-none"
         :style="place(f)"
@@ -71,7 +83,7 @@ const place = (f) => ({
       <img
         v-for="f in rightGroup"
         :key="f.src"
-        :src="`${FIGURES}/${f.src}.webp`"
+        :src="figureUrl(f)"
         alt=""
         class="figure absolute h-auto max-w-none"
         :style="place(f)"

@@ -1,4 +1,7 @@
 <script setup>
+import { useImagesReady } from '../../composables/useImagesReady'
+import { heroImage } from '../../utils/heroImage'
+
 // Napoleon on a rearing horse breaking out of a stone window, with the cream
 // rings — shared by "Who are we" (home) and the login / register screens.
 // A square stage: every layer is placed in % of it, so they stay aligned at
@@ -11,6 +14,19 @@ defineProps({
 // Placement in % of the stage, per mockup.
 // Home: big ring top-left, pair bottom-right, Napoleon bigger and breaking out top-left.
 // Auth (login/register): big ring top-right, pair bottom-left (mirrored), Napoleon inside the frame.
+const DIR = '/images/home/who-are-we'
+const IMAGES = {
+  ringBack: `${DIR}/ring-back.webp`,
+  window: heroImage(`${DIR}/window.webp`), // phones: half-size version
+  napoleon: heroImage(`${DIR}/napoleon.webp`), // phones: half-size version
+  windowFront: `${DIR}/window-front.webp`,
+  ringsFront: `${DIR}/rings-front.webp`,
+}
+
+// All five layers fade in together once they're loaded, and only then can the
+// animation play — otherwise the pieces appeared one by one while downloading.
+const { ready } = useImagesReady(Object.values(IMAGES), { timeout: 8000 })
+
 const LAYOUTS = {
   home: { back: 'left-[-7%] top-[-9.5%] w-[50%]', front: 'left-[68.5%] top-[67%] w-[47%]', rider: 'left-[2%] top-[-3%] w-[86%]' },
   auth: { back: 'left-[56%] top-[-9%] w-[50%]', front: 'left-[-17%] top-[69%] w-[44%] [--flip:-1]', rider: 'left-[8%] top-[5%] w-[78%]' },
@@ -18,14 +34,15 @@ const LAYOUTS = {
 </script>
 
 <template>
-  <div :class="{ 'is-playing': playing }" class="relative w-full aspect-square">
-    <img src="/images/home/who-are-we/ring-back.webp" alt="" class="ring-pop absolute" :class="LAYOUTS[layout].back" />
+  <div
+    :class="[{ 'is-playing': playing && ready }, ready ? 'opacity-100' : 'opacity-0']"
+    class="relative w-full aspect-square transition-opacity duration-500 motion-reduce:transition-none"
+  >
+    <img :src="IMAGES.ringBack" alt="" class="ring-pop absolute" :class="LAYOUTS[layout].back" />
     <!-- drop-shadow follows the window's outline (not its box), matching the
          paper-cut shadow baked into the Napoleon image: down and to the left -->
     <img
-      src="/images/home/who-are-we/window.webp"
-      srcset="/images/home/who-are-we/window-sm.webp 760w, /images/home/who-are-we/window.webp 1395w"
-      sizes="(min-width: 768px) 45vw, 90vw"
+      :src="IMAGES.window"
       width="1395"
       height="1395"
       alt=""
@@ -37,9 +54,7 @@ const LAYOUTS = {
          frame over the top and left edges in his final pose. -->
     <div class="absolute inset-0 [clip-path:inset(-50%_15.3%_15%_-50%)]">
       <img
-        src="/images/home/who-are-we/napoleon.webp"
-        srcset="/images/home/who-are-we/napoleon-sm.webp 640w, /images/home/who-are-we/napoleon.webp 1068w"
-        sizes="(min-width: 768px) 32vw, 65vw"
+        :src="IMAGES.napoleon"
         width="1068"
         height="1113"
         alt="Napoleon on a rearing horse, emerging from a stone window"
@@ -48,8 +63,8 @@ const LAYOUTS = {
       />
     </div>
 
-    <img src="/images/home/who-are-we/window-front.webp" alt="" class="absolute inset-0 w-full h-full" />
-    <img src="/images/home/who-are-we/rings-front.webp" alt="" style="--delay: 0.25s" class="ring-pop absolute" :class="LAYOUTS[layout].front" />
+    <img :src="IMAGES.windowFront" alt="" class="absolute inset-0 w-full h-full" />
+    <img :src="IMAGES.ringsFront" alt="" style="--delay: 0.25s" class="ring-pop absolute" :class="LAYOUTS[layout].front" />
   </div>
 </template>
 

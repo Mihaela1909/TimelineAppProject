@@ -1,6 +1,8 @@
 <script setup>
 import { ref } from 'vue'
 import { useInView } from '../../composables/useInView'
+import { useImagesReady } from '../../composables/useImagesReady'
+import { heroImage } from '../../utils/heroImage'
 
 // "Blog" banner: Fitzgerald + Woolf bottom-left, Camus + Kafka bottom-right.
 // Positions were fitted against the 1408×520 mockup (pixel matching) and stored
@@ -20,6 +22,11 @@ const rightGroup = [
 const hero = ref(null)
 const { inView } = useInView(hero, { threshold: 0.3, once: false })
 
+// Wait for the background and every figure before playing, so they all appear together.
+const BACKGROUND = heroImage('/images/blog/hero-bg.webp')
+const figureUrl = (f) => heroImage(`${IMG}/${f.src}.webp`)
+const { ready } = useImagesReady([BACKGROUND, ...[...leftGroup, ...rightGroup].map(figureUrl)], { timeout: 8000 })
+
 const place = (f) => ({
   left: `${f.left}%`,
   top: `${f.top}%`,
@@ -31,17 +38,22 @@ const place = (f) => ({
 <template>
   <section
     ref="hero"
-    :class="{ 'is-playing': inView }"
+    :class="{ 'is-playing': inView && ready }"
     class="relative overflow-hidden bg-umber h-[95vw] max-h-[34rem] md:h-auto md:max-h-none md:aspect-[1408/520]"
   >
-    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/images/blog/hero-bg.webp')" aria-hidden="true"></div>
+    <div
+      class="absolute inset-0 bg-cover bg-center transition-opacity duration-500 motion-reduce:transition-none"
+      :class="ready ? 'opacity-100' : 'opacity-0'"
+      :style="{ backgroundImage: `url(${BACKGROUND})` }"
+      aria-hidden="true"
+    ></div>
 
     <!-- Group boxes = mockup regions x 0–540 / 868–1408, y 90 → bottom (px of 1408×520) -->
     <div class="absolute left-0 bottom-0 w-[58%] md:w-[38.35%] aspect-[540/430]" aria-hidden="true">
-      <img v-for="f in leftGroup" :key="f.src" :src="`${IMG}/${f.src}.webp`" alt="" class="figure absolute h-auto max-w-none" :style="place(f)" />
+      <img v-for="f in leftGroup" :key="f.src" :src="figureUrl(f)" alt="" class="figure absolute h-auto max-w-none" :style="place(f)" />
     </div>
     <div class="absolute right-0 bottom-0 w-[58%] md:w-[38.35%] aspect-[540/430]" aria-hidden="true">
-      <img v-for="f in rightGroup" :key="f.src" :src="`${IMG}/${f.src}.webp`" alt="" class="figure absolute h-auto max-w-none" :style="place(f)" />
+      <img v-for="f in rightGroup" :key="f.src" :src="figureUrl(f)" alt="" class="figure absolute h-auto max-w-none" :style="place(f)" />
     </div>
 
     <div
