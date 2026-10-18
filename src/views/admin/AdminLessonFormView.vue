@@ -142,8 +142,8 @@ async function handleSubmit() {
             <!-- Published / draft switch -->
             <PublishToggle v-model="form.published" />
 
+            <!-- Save button (disabled while saving) -->
             <button
-              <!-- Save button (disabled while saving) -->
               type="submit"
               :disabled="saving"
               class="px-6 py-2.5 bg-olive text-white rounded-lg text-base font-semibold hover:bg-olive/90 transition-colors disabled:opacity-60"

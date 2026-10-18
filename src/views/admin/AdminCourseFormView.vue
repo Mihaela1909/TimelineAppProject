@@ -183,8 +183,8 @@ async function handleSubmit() {
           <ImageUpload v-model="form.headerImageId" label="Course Header image" :required="isRequired('headerImageId')" :invalid="isMissing('headerImageId')" />
         </div>
 
+        <!-- Save button (disabled while saving) -->
         <button
-          <!-- Save button (disabled while saving) -->
           type="submit"
           :disabled="saving"
           class="px-5 py-2.5 bg-olive text-white rounded-md text-sm font-medium disabled:opacity-60"

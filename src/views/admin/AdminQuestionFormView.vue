@@ -159,8 +159,8 @@ async function handleSubmit() {
         </button>
         <div v-else class="mb-5"></div>
 
+        <!-- Save button (disabled while saving) -->
         <button
-          <!-- Save button (disabled while saving) -->
           type="submit"
           :disabled="saving"
           class="px-5 py-2.5 bg-olive text-white rounded-md text-sm font-medium disabled:opacity-60"
