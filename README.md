@@ -1,9 +1,9 @@
 # Timeline
 
-**A free website for learning history:** courses with lessons, quizzes, a blog, and a daily "on this day" event.
+**A free website for learning history.** It has courses with lessons, quizzes to test yourself, a history blog, and a daily "on this day in history" event.
 
-- **Live app:** https://timeline.appwrite.network/
-- **Repository:** https://github.com/Mihaela1909/TimelineAppProject
+- **Website:** https://timeline.appwrite.network/
+- **Code:** https://github.com/Mihaela1909/TimelineAppProject
 
 ![Home page](docs/screenshots/home.jpg)
 
@@ -12,132 +12,134 @@
 ## Contents
 
 1. [Planning](#planning)
-2. [Features](#features)
-3. [Roles and permissions](#roles-and-permissions)
-4. [Tech stack](#tech-stack)
-5. [Running it locally](#running-it-locally)
-6. [Appwrite setup](#appwrite-setup)
-7. [Architecture](#architecture)
-8. [Security model](#security-model)
-9. [UX and accessibility](#ux-and-accessibility)
+2. [What you can do on the site](#what-you-can-do-on-the-site)
+3. [Who can do what](#who-can-do-what)
+4. [What it's built with](#what-its-built-with)
+5. [Running it on your own computer](#running-it-on-your-own-computer)
+6. [How the data is stored](#how-the-data-is-stored)
+7. [How the code is organised](#how-the-code-is-organised)
+8. [Security](#security)
+9. [Ease of use and accessibility](#ease-of-use-and-accessibility)
 10. [Known limitations](#known-limitations)
-11. [AI-assisted development](#ai-assisted-development)
+11. [How AI was used](#how-ai-was-used)
 12. [Screenshots](#screenshots)
 
 ---
 
 ## Planning
 
-The app was planned before it was built: a target persona, a MoSCoW scope, the data model, and Figma mockups for every page, which the finished pages follow.
+Before building anything, I planned the site in four steps:
+1. a **persona**: an imagined typical user, to design for
+2. a **MoSCoW list**: what the site *Must*, *Should*, *Could* and *Won't* have
+3. a **data model**: how the information is stored
+4. **Figma designs** for every page, which the finished pages follow
 
 ### Persona
 
 ![Persona: Mia Hemsworth](docs/planning/persona-mia.png)
 
-How the app answers Mia's needs:
+How the site answers Mia's needs:
 
-| Mia's pain point / gain | How Timeline answers it |
+| What Mia needs or dislikes | How Timeline handles it |
 |---|---|
-| No patience for signup walls | Guests can browse every course and lesson and take quizzes without an account. An account is only needed to *save* progress or posts. |
-| Self-conscious about wrong answers | Instant, private feedback with retakes; guest attempts aren't saved; saved results are visible only to her (Row Security) |
-| Tired and easily distracted, needs scannable content | Short lessons, "Lesson N of M" with a progress bar, a lesson selector, clear headings and images |
-| A reason to come back | Saved progress, "Continue · Lesson N", and a profile with what's in progress |
-| Skeptical of "free" | No paywall anywhere ("Free, always" in the About section) |
-| Trusts peer recommendations | Share buttons and link previews (Open Graph) on posts and events |
+| Hates having to sign up before seeing anything | Everyone can read every course and lesson, and take quizzes, without an account. An account is only needed to *save* progress or posts. |
+| Embarrassed about getting answers wrong | Answers are checked instantly and privately, and quizzes can be retaken. Saved results are visible only to her. |
+| Tired and easily distracted, needs content that's quick to scan | Short lessons, a "Lesson 3 of 8" progress bar, a menu to jump between lessons, clear headings and pictures |
+| Needs a reason to come back | Her progress is saved, with a "Continue · Lesson 4" button, and her profile shows what she's working on |
+| Doesn't trust "free" apps | Nothing is ever paid ("Free, always" on the home page) |
+| Trusts what friends recommend | Share buttons, and nice previews when a link is shared in a chat |
 
 ### MoSCoW
 
 ![MoSCoW prioritisation](docs/planning/moscow.png)
 
-**Outcome**
-- **Must** (the MVP): all built.
-- **Should**: all built.
-- **Could**: Event of the Day, the soft-locked quiz ("Finish Course" / "Start anyway"), saved posts and the quiz-based course recommendation (the level check) are built. Achievement badges were left out.
-- **Won't**: as planned. Also deliberately out of scope, because they need server-side code (an Appwrite Function): server-side quiz grading, full account deletion and automatic role/label sync (see [Known limitations](#known-limitations)).
-- **Added during development:** profile photos with admin approval, user management (roles, deactivation), statistics, a 404 page, and accessibility, SEO and performance work.
+**What happened to the plan**
+- **Must have:** everything was built.
+- **Should have:** everything was built.
+- **Could have:** most were built: Event of the Day, the quiz "lock" until a course is finished, saving blog posts, and the level-check quiz that recommends a course. Only achievement badges were left out.
+- **Won't have:** as planned. A few more things were left out on purpose because they need a separate server program (see [Known limitations](#known-limitations)).
+- **Added along the way:** profile photos checked by an admin, user management, a statistics page, a "page not found" page, plus work on accessibility, search engines and speed.
 
-### Data model
+### How the data fits together
 
-See the diagram under [Appwrite setup](#data-model).
+See the data model diagram under [How the data is stored](#data-model).
 
 ---
 
-## Features
+## What you can do on the site
 
-**Public site (anyone)**
-- **Courses:** search, filter by category, sort, paginate. Each course has an overview page and lessons with rich-text content and images.
+**Everyone (no account needed)**
+- **Courses:** search them, filter by topic, sort them, and page through them. Each course has an overview page and lessons with text and pictures.
 - **Quizzes:** one per course, with multiple-choice questions, instant feedback and a results screen.
-- **Blog:** articles with categories, read time, sharing, and a "Browse more" carousel.
-- **Level check:** a quick mixed quiz with 2 random questions from every course's quiz. It shows your history level (Beginner / Explorer / Historian), a score per course, and recommends the course you'd learn most from. No account needed, and nothing is saved.
-- **Event of the Day:** a historical event for any date (Wikipedia "On this day" API), with prev/next day, a date picker and a random date. The date lives in the URL, so it can be shared.
-- An animated home page with popular courses, a quiz teaser, the event of the day, an "About us" section and a blog preview.
+- **Blog:** history articles by topic, with reading time, share buttons, and suggestions for what to read next.
+- **Level check:** a quick quiz with 2 random questions from every course. It tells you your history level (Beginner, Explorer or Historian), shows how you did per course, and recommends the course you'd learn the most from. Nothing is saved.
+- **Event of the Day:** a real historical event for any date, taken from Wikipedia. You can go to the previous or next day, pick a date, or get a random one. The date is in the web address, so you can share it.
+- **Home page:** animated, with popular courses, a quiz teaser, today's event, an "About us" section and the latest blog posts.
 
-**Logged-in users**
-- Course progress: mark lessons complete or undo, plus "In Progress" / "Completed" badges and a "Continue · Lesson N" button.
-- Quiz attempts are saved, and quizzes show Passed / Failed / Not attempted.
-- Save blog posts to read later.
-- Profile page with stats (enrolled, completed, quizzes taken, average score), course progress, quiz history, saved posts, and settings (name, email, password).
-- Profile picture and header photo. **Every upload or removal is reviewed by an admin** before it goes live.
+**With a free account**
+- **Course progress:** mark lessons as done (or undo), see "In progress" and "Completed" labels, and continue where you left off.
+- **Quiz results** are saved, and each quiz shows Passed, Failed or Not attempted.
+- **Saved posts:** keep blog posts to read later.
+- **Profile page:** statistics (courses started and finished, quizzes taken, average score), course progress, quiz history, saved posts, and settings (name, email, password).
+- **Profile picture and banner photo.** Every new photo, or removal, is **checked by an admin** before anyone sees it.
 
-**Admin panel (`/admin`, staff only)**
-- Dashboard with counts and recent activity.
-- Create, edit, publish and delete **courses, lessons, quizzes, quiz questions** (drag or arrow keys to reorder) and **blog posts**, with image uploads.
-- *Admin only:* manage users (change role, deactivate or reactivate), approve or reject profile photos, and a statistics page (course engagement, quiz performance, community breakdown).
+**Staff only (admin panel)**
+- An overview page with totals and recent activity.
+- Create, edit, publish and delete **courses, lessons, quizzes, quiz questions** and **blog posts**, with pictures. Quiz questions can be reordered by dragging, or with the arrow keys.
+- **Admins only:** manage users (change their role, switch accounts off or on), approve or reject profile photos, and see statistics (which courses people take, how they do in quizzes, how many users there are).
 
 ---
 
-## Roles and permissions
+## Who can do what
 
-| | Guest | User | Editor | Admin |
+There are four kinds of visitors:
+
+| | Visitor | User | Editor | Admin |
 |---|:-:|:-:|:-:|:-:|
-| Browse courses, lessons, quizzes, blog, Event of the Day | ✅ | ✅ | ✅ | ✅ |
+| Read courses, lessons, quizzes, blog, Event of the Day | ✅ | ✅ | ✅ | ✅ |
 | Take quizzes | ✅ (not saved) | ✅ | ✅ | ✅ |
-| Save progress, attempts and posts; profile page | → login | ✅ | ✅ | ✅ |
-| Upload or remove profile photos (needs approval) | — | ✅ | ✅ | ✅ |
+| Save progress, quiz results and posts; own profile | asked to log in | ✅ | ✅ | ✅ |
+| Change own photos (an admin checks them first) | — | ✅ | ✅ | ✅ |
 | Admin panel: courses, lessons, quizzes, blog | — | — | ✅ | ✅ |
-| Users, roles, statistics, image approvals | — | — | — | ✅ |
+| Users, roles, statistics, photo approvals | — | — | — | ✅ |
 
-The router hides pages a role can't use, but **the real enforcement is in Appwrite's permissions** (see [Security model](#security-model)).
+The site hides pages that you're not allowed to use, but that's only for convenience. **The real protection is on the database itself** (see [Security](#security)).
 
 ---
 
-## Tech stack
+## What it's built with
 
 | | |
 |---|---|
-| Front end | **Vue 3** (Composition API, `<script setup>`), **Vue Router 4**, **Vite** |
-| Styling | **Tailwind CSS 3**, with a brand palette defined once as CSS variables in `src/style.css` |
-| Backend | **Appwrite Cloud**: Auth (email + password), TablesDB, Storage |
-| Hosting | **Appwrite Sites** |
-| Rich text | TipTap (admin lesson and blog editor) |
-| External API | Wikipedia REST API ("On this day"), no key needed |
+| The website | **Vue 3** (a popular tool for building interactive websites) with **Vue Router** (moves between pages) and **Vite** (prepares the files for the web) |
+| Design | **Tailwind CSS** (styling), with the brand colours defined in one place (`src/style.css`) |
+| Database, logins and file storage | **Appwrite Cloud**: an online service that stores the data, handles accounts and passwords, and keeps the uploaded pictures |
+| Hosting | **Appwrite Sites** (puts the website online) |
+| Text editor in the admin panel | TipTap |
+| Outside data | Wikipedia's free "On this day" service |
 
-No backend code, no state library (shared state uses module-level composables), and no UI, icon or chart libraries. Icons are inline SVG (`AppIcon.vue`), and charts are plain HTML and Tailwind.
+I didn't write any server code; all the server work is done by Appwrite. No extra design, icon or chart libraries are used: icons and charts are drawn with plain code.
 
 ---
 
-## Running it locally
+## Running it on your own computer
 
-Requirements: Node 20.19+ and a `.env` file with the Appwrite endpoint, project, database, bucket and table IDs (`VITE_APPWRITE_…`, read in `src/services/appwrite.js`).
+You need Node.js (version 20.19 or newer) and a `.env` file containing the Appwrite connection details (the `VITE_APPWRITE_…` names that `src/services/appwrite.js` reads).
 
 ```bash
-npm install
-npm run dev     # http://localhost:5173
-npm run build   # generates sitemap.xml, then builds into dist/
+npm install     # download the tools the project needs
+npm run dev     # start it at http://localhost:5173
+npm run build   # make the final version for the web (in the dist/ folder)
 ```
 
-Deployed on **Appwrite Sites** from this repository (build command `npm run build`, output `dist`).
+The live site is published from this code with Appwrite Sites.
 
 ---
 
-## Appwrite setup
+## How the data is stored
 
 ### Roles
-Staff accounts have an Appwrite **user label**, which is what the table permissions check:
-- `admin`: full access
-- `editor`: content only
-
-`profiles.role` (`user` / `editor` / `admin`) decides which pages the app shows.
+Staff accounts get a **label** in Appwrite, either `admin` (can do everything) or `editor` (can only manage content). The database checks these labels before allowing any change. Each user's role is also saved in their profile, so the site knows which pages to show them.
 
 ### Data model
 
@@ -145,143 +147,145 @@ Staff accounts have an Appwrite **user label**, which is what the table permissi
 
 ### Tables
 
-All rows reference each other by ID (e.g. `lessons.courseId`). "Row Security ON" means each row carries its own permissions, set by the app when it creates the row.
+The information is stored in **tables**, a bit like spreadsheets. Each row is one item (one course, one lesson…), and rows point to each other by ID; for example, every lesson stores the ID of its course.
 
-| Table | Main columns | Row Security | Table-level permissions |
+Some tables use **row security**: each row has its own lock, so only the person it belongs to (and admins) can see it.
+
+| Table | What's in it | Row security | Who may read or change it |
 |---|---|---|---|
-| `profiles` | `userId`, `name`, `email`, `role`, `active`, `avatarImageId`, `headerImageId` | ON | Create → Users · Read + Update → label `admin` |
-| `profile_settings` | `userId`, `pendingAvatarImageId`, `pendingHeaderImageId` | ON | Create → Users · Read + Update → label `admin` |
-| `courses` | `title`, `description`, `category`, `lessonCount`, `coverImageId`, `headerImageId`, `published` | — | Read → Any · Create / Update / Delete → labels `admin`, `editor` |
-| `lessons` | `courseId`, `title`, `order`, `content`, `imageId`, `published` | — | Read → Any · Create / Update / Delete → `admin`, `editor` |
-| `quizzes` | `courseId`, `title`, `passingScore`, `coverImageId`, `headerImageId`, `published` | — | Read → Any · Create / Update / Delete → `admin`, `editor` |
-| `quiz_questions` | `quizId`, `questionText`, `options[]`, `correctOptionIndex`, `order` | — | Read → Any · Create / Update / Delete → `admin`, `editor` |
-| `blog_posts` | `title`, `category`, `introduction`, `content`, `readTime`, `coverImageId`, `published` | — | Read → Any · Create / Update / Delete → `admin`, `editor` |
-| `progress` | `userId`, `courseId`, `lessonId` | **ON** | Create → Users · Read → `admin` · Delete → `admin`, `editor` |
-| `quiz_attempts` | `userId`, `quizId`, `score`, `totalQuestions` | **ON** | Create → Users · Read → `admin` · Delete → `admin`, `editor` |
-| `saved_posts` | `userId`, `postId` | **ON** | Create → Users |
+| `profiles` | name, email, role, account on/off, photos | on | each user can read their own; only admins can change it |
+| `profile_settings` | photos waiting for admin approval | on | each user manages their own; admins can see all |
+| `courses` | title, description, topic, pictures, published or not | — | everyone can read; editors and admins can change |
+| `lessons` | which course, title, order, text, picture | — | everyone can read; editors and admins can change |
+| `quizzes` | which course, title, pass mark, pictures | — | everyone can read; editors and admins can change |
+| `quiz_questions` | which quiz, question, answers, correct answer, order | — | everyone can read; editors and admins can change |
+| `blog_posts` | title, topic, intro, text, reading time, picture | — | everyone can read; editors and admins can change |
+| `progress` | which user finished which lesson | on | only that user (read or delete) and admins |
+| `quiz_attempts` | a user's quiz score | on | only that user (read or delete) and admins |
+| `saved_posts` | which user saved which post | on | only that user |
 
-**Storage:** one `media` bucket: Read → Any, Create → Users. Uploads are compressed in the browser before upload.
+**Pictures** are kept in one storage folder: anyone can view them, and only logged-in users can upload. Pictures are made smaller in the browser before they're uploaded.
 
 ---
 
-## Architecture
+## How the code is organised
 
-The coding rules are in **[AGENTS.md](AGENTS.md)**: layers, SRP/SoC, the check-and-reset pattern, and Vue and design conventions. Project decisions are in **[CLAUDE.md](CLAUDE.md)**.
+The detailed coding rules are in **[AGENTS.md](AGENTS.md)**, and the decisions made along the way are in **[CLAUDE.md](CLAUDE.md)**.
 
-**Data flows one way: view → composable → service → Appwrite.**
+The code is split into layers, each with one job, and information always flows the same way:
+
+**page → logic → database code → Appwrite**
 
 ```
 src/
-├── services/      Data access. One file per table (courseService.js …). Plain async functions, no Vue.
-│                  appwrite.js is the ONLY file that creates the Appwrite client.
-├── composables/   Application logic: state (ref), loading/error, combining services, validation.
-├── views/         One component per route (views/admin/ for the admin panel). Layout + wiring events.
-├── components/    UI driven by props/emits: ui/ (reusable), layout/, and feature folders
-│                  (home/, courses/, quizzes/, blog/, profile/, auth/, admin/).
-├── layouts/       PublicLayout (header + footer) and AdminLayout (sidebar / mobile drawer).
-├── router/        Routes (lazy-loaded) + the navigation guard.
-├── constants/     Roles, category colours, shared values.
-└── utils/         Small pure helpers (dates, text).
+├── views/         One file per page.
+├── components/    Reusable building blocks (cards, buttons, menus…), grouped by area.
+├── composables/   The logic: what's loading, what went wrong, what to show.
+├── services/      The only code that talks to the database, one file per table.
+│                  appwrite.js is the only file that connects to Appwrite.
+├── layouts/       The page frames: header + footer for visitors, sidebar for staff.
+├── router/        The list of pages, and the check for who may open which page.
+├── constants/     Fixed values, like the role names.
+└── utils/         Small helpers, like date formatting.
 ```
 
-**Example: "Save post"**
-1. `BlogPostDetailView` (button) calls
-2. `useSavedPosts().toggle()`, which has a busy guard and updates the shared state, which calls
-3. `savedPostService.savePost()`, which checks for a duplicate and then runs `createRow` with permissions for that user only.
+**Example: pressing "Save" on a blog post**
+1. The **page** (`BlogPostDetailView`) passes the click to
+2. the **logic** (`useSavedPosts`), which ignores double-clicks and updates what's shown, and asks
+3. the **database code** (`savedPostService`) to save it, after checking it isn't already saved. The saved row can only be seen by that user.
 
-**Patterns**
-- **Check and reset:** every user action blocks double submits, validates and trims input, clears the previous error, always resets its busy flag in `finally`, returns `true` / `false`, and shows a toast.
-- **Pure logic kept separate:** e.g. `buildStatistics()` takes plain data and returns the stats, with no loading or Vue involved.
-- **Full reads page through results:** Appwrite returns only 25 rows by default, so every "get all" uses `listAllRows()` (cursor pagination).
-- **Cascading deletes:** deleting a course removes its lessons, quizzes, questions, attempts and progress first, so a failure leaves the parent in place to retry.
-- **Shared state without a store library:** `useAuth`, `useToast` and `useSavedPosts` keep module-level state shared across pages.
-
----
-
-## Security model
-
-**Hiding buttons and guarding routes is only UX.** The router guard (`meta.requiresAuth`, `meta.requiresRole`) sends guests to login and other roles to the 404 page. Every rule also exists as an **Appwrite permission**, so calling the API directly from the browser console is rejected with 401.
-
-- **Content tables:** anyone can read; only the `admin` / `editor` labels can write.
-- **`profiles` holds `role`:** users can read their own row but **not update it**, so nobody can make themselves admin. `createProfile` sets explicit permissions, because Appwrite's default would give the creator update rights.
-- **Photo approval can't be skipped:** live photo IDs are in `profiles`, which users can't write. Users only write *pending* IDs in `profile_settings`, which is a separate table because Appwrite permissions apply to whole rows, not single columns.
-- **Personal rows** (`progress`, `quiz_attempts`, `saved_posts`): Row Security is on, and each row grants Read (+ Delete) only to its owner. There is no Update, so users can't edit their own scores.
-- **XSS:** Vue escapes all normal output. The only raw HTML (lesson and blog content) is passed through an allow-list sanitizer (`utils/sanitizeHtml.js`) before `v-html`, so `<script>`, event handlers and `javascript:` links are removed even if written straight to the database.
-- **CSRF and brute force:** Appwrite only accepts requests from the registered web platforms (other origins get 403) and with the project header, and it rate-limits login attempts (429 after 10 tries).
-- **No secrets in the repo:** `.env` is git-ignored. Its values are public IDs that end up in the browser bundle anyway. No Appwrite API key is used anywhere in the front end.
+**Habits used throughout**
+- **Every action is careful:** it ignores double-clicks, checks the input, clears old error messages, always switches the "busy" state off afterwards (even when something fails), and shows a short message saying whether it worked.
+- **Calculations are kept separate** from loading data, so they're easy to understand and test, e.g. the statistics page (`buildStatistics()`).
+- **Long lists are loaded completely:** Appwrite only sends 25 rows at a time, so the code keeps asking until it has everything (`listAllRows()`).
+- **Deleting is done in a safe order:** deleting a course first deletes its lessons, quizzes and everyone's progress in it, and only then the course. If something fails halfway, the course is still there to try again.
 
 ---
 
-## UX and accessibility
+## Security
 
-- **Every data view has loading, empty and error states:** skeletons, a friendly empty message with a next step, and an error box with **Retry**.
-- **Feedback for every action** through toasts; confirmation dialogs before destructive actions; buttons disabled while saving.
-- **Validation:** required fields, minimum lengths, required images, friendly messages (never raw Appwrite errors).
-- **Responsive** from 390px phones up; the admin sidebar becomes a slide-in drawer on phones.
-- **Accessibility:**
-  - "Skip to main content" link and semantic landmarks
-  - labelled inputs and `aria-label` on icon buttons
-  - `alt` on every image
-  - toasts announced (`role="status"`) and errors as `role="alert"`
-  - an accessible confirm dialog (focus moved in and trapped, Escape closes it)
-  - visible focus rings and keyboard reordering of quiz questions
-  - contrast rules for the palette
-  - all animations off under `prefers-reduced-motion`
+**Hiding buttons and pages is not real security,** because anyone can send requests to the database directly. So every rule is also set on the database itself (in Appwrite), and requests that break a rule are refused.
 
-### SEO
-- **Per-page metadata:** each page sets its own title and description, a canonical URL and link-preview tags (Open Graph, with a 1200×630 preview image). Course, lesson, quiz and blog pages use their real content.
-- **Hidden from search:** login, register, profile, admin and 404 are marked `noindex`.
-- **`robots.txt` and `sitemap.xml`:** the sitemap is generated at build time by `scripts/generate-sitemap.mjs`. It lists every published course, lesson, quiz and blog post, read from Appwrite's public API as a guest.
+- **Course, lesson, quiz and blog content:** everyone can read it, but only staff can change it.
+- **Nobody can make themselves admin:** your role is stored in your profile, and you can read your profile but not change it.
+- **The photo check can't be skipped:** the photo people see is in a table only admins can change. Users can only *suggest* a new photo, which is stored in a separate table.
+- **Personal data stays personal:** progress, quiz scores and saved posts can only be seen by their owner. Scores can't be edited after the quiz, only deleted.
+- **Harmful code in articles is blocked:** lesson and blog text is cleaned before it's shown, so even if someone sneaked a script into the database, it wouldn't run in visitors' browsers (`utils/sanitizeHtml.js`).
+- **Other websites can't use the database:** Appwrite only accepts requests from this site. It also slows down repeated wrong passwords: after 10 tries, logging in is blocked for a while.
+- **No passwords or secret keys are in the code.** The connection details in the `.env` file are not secret (every website needs them to talk to its database), and that file isn't uploaded to GitHub anyway.
+
+---
+
+## Ease of use and accessibility
+
+- **Every page that loads information shows what's happening:** a grey placeholder while loading, a friendly message when there's nothing to show, and a clear error with a **Retry** button if something goes wrong.
+- **Every action gets feedback:** a short pop-up message, a "Are you sure?" question before deleting, and buttons that switch off while saving.
+- **Forms explain mistakes** in plain words: missing fields, too-short text, missing pictures.
+- **Works on phones** as well as computers; on phones, the staff menu slides in from the side.
+- **Accessibility** (for people using a keyboard, a screen reader, or other aids):
+  - a "Skip to main content" link
+  - every field has a label, and every icon button has a spoken name
+  - every image has a description, or is marked as decoration
+  - pop-up messages and errors are read out by screen readers
+  - the "Are you sure?" box works fully with the keyboard
+  - a visible outline shows where you are when using the keyboard, and quiz questions can be reordered with the arrow keys
+  - colours were chosen to be readable
+  - animations switch off for people who have asked their device for less motion
+
+### Search engines
+- Every page has its own title and description, plus a preview picture for when a link is shared.
+- Private pages (login, profile, admin) are hidden from search engines.
+- A list of all the site's pages (`sitemap.xml`) is made automatically every time the site is published, so search engines can find every course, lesson, quiz and post.
 
 ---
 
 ## Known limitations
 
-These need server-side code (an Appwrite Function with an API key), which is out of scope for this front-end-only project:
+These would need a separate server program (an Appwrite Function), which is beyond this website-only project:
 
-- **Role vs. label:** changing a user's role in the app updates `profiles.role`, but the matching Appwrite label still has to be added in the console.
-- **Deactivation** is enforced by the app (the user is signed out on the next page load). A hard block uses the console's "Block user".
-- **Quiz grading happens in the browser,** so a determined user could submit a fake attempt through the API.
-- **Deleting an account** only signs the user out; removing an Auth account needs the server SDK.
-- **Rejected or replaced images stay in the bucket.**
-- **Statistics are calculated in the browser** from full table reads.
-- "Most Popular Courses" shows the first published courses, because guests can't read progress, so there's no popularity data.
+- **Changing someone's role in the site doesn't add their staff label in Appwrite;** that still has to be done by hand in Appwrite.
+- **Switching off an account** signs the person out the next time they open the site. Blocking them immediately has to be done in Appwrite.
+- **Quiz answers are checked in the browser,** so a skilled user could fake a score by talking to the database directly.
+- **"Delete account" only signs you out;** fully deleting an account needs server code.
+- **Rejected or replaced photos are not deleted** from storage.
+- **The statistics are calculated in the browser** by loading all the data, which is fine for a site this size.
+- **"Most popular courses"** shows the first published courses, because visitors' progress is private, so there's no popularity data.
 
 ---
 
-## AI-assisted development
+## How AI was used
 
-### Tools
-**Claude Code** (Anthropic, Claude Opus model) inside VS Code. It can read the project, run the build and edit files; every change was reviewed and tested before committing. To keep it consistent with my architecture, it follows two files I maintain:
-- [AGENTS.md](AGENTS.md): layers, SRP/SoC, check-and-reset, Vue and design rules
-- [CLAUDE.md](CLAUDE.md): project decisions, Appwrite setup and their reasons
+### Tool
+**Claude Code** (made by Anthropic, using the Claude Opus model), inside VS Code. It can read the project, test it and edit files. I reviewed and tested every change before saving it. To keep it working my way, it follows two files I wrote:
+- [AGENTS.md](AGENTS.md): how the code must be organised, and the design rules
+- [CLAUDE.md](CLAUDE.md): the decisions made for this project, and why
 
-### What AI was used for
-- **Implementation:** turning the Figma mockups into Vue components, and the Appwrite integration (services, composables, permissions).
-- **Debugging:** e.g. 401 errors from Row Security, images not loading, a page transition crashing the quiz page.
-- **Reviews:** security (XSS, CSRF, brute force, permissions), accessibility, performance (Lighthouse), SEO, and a final pass for unnecessary or duplicated code.
+### What I used it for
+- **Building:** turning my Figma designs into working pages, and connecting the site to Appwrite.
+- **Fixing problems:** e.g. "not allowed" errors from the database, pictures not loading, a page that crashed.
+- **Checking:** security, accessibility, speed, search engines, and a final clean-up of unnecessary or repeated code.
 - **Documentation:** this README and the data model diagram.
 
-Planning stayed mine: the persona, the MoSCoW prioritisation and the Figma mockups.
+The planning was my own: the persona, the MoSCoW list and the Figma designs.
 
 ### Where AI helped
-- **Finding a data leak.** A security check sent requests to Appwrite as a logged-out visitor and found that the `profiles` table was readable by anyone: every user's name, email and role. The UI never showed it, so I hadn't noticed. I fixed the table permissions, and a re-test returned 0 rows.
-- **XSS.** It pointed out that lesson and blog content was rendered with `v-html` straight from the database. It added an allow-list sanitizer (`utils/sanitizeHtml.js`), and none of the 10 attack payloads we tested ran.
-- **Performance.** Lighthouse scored the home page 77. The page was waiting for the login check and the Google Fonts before rendering, and served oversized images. After the fixes, a local build scored 98.
+- **It found a data leak.** It tested the database the way a stranger would, and found that anyone could read every user's name, email and role, which the site itself never showed. I fixed the permissions, and a new test found nothing.
+- **It blocked harmful code.** It noticed that lesson and blog text was shown without being cleaned first, and added a filter. None of the 10 attack examples we tested got through.
+- **It made the site faster.** Google's speed test scored the home page 77/100. The page was waiting for the login check and the fonts before showing anything, and the pictures were too big. After the fixes it scored 98 when tested on my computer.
 
-### Where I had to correct or reject AI suggestions
-- **A permission hole.** The generated code gave users *update* permission on their own quiz attempts and progress, so anyone could raise their own score through the API. I caught it while reviewing the data requirements, and it was removed; users can now only read and delete their own rows (see `quizAttemptService.js`).
-- **A design that didn't work.** The first image setup used per-file permissions. Images kept failing to load, so I dropped it in favour of one bucket with simple rules, with moderation in the app instead: photos only go live after admin approval.
-- **Wrong API for my plan.** It used `getFilePreview()`, which needs Appwrite's paid plan, so it was switched to `getFileView()`.
-- **Design details.** It follows instructions literally, so I compared every page with my mockups and corrected things: white cards instead of cream, no hover colour effect, thinner lines, smaller headings, and design-only changes that don't touch the logic.
-- **Too much complexity.** Its first version of the faster login check was hard to follow. In the final clean-up I asked for code an average person can read, and it was reduced to a few lines with the same behaviour.
+### Where I had to correct it
+- **A security hole.** Its code let users change their own quiz scores. I spotted this while checking the project requirements, and it was removed; users can now only see and delete their own scores (`quizAttemptService.js`).
+- **An approach that didn't work.** Its first way of protecting uploaded photos kept breaking the pictures. I chose a simpler setup instead, where an admin approves photos before they appear.
+- **A paid feature.** It used an Appwrite feature for resizing pictures that only works on the paid plan, so it was replaced with one that works on the free plan.
+- **Design details.** It follows instructions very literally, so I compared every page with my designs and corrected things: white cards instead of cream, no colour change on hover, thinner lines, smaller headings, and design changes that don't touch how things work.
+- **Too much complexity.** Its first version of the faster login check was hard to follow. In the final clean-up I asked for code an average person can read, and it became a few simple lines that do the same thing.
 
 ### Reflection
-AI made development much faster and was good at repetitive work, at explaining errors, and at checking things I wouldn't have thought to check (XSS, robots.txt, image sizes). Human evaluation was still essential:
-- **Security:** generated code contained a permission hole, and only testing with real requests revealed the public `profiles` table. Hidden buttons and router guards *look* secure, so I always verified the permissions in the Appwrite console myself.
-- **Design:** matching the mockups needed my eye, page by page.
-- **Architecture and readability:** without the AGENTS.md rules, the code drifted towards mixing layers or adding complexity. I decided what was simple enough and which duplication was acceptable.
-- **Scope:** AI will keep adding features; the MoSCoW decided what got built.
+AI made the work much faster. It was good at repetitive tasks, at explaining errors, and at checking things I wouldn't have thought of. But my own judgement was still essential:
+- **Security:** its code had a security hole, and the data leak only showed up when we actually tested it. Hidden buttons *look* safe, so I always checked the database permissions myself.
+- **Design:** making the pages match my designs needed my eye, page by page.
+- **Clean, readable code:** without my rules it tended to mix things together or make them complicated. I decided what was simple enough.
+- **Scope:** AI will happily keep adding features; my MoSCoW list decided what got built.
 
 ---
 
