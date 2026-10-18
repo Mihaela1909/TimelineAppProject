@@ -158,6 +158,10 @@ A user's upload does NOT go live until an admin approves it.
 - `ConfirmModal` is an `alertdialog`: focus goes to Cancel on open, Tab is trapped, Escape / backdrop click cancel, focus returns on close.
 - Admin edit forms: `fetchOne` in the admin composables has its own `loadingOne` / `loadError`, so the form shows a skeleton or a Retry box instead of an empty form. Deletes use `deleting`, user changes `updating` (double-click guards).
 
+## Keep-alive (Free plan)
+- `.github/workflows/keep-alive.yml` (GitHub Actions, every 3 days + manual "Run workflow"): visits the live site and reads 1 published course as a guest. Public IDs only, no API key.
+- Appwrite pauses Free projects after 7 days without "development activity in the Console"; it's not documented whether API traffic counts, so this may not be enough. A paused project is resumed instantly from the Console (data kept; deleted after 90 days paused). GitHub disables scheduled workflows after 60 days without repo activity.
+
 ## Known gaps / next priorities
 1. Rejected/replaced files stay in the bucket (orphaned). Cleanup would need bucket `Delete` for label `admin`, plus a `storage.deleteFile` helper in `mediaService` called on reject/replace.
 2. Role/label sync and hard user blocking need an Appwrite Function (server SDK + API key).

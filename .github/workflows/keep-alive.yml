@@ -1,0 +1,35 @@
+# Keeps the Appwrite Free-plan project from looking inactive by visiting the live
+# site and reading published content from the API, like a normal visitor would.
+# Runs every 3 days (Appwrite pauses Free projects after 7 days without activity)
+# and can also be started by hand: GitHub → Actions → Keep Appwrite awake → Run workflow.
+# The IDs below are the same public IDs the website already sends from the browser
+# (no API key, no secrets). It only READS public data.
+name: Keep Appwrite awake
+
+on:
+  schedule:
+    - cron: '17 6 */3 * *' # 06:17 UTC every 3 days
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    env:
+      SITE_URL: https://timeline.appwrite.network
+      APPWRITE_ENDPOINT: https://fra.cloud.appwrite.io/v1
+      APPWRITE_PROJECT: 6abb656b001812251ebe
+      DATABASE_ID: 6abb6609000ee99b777d
+      COURSES_TABLE_ID: 6abb663e001b1f13320b
+    steps:
+      - name: Visit the live site
+        run: |
+          curl --fail --silent --show-error --output /dev/null --write-out "Site: HTTP %{http_code}\n" "$SITE_URL"
+
+      - name: Read published courses from Appwrite
+        run: |
+          QUERY='queries%5B0%5D=%7B%22method%22%3A%22limit%22%2C%22values%22%3A%5B1%5D%7D'
+          curl --fail --silent --show-error \
+            -H "X-Appwrite-Project: $APPWRITE_PROJECT" \
+            -H "Origin: $SITE_URL" \
+            --output /dev/null --write-out "Appwrite: HTTP %{http_code}\n" \
+            "$APPWRITE_ENDPOINT/tablesdb/$DATABASE_ID/tables/$COURSES_TABLE_ID/rows?$QUERY"
