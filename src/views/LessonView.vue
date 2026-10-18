@@ -13,6 +13,9 @@ import { usePageMeta } from '../composables/usePageMeta'
 import { toDescription } from '../utils/pageMeta'
 import { sanitizeHtml } from '../utils/sanitizeHtml'
 
+// LESSON PAGE (/courses/:id/lessons/:lessonId): lesson text and picture,
+// a lesson selector, "Mark as Complete" (or Undo), and previous / next links.
+
 const route = useRoute()
 const router = useRouter()
 const { course, lessons, loading, error, fetchCourseAndLessons } = useCourseDetail()

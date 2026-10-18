@@ -8,6 +8,7 @@ import { countRows, getLatestRows, TABLES } from '../services/dashboardService'
 
 const PER_TABLE = 10
 
+// Turns course / quiz / post rows into "Recent activity" lines.
 function contentEvents(rows, kind, label, editPath) {
   return rows.map((row) => ({
     id: `${kind}-${row.$id}`,
@@ -18,6 +19,7 @@ function contentEvents(rows, kind, label, editPath) {
   }))
 }
 
+// Turns new profile rows into "New user signed up" lines.
 function signupEvents(rows) {
   return rows.map((row) => ({
     id: `user-${row.$id}`,
@@ -34,6 +36,7 @@ export function useAdminDashboard() {
   const loading = ref(false)
   const error = ref(null)
 
+  // Load the four totals and the newest rows of each table, then build the activity list.
   async function fetchAll() {
     loading.value = true
     error.value = null

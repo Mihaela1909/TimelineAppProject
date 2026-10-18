@@ -15,6 +15,7 @@ export function useAdminQuizzes() {
   const saving = ref(false)
   const deleting = ref(false) // separate from saving: a delete from the list isn't a form save
 
+  // Load every quiz (drafts too) for the admin list.
   async function fetchAll() {
     loading.value = true
     error.value = null
@@ -44,6 +45,7 @@ export function useAdminQuizzes() {
     }
   }
 
+  // Create a new quiz (no id) or update an existing one. Returns true/false.
   async function save(id, data) {
     if (saving.value) return null // already saving — ignore double-clicks
     error.value = missingFieldsMessage(data, REQUIRED_IMAGES)

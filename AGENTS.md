@@ -89,7 +89,11 @@ async function save(id, data) {
 - `RouterLink` for navigation, `router.push` only after an action succeeds.
 - New routes are lazy-loaded in `router/index.js` (`const XView = () => import('../views/XView.vue')`). Only the home page and its layout are imported normally, so each page is downloaded the first time it's opened.
 - Loading → skeleton (`animate-pulse`); error → red box + Retry; empty → friendly message with a link to create one. Every list view has all three states.
-- Comments that explain **why**, not what.
+- Comments for a reader who doesn't know the project yet:
+  - every file starts with a short comment saying what it's for (which page / table / feature),
+  - each function in composables (and any non-obvious service function) gets a one-line comment,
+  - longer templates label their blocks (`<!-- Loading -->`, `<!-- Tab: Settings -->`…),
+  - and tricky lines explain **why** they're written that way.
 
 **Avoid**
 - Options API, `this`, mixins, global event buses.

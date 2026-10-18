@@ -7,6 +7,7 @@ import { listAllRows, deleteAllRows } from './rowHelpers'
 // read/delete to that specific user at creation time (no update: nothing
 // edits a progress row, and it shouldn't be changeable after the fact).
 
+// Save "this user finished this lesson" (only one row per lesson).
 export async function markLessonComplete({ userId, courseId, lessonId }) {
   // Avoid creating duplicate rows if the lesson is somehow marked twice
   // (e.g. a double-click before the button disables).
@@ -35,11 +36,13 @@ export async function unmarkLessonComplete({ userId, lessonId }) {
   return deleteAllRows(TABLES.PROGRESS, [Query.equal('userId', userId), Query.equal('lessonId', lessonId)])
 }
 
+// The lessons of one course this user has finished.
 export async function getCompletedLessonIds(userId, courseId) {
   const rows = await listAllRows(TABLES.PROGRESS, [Query.equal('userId', userId), Query.equal('courseId', courseId)])
   return rows.map((row) => row.lessonId)
 }
 
+// Every lesson this user has finished, in all courses.
 export async function getAllProgressForUser(userId) {
   return listAllRows(TABLES.PROGRESS, [Query.equal('userId', userId)])
 }

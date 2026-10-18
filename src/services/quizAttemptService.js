@@ -22,10 +22,12 @@ export async function createAttempt({ userId, quizId, score, totalQuestions }) {
   })
 }
 
+// All of a user's quiz results, newest first.
 export async function getAllAttemptsForUser(userId) {
   return listAllRows(TABLES.QUIZ_ATTEMPTS, [Query.equal('userId', userId), Query.orderDesc('$createdAt')])
 }
 
+// A user's results for one quiz, newest first.
 export async function getAttemptsForUserAndQuiz(userId, quizId) {
   return listAllRows(TABLES.QUIZ_ATTEMPTS, [
     Query.equal('userId', userId),

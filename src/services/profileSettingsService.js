@@ -19,6 +19,7 @@ const FIELDS = {
   header: { pending: 'pendingHeaderImageId', live: 'headerImageId' },
 }
 
+// A user's profile_settings row (their waiting photos), or null.
 export async function getSettingsByUserId(userId) {
   const res = await tablesDB.listRows({
     databaseId: DB_ID,
@@ -28,6 +29,7 @@ export async function getSettingsByUserId(userId) {
   return res.rows[0] || null
 }
 
+// Set one field in the user's own row, creating the row the first time.
 async function updateSetting(userId, field, value) {
   const existing = await getSettingsByUserId(userId)
   if (existing) {
@@ -61,6 +63,7 @@ export async function listPendingSubmissions() {
   ])
 }
 
+// Admin approves: copy the waiting photo to the live profile, then clear it.
 export async function approvePendingImage(row, kind) {
   const { pending, live } = FIELDS[kind]
   // Publish first, then clear — if the second call fails the photo is
@@ -71,10 +74,12 @@ export async function approvePendingImage(row, kind) {
   return clearPending(row, kind)
 }
 
+// Admin rejects: just clear the waiting photo.
 export async function rejectPendingImage(row, kind) {
   return clearPending(row, kind)
 }
 
+// Empty the waiting-photo field of a request.
 function clearPending(row, kind) {
   return tablesDB.updateRow({
     databaseId: DB_ID,

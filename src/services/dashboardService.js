@@ -5,6 +5,7 @@ import { tablesDB, DB_ID, TABLES } from './appwrite'
 // generic: every stat card and activity feed entry is just "count rows" or
 // "latest rows" against one of the existing tables.
 
+// How many rows a table has (only the count is downloaded).
 export async function countRows(tableId) {
   // limit(1) keeps the payload tiny — we only want `total`, which Appwrite
   // returns for the whole table regardless of the page size.
@@ -16,6 +17,7 @@ export async function countRows(tableId) {
   return res.total
 }
 
+// The newest rows of a table, for "Recent activity".
 export async function getLatestRows(tableId, { limit = 10, orderBy = '$updatedAt' } = {}) {
   const res = await tablesDB.listRows({
     databaseId: DB_ID,

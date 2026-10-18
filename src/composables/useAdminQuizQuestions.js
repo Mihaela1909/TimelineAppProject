@@ -1,6 +1,9 @@
 import { ref } from 'vue'
 import * as questionService from '../services/quizQuestionService'
 
+// APPLICATION LOGIC for the questions of one quiz in the admin panel:
+// load, add/edit, delete and reorder them (drag & drop or arrow keys).
+
 export function useAdminQuizQuestions() {
   const questions = ref([])
   const loading = ref(false)
@@ -11,6 +14,7 @@ export function useAdminQuizQuestions() {
   const deleting = ref(false) // separate from saving: a delete from the list isn't a form save
   const reordering = ref(false)
 
+  // Load all of one quiz's questions, in order.
   async function fetchForQuiz(quizId) {
     loading.value = true
     error.value = null
@@ -40,6 +44,7 @@ export function useAdminQuizQuestions() {
     }
   }
 
+  // Create a new question (no id) or update one. Returns the saved row, or null.
   async function save(id, data) {
     if (saving.value) return null // already saving — ignore double-clicks
     saving.value = true

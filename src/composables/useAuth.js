@@ -45,6 +45,7 @@ export function useAuth() {
     throw new Error(message)
   }
 
+  // Create an account (after checking the inputs), log in, and load the user.
   async function register({ email, password, name }) {
     error.value = null
     name = name?.trim()
@@ -67,6 +68,7 @@ export function useAuth() {
     }
   }
 
+  // Log in, then load the user. Shows a friendly message if it fails.
   async function login({ email, password }) {
     error.value = null
     email = email?.trim()
@@ -91,6 +93,7 @@ export function useAuth() {
     }
   }
 
+  // Change the display name. Returns true/false.
   async function updateName(name) {
     if (loading.value) return false
     error.value = null
@@ -113,6 +116,7 @@ export function useAuth() {
     }
   }
 
+  // Change the email (Appwrite asks for the password). Returns true/false.
   async function updateEmail(email, password) {
     if (loading.value) return false
     error.value = null
@@ -135,6 +139,7 @@ export function useAuth() {
     }
   }
 
+  // Change the password (needs the current one). Returns true/false.
   async function updatePassword(newPassword, oldPassword) {
     if (loading.value) return false
     error.value = null
@@ -159,6 +164,7 @@ export function useAuth() {
     }
   }
 
+  // End the session and forget the user.
   async function logout() {
     await authService.logoutUser()
     currentUser.value = null
@@ -171,6 +177,7 @@ export function useAuth() {
     return pendingCheck
   }
 
+  // Asks Appwrite who is logged in, then adds their role and photos from our tables.
   async function loadCurrentUser() {
     try {
       // account.get() is the one call that MUST succeed for someone to be

@@ -8,6 +8,9 @@ import HistoryCard from '../ui/HistoryCard.vue'
 import AppIcon from '../ui/AppIcon.vue'
 import { readTimeText } from '../../utils/time'
 
+// Home page section "Blog": a carousel with the newest published blog posts
+// (loading / error / empty states included). Data comes from useBlog.
+
 const SHOWN = 8
 const { posts, loading, error, fetchPublished } = useBlog()
 onMounted(fetchPublished)

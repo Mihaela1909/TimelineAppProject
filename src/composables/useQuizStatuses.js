@@ -10,6 +10,7 @@ export function useQuizStatuses() {
   const attemptsByQuiz = ref({}) // quizId → { best: 0–100 }
   const { statusById: courseStatusById, fetchFor: fetchCourseStatuses } = useCourseStatuses()
 
+  // Load the user's quiz results and course progress for the status pills.
   async function fetchFor(userId) {
     attemptsByQuiz.value = {}
     if (!userId) return

@@ -5,6 +5,7 @@ import { createProfile } from './profileService'
 // DATA ACCESS LAYER for authentication. Composables call these;
 // components never touch Appwrite's Account API directly.
 
+// Create the account, log in straight away, and create their profiles row (role "user").
 export async function registerUser({ email, password, name }) {
   const newUser = await account.create(ID.unique(), email, password, name)
   // Appwrite doesn't log the user in automatically after create —
@@ -17,6 +18,7 @@ export async function registerUser({ email, password, name }) {
   return session
 }
 
+// Log in with email + password.
 export async function loginUser({ email, password }) {
   // Appwrite refuses to create a session while one is already active
   // (e.g. another account is still logged in this browser), so clear any
@@ -29,6 +31,7 @@ export async function logoutUser() {
   return account.deleteSession('current')
 }
 
+// Who is logged in right now (throws if nobody is).
 export async function getCurrentUser() {
   // Throws if nobody is logged in — callers should catch this and
   // treat it as "no user", not as a real error.

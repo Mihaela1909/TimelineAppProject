@@ -10,6 +10,7 @@ export function useAdminUsers() {
   const error = ref(null)
   const updating = ref(false)
 
+  // Load every user (their profiles rows) for the Users page.
   async function fetchAll() {
     loading.value = true
     error.value = null

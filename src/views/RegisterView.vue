@@ -5,6 +5,9 @@ import { useAuth } from '../composables/useAuth'
 import AuthScene from '../components/auth/AuthScene.vue'
 import AuthField from '../components/auth/AuthField.vue'
 
+// SIGN-UP PAGE (/register): creates the account and logs the user in,
+// then goes back to where they came from (?redirect=…) or the home page.
+
 const name = ref('')
 const email = ref('')
 const password = ref('')

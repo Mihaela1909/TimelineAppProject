@@ -20,6 +20,10 @@ import StatBoxes from '../components/ui/StatBoxes.vue'
 import ProfileTabs from '../components/profile/ProfileTabs.vue'
 import ProfilePhotosCard from '../components/profile/ProfilePhotosCard.vue'
 
+// PROFILE PAGE (/profile, logged in only): header with photos, stats, and four
+// tabs — My Courses, Quiz History, Saved Posts, Settings (name, email,
+// password, photos, delete account). Each tab is its own component.
+
 const router = useRouter()
 const { currentUser, updateName, updateEmail, updatePassword, logout, loading: authLoading, error: authError } = useAuth()
 const {
@@ -151,6 +155,7 @@ async function confirmDeleteAccount() {
 
 <template>
   <div class="pb-16">
+    <!-- Banner photo, round profile picture and name -->
     <ProfileHeader
       :name="currentUser?.name || ''"
       :avatar-image-id="currentUser?.avatarImageId"
@@ -162,8 +167,10 @@ async function confirmDeleteAccount() {
       <!-- Stat boxes (same style as the quiz intro) -->
       <StatBoxes class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-4xl mx-auto mt-8 mb-10" :stats="stats" />
 
+      <!-- Tab buttons; only the active tab below is shown -->
       <ProfileTabs v-model="activeTab" :tabs="TABS" />
 
+      <!-- Tab: My Courses (in progress + completed) -->
       <ProfileCoursesTab
         v-if="activeTab === 'courses'"
         :in-progress="inProgressCourses"
@@ -173,6 +180,7 @@ async function confirmDeleteAccount() {
         @retry="fetchFor(currentUser?.$id)"
       />
 
+      <!-- Tab: Quiz History -->
       <QuizHistoryTab
         v-else-if="activeTab === 'history'"
         :attempts="attempts"
@@ -182,6 +190,7 @@ async function confirmDeleteAccount() {
         @retry="fetchFor(currentUser?.$id)"
       />
 
+      <!-- Tab: Saved Posts -->
       <ProfileSection v-else-if="activeTab === 'saved'" title="Saved for later:">
         <SavedPostsTab
           :posts="savedPosts"
@@ -193,7 +202,9 @@ async function confirmDeleteAccount() {
         />
       </ProfileSection>
 
+      <!-- Tab: Settings -->
       <div v-else-if="activeTab === 'settings'" class="space-y-8">
+        <!-- Name + email (changing the email asks for the password) -->
         <ProfileSection title="Profile Settings">
           <form class="max-w-3xl" @submit.prevent="saveProfile">
             <div v-if="authError && errorFor === 'profile'" class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2 mb-4" role="alert">{{ authError }}</div>
@@ -209,8 +220,10 @@ async function confirmDeleteAccount() {
           </form>
         </ProfileSection>
 
+        <!-- Profile picture + banner photo (an admin approves changes) -->
         <ProfilePhotosCard v-if="currentUser" :user="currentUser" @submit="submitImage" />
 
+        <!-- Password (needs the current password) -->
         <ProfileSection title="Change Password">
           <form class="max-w-3xl" @submit.prevent="savePassword">
             <div v-if="authError && errorFor === 'password'" class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2 mb-4" role="alert">{{ authError }}</div>
@@ -225,6 +238,7 @@ async function confirmDeleteAccount() {
           </form>
         </ProfileSection>
 
+        <!-- Delete account -->
         <div class="bg-red-50 border border-red-200 rounded-xl px-5 py-5 md:px-14 flex flex-wrap gap-4 justify-between items-center">
           <div>
             <div class="font-semibold text-red-700 text-lg">Delete account</div>
@@ -235,6 +249,7 @@ async function confirmDeleteAccount() {
       </div>
     </div>
 
+    <!-- "Are you sure?" pop-up for deleting the account -->
     <ConfirmModal
       :open="confirmingDelete"
       title="Delete your account?"

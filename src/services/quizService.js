@@ -2,6 +2,9 @@ import { Query } from 'appwrite'
 import { tablesDB, DB_ID, TABLES } from './appwrite'
 import { listAllRows, deleteAllRows } from './rowHelpers'
 
+// DATA ACCESS for the `quizzes` table. Each quiz belongs to one course
+// (courseId). Deleting a quiz also deletes its questions and attempts.
+
 export async function getAllQuizzes() {
   return listAllRows(TABLES.QUIZZES)
 }
@@ -14,6 +17,7 @@ export async function getQuizById(id) {
   return tablesDB.getRow({ databaseId: DB_ID, tableId: TABLES.QUIZZES, rowId: id })
 }
 
+// A course's quiz (each course has at most one).
 export async function getQuizForCourse(courseId, { publishedOnly = false } = {}) {
   const queries = [Query.equal('courseId', courseId)]
   if (publishedOnly) queries.push(Query.equal('published', true))

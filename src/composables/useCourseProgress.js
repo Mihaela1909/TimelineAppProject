@@ -8,6 +8,7 @@ export function useCourseProgress() {
   const completedLessonIds = ref([])
   const marking = ref(false)
 
+  // Which lessons of this course the user has finished (none for guests).
   async function fetchCompleted(userId, courseId) {
     completedLessonIds.value = []
     if (!userId) return // guests have no progress

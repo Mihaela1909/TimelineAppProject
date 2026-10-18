@@ -4,9 +4,13 @@ import { useImageApprovals } from '../../composables/useImageApprovals'
 import { getImagePreviewUrl } from '../../services/mediaService'
 import { useToast } from '../../composables/useToast'
 
+// ADMIN ONLY: profile photos (and photo removals) that users submitted,
+// waiting for an admin to approve or reject them.
+
 const { requests, loading, error, busyKey, fetchAll, decide } = useImageApprovals()
 const toast = useToast()
 
+// When the page opens: load what it needs.
 onMounted(fetchAll)
 
 async function handleDecision(request, approve) {
@@ -22,20 +26,24 @@ async function handleDecision(request, approve) {
       <button class="text-sm px-4 py-2 rounded-md border border-olive text-olive" @click="fetchAll">Refresh</button>
     </div>
 
+    <!-- Loading: grey placeholders while the data arrives -->
     <div v-if="loading" class="bg-white rounded-xl p-4 md:p-6 space-y-3" aria-live="polite">
       <div v-for="n in 3" :key="n" class="h-8 bg-olive-light rounded animate-pulse"></div>
     </div>
 
+    <!-- Error loading: message + Retry button -->
     <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center text-sm" role="alert">
       <p class="mb-3">{{ error }}</p>
       <button class="px-4 py-2 rounded-md border border-red-400" @click="fetchAll">Retry</button>
     </div>
 
+    <!-- Empty: no photos waiting -->
     <div v-else-if="requests.length === 0" class="bg-white rounded-xl p-12 text-center text-sm text-bark/60">
       No images waiting for approval.
     </div>
 
     <div v-else class="bg-white rounded-xl overflow-hidden">
+      <!-- The list (secondary columns are hidden on phones) -->
       <table class="w-full text-sm">
         <thead>
           <tr class="text-left text-bark/50 border-b border-black/5">

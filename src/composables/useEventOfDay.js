@@ -11,6 +11,7 @@ const HISTORY_BEFORE_YEAR = 1900
 
 const dayOfYear = (date) => Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 86400000)
 
+// Pick the date's featured event: an older (pre-1900) one, the same all day.
 export function pickFeaturedEvent(events, date) {
   if (!events.length) return null
   const older = events.filter((e) => e.year < HISTORY_BEFORE_YEAR)
@@ -40,6 +41,7 @@ export function displayText(item) {
   return `${name} is born.`
 }
 
+// Guess a topic label for an event from its words (Wikipedia has none).
 export function topicOf(item) {
   if (item.kind === 'birth') return 'Birth'
   return TOPICS.find(([, re]) => re.test(item.text))?.[0] || 'Event'

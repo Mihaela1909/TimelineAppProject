@@ -10,6 +10,9 @@ import AppIcon from '../components/ui/AppIcon.vue'
 import { usePageMeta } from '../composables/usePageMeta'
 import { toDescription } from '../utils/pageMeta'
 
+// COURSE OVERVIEW PAGE (/courses/:id): banner, description, the main button
+// (Start / Continue / Review), the lesson list with progress, and the quiz.
+
 const route = useRoute()
 const { course, lessons, quiz, loading, error, fetchCourseAndLessons } = useCourseDetail()
 usePageMeta(() =>

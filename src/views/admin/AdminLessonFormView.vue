@@ -9,15 +9,19 @@ import PublishToggle from '../../components/ui/PublishToggle.vue'
 import { useToast } from '../../composables/useToast'
 import AppIcon from '../../components/ui/AppIcon.vue'
 
+// ADMIN: create or edit one lesson of a course (title, order, picture, text).
+
 const route = useRoute()
 const router = useRouter()
 const { fetchOne, loadingOne, loadError, save, saving, error } = useAdminLessons()
 const { fetchOne: fetchCourse } = useAdminCourses()
 const toast = useToast()
 
+// Same page for "new" and "edit": an ID in the URL means editing.
 const isEditing = computed(() => !!route.params.lessonId)
 const courseTitle = ref('')
 
+// The form fields: empty for a new item, filled in by loadRow() when editing.
 const form = ref({
   courseId: route.params.id,
   title: '',
@@ -32,6 +36,7 @@ async function loadRow() {
   if (existing) form.value = { ...existing }
 }
 
+// When the page opens: load what it needs.
 onMounted(async () => {
   const course = await fetchCourse(route.params.id)
   if (course) courseTitle.value = course.title
@@ -46,6 +51,7 @@ const submitted = ref(false)
 const isRequired = (field) => field in REQUIRED_IMAGES
 const isMissing = (field) => submitted.value && isRequired(field) && !form.value[field]
 
+// Save button: the composable checks and saves; on success, show a message and go back.
 async function handleSubmit() {
   submitted.value = true
   const wasEditing = isEditing.value
@@ -98,6 +104,7 @@ async function handleSubmit() {
 
       </div>
 
+      <!-- The form -->
       <form v-else @submit.prevent="handleSubmit">
         <div class="grid md:grid-cols-[1fr_12rem] gap-6 mb-5">
           <div>
@@ -132,9 +139,11 @@ async function handleSubmit() {
           <ImageUpload v-model="form.imageId" label="Lesson image" :required="isRequired('imageId')" :invalid="isMissing('imageId')" />
 
           <div class="flex flex-col items-end gap-5">
+            <!-- Published / draft switch -->
             <PublishToggle v-model="form.published" />
 
             <button
+              <!-- Save button (disabled while saving) -->
               type="submit"
               :disabled="saving"
               class="px-6 py-2.5 bg-olive text-white rounded-lg text-base font-semibold hover:bg-olive/90 transition-colors disabled:opacity-60"

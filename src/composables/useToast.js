@@ -6,6 +6,7 @@ import { ref } from 'vue'
 const toasts = ref([])
 let nextId = 1
 
+// Show a message, then remove it again after `duration` ms.
 function push(message, type = 'success', duration = 3000) {
   const id = nextId++
   toasts.value.push({ id, message, type })

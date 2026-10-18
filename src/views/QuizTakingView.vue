@@ -13,6 +13,9 @@ import AppIcon from '../components/ui/AppIcon.vue'
 import { usePageMeta } from '../composables/usePageMeta'
 import { scorePercent, passingScoreOf, estimatedMinutes } from '../utils/quizScore'
 
+// QUIZ PAGE (/quizzes/:id): intro screen → one question at a time → results.
+// The state lives in useQuizTaking; this page decides what to show.
+
 const route = useRoute()
 const { currentUser } = useAuth()
 const {

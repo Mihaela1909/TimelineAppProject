@@ -9,6 +9,9 @@ import PublishToggle from '../../components/ui/PublishToggle.vue'
 import CategoryPicker from '../../components/ui/CategoryPicker.vue'
 import { useToast } from '../../composables/useToast'
 
+// ADMIN: create or edit a course. Two tabs: "Details" (the course form) and
+// "Lessons" (the course's lessons, with add / edit / delete).
+
 const route = useRoute()
 const router = useRouter()
 const { fetchOne, loadingOne, loadError, save, saving, error, categories, fetchAll } = useAdminCourses()
@@ -21,6 +24,7 @@ const {
   deleting: deletingLesson,
 } = useAdminLessons()
 
+// Same page for "new" and "edit": an ID in the URL means editing.
 const isEditing = computed(() => !!route.params.id)
 const activeTab = ref(route.query.tab === 'lessons' ? 'lessons' : 'details')
 const pendingDeleteLesson = ref(null)
@@ -29,6 +33,7 @@ watch(activeTab, (tab) => {
   if (tab === 'lessons' && isEditing.value) fetchForCourse(route.params.id)
 })
 
+// Runs when the user confirms the delete pop-up.
 async function confirmDeleteLesson() {
   const target = pendingDeleteLesson.value
   pendingDeleteLesson.value = null // close the modal first so it can't be confirmed twice
@@ -36,6 +41,7 @@ async function confirmDeleteLesson() {
   else toast.error('Could not delete this lesson. Please try again.')
 }
 
+// The form fields: empty for a new item, filled in by loadRow() when editing.
 const form = ref({
   title: '',
   category: '',
@@ -56,6 +62,7 @@ async function loadRow() {
   if (existing) form.value = { ...existing }
 }
 
+// When the page opens: load what it needs.
 onMounted(async () => {
   fetchAll() // existing courses → the list of categories already in use
   if (isEditing.value) {
@@ -69,6 +76,7 @@ const submitted = ref(false)
 const isRequired = (field) => field in REQUIRED_IMAGES
 const isMissing = (field) => submitted.value && isRequired(field) && !form.value[field]
 
+// Save button: the composable checks and saves; on success, show a message and go back.
 async function handleSubmit() {
   submitted.value = true
   if (descriptionTooShort.value) return
@@ -109,6 +117,7 @@ async function handleSubmit() {
       </button>
     </div>
 
+    <!-- Tab: Details -->
     <div v-if="activeTab === 'details'" class="bg-white rounded-xl p-4 md:p-6">
       <div
         v-if="error"
@@ -136,6 +145,7 @@ async function handleSubmit() {
 
       </div>
 
+      <!-- The form -->
       <form v-else @submit.prevent="handleSubmit">
         <label class="text-xs text-bark/70 block mb-1">Title *</label>
         <input
@@ -163,6 +173,7 @@ async function handleSubmit() {
             <CategoryPicker id="course-category" v-model="form.category" :options="categories" required />
           </div>
           <div class="flex items-end pb-1">
+            <!-- Published / draft switch -->
             <PublishToggle v-model="form.published" />
           </div>
         </div>
@@ -173,6 +184,7 @@ async function handleSubmit() {
         </div>
 
         <button
+          <!-- Save button (disabled while saving) -->
           type="submit"
           :disabled="saving"
           class="px-5 py-2.5 bg-olive text-white rounded-md text-sm font-medium disabled:opacity-60"
@@ -182,6 +194,7 @@ async function handleSubmit() {
       </form>
     </div>
 
+    <!-- Tab: Lessons -->
     <div v-else-if="activeTab === 'lessons'" class="bg-white rounded-xl p-4 md:p-6">
       <div class="flex justify-between items-center mb-4">
         <span class="text-xs text-bark/60">{{ lessons.length }} lesson{{ lessons.length === 1 ? '' : 's' }}</span>
@@ -193,10 +206,12 @@ async function handleSubmit() {
         </RouterLink>
       </div>
 
+      <!-- Loading: grey placeholders while the data arrives -->
       <div v-if="lessonsLoading" class="space-y-2">
         <div v-for="n in 3" :key="n" class="h-10 bg-olive-light rounded animate-pulse"></div>
       </div>
 
+      <!-- Empty: nothing created yet -->
       <div v-else-if="lessons.length === 0" class="text-center text-sm text-bark/60 py-10">
         No lessons yet. Add your first one to get started.
       </div>
@@ -225,6 +240,7 @@ async function handleSubmit() {
         </div>
       </div>
 
+      <!-- "Are you sure?" pop-up before deleting -->
       <ConfirmModal
         :open="!!pendingDeleteLesson"
         title="Delete this lesson?"

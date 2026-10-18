@@ -9,6 +9,9 @@ import PaginationNav from '../components/ui/PaginationNav.vue'
 import ListControls from '../components/ui/ListControls.vue'
 import { useListControls, byNewest, byTitle } from '../composables/useListControls'
 
+// BLOG LIST PAGE (/blog): hero, search / category / sort controls, and the
+// posts in a 2×2 grid with pages. The list logic is shared (useListControls).
+
 const PAGE_SIZE = 4 // 2×2 per page, like the mockup
 
 const { posts, loading, error, fetchPublished } = useBlog()

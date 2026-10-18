@@ -8,13 +8,18 @@ import PublishToggle from '../../components/ui/PublishToggle.vue'
 import CategoryPicker from '../../components/ui/CategoryPicker.vue'
 import { useToast } from '../../composables/useToast'
 
+// ADMIN: create or edit a blog post (/admin/blog-posts/new or /:id/edit).
+// The same form is used for both; editing first loads the existing post.
+
 const route = useRoute()
 const router = useRouter()
 const { fetchOne, loadingOne, loadError, save, saving, error, categories, fetchAll } = useAdminBlogPosts()
 const toast = useToast()
 
+// Same page for "new" and "edit": an ID in the URL means editing.
 const isEditing = computed(() => !!route.params.id)
 
+// The form fields: empty for a new item, filled in by loadRow() when editing.
 const form = ref({
   title: '',
   category: '',
@@ -30,6 +35,7 @@ async function loadRow() {
   if (existing) form.value = { ...existing }
 }
 
+// When the page opens: load what it needs.
 onMounted(async () => {
   fetchAll() // existing posts → the list of categories already in use
   if (isEditing.value) {
@@ -42,6 +48,7 @@ const submitted = ref(false)
 const isRequired = (field) => field in REQUIRED_IMAGES
 const isMissing = (field) => submitted.value && isRequired(field) && !form.value[field]
 
+// Save button: the composable checks and saves; on success, show a message and go back.
 async function handleSubmit() {
   submitted.value = true
   const ok = await save(isEditing.value ? route.params.id : null, form.value)
@@ -84,6 +91,7 @@ async function handleSubmit() {
 
       </div>
 
+      <!-- The form -->
       <form v-else @submit.prevent="handleSubmit">
         <label class="text-xs text-bark/70 block mb-1">Title *</label>
         <input
@@ -125,10 +133,12 @@ async function handleSubmit() {
         </div>
 
         <div class="mb-5">
+          <!-- Published / draft switch -->
           <PublishToggle v-model="form.published" />
         </div>
 
         <button
+          <!-- Save button (disabled while saving) -->
           type="submit"
           :disabled="saving"
           class="px-5 py-2.5 bg-olive text-white rounded-md text-sm font-medium disabled:opacity-60"

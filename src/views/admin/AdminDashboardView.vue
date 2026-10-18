@@ -4,9 +4,13 @@ import { useAdminDashboard } from '../../composables/useAdminDashboard'
 import { timeAgo } from '../../utils/time'
 import AppIcon from '../../components/ui/AppIcon.vue'
 
+// ADMIN: start page of the admin panel — totals, quick "New …" buttons and
+// a recent activity list.
+
 const { stats, activity, loading, error, fetchAll } = useAdminDashboard()
 const showAll = ref(false)
 
+// When the page opens: load what it needs.
 onMounted(fetchAll)
 
 const statCards = computed(() => [
@@ -42,6 +46,7 @@ const visibleActivity = computed(() => (showAll.value ? activity.value : activit
         class="bg-white rounded-xl p-5 hover:shadow-md transition-shadow"
       >
         <div class="text-sm text-bark/70 mb-1">{{ card.label }}</div>
+        <!-- Loading: grey placeholders while the data arrives -->
         <div v-if="loading" class="h-9 w-12 bg-olive-light rounded animate-pulse"></div>
         <div v-else class="text-3xl md:text-4xl font-bold text-bark">{{ card.value }}</div>
       </RouterLink>
@@ -62,10 +67,12 @@ const visibleActivity = computed(() => (showAll.value ? activity.value : activit
     <div class="bg-white rounded-xl p-4 md:p-6">
       <h2 class="text-lg font-semibold text-bark mb-4">Recent Activity</h2>
 
+      <!-- Loading: grey placeholders while the data arrives -->
       <div v-if="loading" class="space-y-3" aria-live="polite">
         <div v-for="n in 3" :key="n" class="h-6 bg-olive-light rounded animate-pulse"></div>
       </div>
 
+      <!-- Empty: no activity yet -->
       <div v-else-if="activity.length === 0" class="text-sm text-bark/60 py-4">No activity yet.</div>
 
       <ul v-else class="space-y-3">

@@ -8,6 +8,7 @@ import { getAllPublishedLessons } from '../services/lessonService'
 export function useCourseStatuses() {
   const statusById = ref({})
 
+  // Work out "in progress" / "completed" for every course the user started.
   async function fetchFor(userId) {
     statusById.value = {}
     if (!userId) return // guests have no progress

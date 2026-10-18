@@ -4,6 +4,10 @@ import { listAllRows, deleteAllRows } from './rowHelpers'
 import { deleteLesson } from './lessonService'
 import { deleteQuiz } from './quizService'
 
+// DATA ACCESS for the `courses` table. Deleting a course also deletes
+// everything that belongs to it (lessons, quizzes, progress) — children first.
+
+// Published courses for the public site; `limit` = only the first N.
 export async function getPublishedCourses({ limit } = {}) {
   const queries = [Query.equal('published', true)]
   if (!limit) return listAllRows(TABLES.COURSES, queries)
@@ -16,6 +20,7 @@ export async function getPublishedCourses({ limit } = {}) {
   return res.rows
 }
 
+// Every course, drafts included (admin).
 export async function getAllCourses() {
   return listAllRows(TABLES.COURSES)
 }

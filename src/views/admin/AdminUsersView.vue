@@ -20,6 +20,7 @@ const toast = useToast()
 const openMenuId = ref(null)
 const pendingDeactivate = ref(null)
 
+// When the page opens: load what it needs.
 onMounted(fetchAll)
 
 // Rows created before the `active` column existed have null → treat as active.
@@ -87,20 +88,24 @@ async function reactivate(user) {
   <div>
     <h1 class="font-voice text-3xl md:text-4xl text-bark mb-8">{{ inactiveOnly ? 'Inactive Users' : 'Users' }}</h1>
 
+    <!-- Loading: grey placeholders while the data arrives -->
     <div v-if="loading" class="bg-white rounded-xl p-4 md:p-6 space-y-3" aria-live="polite">
       <div v-for="n in 4" :key="n" class="h-10 bg-olive-light rounded animate-pulse"></div>
     </div>
 
+    <!-- Error loading: message + Retry button -->
     <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center text-sm" role="alert">
       <p class="mb-3">{{ error }}</p>
       <button class="px-4 py-2 rounded-md border border-red-400" @click="fetchAll">Retry</button>
     </div>
 
+    <!-- Empty: no users to show -->
     <div v-else-if="visibleUsers.length === 0" class="bg-white rounded-xl p-12 text-center text-sm text-bark/60">
       {{ inactiveOnly ? 'No inactive users.' : 'No users yet.' }}
     </div>
 
     <div v-else class="bg-white rounded-xl px-3 md:px-6 py-4">
+      <!-- The list (secondary columns are hidden on phones) -->
       <table class="w-full text-sm">
         <thead>
           <tr class="text-left text-bark border-b border-bark/30">
@@ -201,6 +206,7 @@ async function reactivate(user) {
     <!-- Click-outside catcher for the ••• menu -->
     <div v-if="openMenuId" class="fixed inset-0 z-10" @click="openMenuId = null"></div>
 
+    <!-- "Are you sure?" pop-up before deleting -->
     <ConfirmModal
       :open="!!pendingDeactivate"
       title="Deactivate this user?"

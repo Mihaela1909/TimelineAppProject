@@ -7,6 +7,7 @@ import { listAllRows } from './rowHelpers'
 // stores each user's role (Appwrite's own Auth/Account has no concept
 // of "role" — that's application data, not identity data).
 
+// A user's profiles row (role, name, live photos), or null.
 export async function getProfileByUserId(userId) {
   const res = await tablesDB.listRows({
     databaseId: DB_ID,

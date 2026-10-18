@@ -4,12 +4,16 @@ import { useAdminCourses } from '../../composables/useAdminCourses'
 import ConfirmModal from '../../components/ui/ConfirmModal.vue'
 import { useToast } from '../../composables/useToast'
 
+// ADMIN: list of all courses (published and drafts) with edit and delete.
+
 const { courses, loading, error, deleting, fetchAll, remove } = useAdminCourses()
 const pendingDelete = ref(null)
 const toast = useToast()
 
+// When the page opens: load what it needs.
 onMounted(fetchAll)
 
+// Runs when the user confirms the delete pop-up.
 async function confirmDelete() {
   const target = pendingDelete.value
   pendingDelete.value = null // close the modal first so it can't be confirmed twice
@@ -49,6 +53,7 @@ async function confirmDelete() {
 
     <!-- Loaded state -->
     <div v-else class="bg-white rounded-xl overflow-hidden">
+      <!-- The list (secondary columns are hidden on phones) -->
       <table class="w-full text-sm">
         <thead>
           <tr class="text-left text-bark/50 border-b border-black/5">
@@ -81,6 +86,7 @@ async function confirmDelete() {
       </table>
     </div>
 
+    <!-- "Are you sure?" pop-up before deleting -->
     <ConfirmModal
       :open="!!pendingDelete"
       title="Delete this course?"

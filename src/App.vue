@@ -1,5 +1,8 @@
 <script setup>
 import ToastContainer from './components/ui/ToastContainer.vue'
+
+// Root component: shown on every page. The current page appears in <RouterView>;
+// ToastContainer shows the small success/error messages from anywhere in the app.
 </script>
 
 <template>

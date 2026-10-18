@@ -6,6 +6,10 @@ import { getCourseById } from '../services/courseService'
 import { getLessonsForCourse } from '../services/lessonService'
 import { useToast } from './useToast'
 
+// APPLICATION LOGIC for taking a quiz: loads the quiz + questions, then steps
+// through the phases start → question → results, counts correct answers,
+// and saves the result for logged-in users.
+
 export function useQuizTaking() {
   const quiz = ref(null)
   const course = ref(null)
@@ -26,6 +30,7 @@ export function useQuizTaking() {
   const currentQuestion = computed(() => questions.value[currentIndex.value])
   const isLastQuestion = computed(() => currentIndex.value === questions.value.length - 1)
 
+  // Load the quiz, its questions, its course, and the user's earlier attempts.
   async function fetchQuiz(quizId, userId) {
     loading.value = true
     error.value = null
@@ -50,6 +55,7 @@ export function useQuizTaking() {
     }
   }
 
+  // Start (or restart) the quiz from question 1.
   function startQuiz() {
     phase.value = 'question'
     currentIndex.value = 0
@@ -58,10 +64,12 @@ export function useQuizTaking() {
     correctCount.value = 0
   }
 
+  // Remember the clicked answer (until it has been submitted).
   function selectOption(index) {
     if (!answered.value) selectedIndex.value = index
   }
 
+  // Lock in the chosen answer and count it if it was right.
   function submitAnswer() {
     if (selectedIndex.value === null || answered.value) return // no double-scoring
     answered.value = true
@@ -70,6 +78,7 @@ export function useQuizTaking() {
     }
   }
 
+  // Next question, or the results after the last one (and save the score if logged in).
   async function nextQuestion(userId) {
     if (!answered.value || phase.value !== 'question') return // must answer first; ignore double-clicks
     if (isLastQuestion.value) {
@@ -97,6 +106,7 @@ export function useQuizTaking() {
     }
   }
 
+  // Play the same quiz again.
   function retake() {
     startQuiz()
   }

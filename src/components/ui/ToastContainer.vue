@@ -1,6 +1,9 @@
 <script setup>
 import { useToast } from '../../composables/useToast'
 
+// Shows the short success / error messages (toasts) in the bottom-right corner.
+// Any code can trigger one with useToast().success(...) / .error(...).
+
 const { toasts } = useToast()
 </script>
 

@@ -5,6 +5,7 @@ import { listAllRows, deleteAllRows } from './rowHelpers'
 // DATA ACCESS LAYER for lessons. Lessons always belong to exactly one
 // course, so every read here is scoped by courseId.
 
+// One course's lessons in order; publishedOnly for the public site.
 export async function getLessonsForCourse(courseId, { publishedOnly = false } = {}) {
   const queries = [Query.equal('courseId', courseId), Query.orderAsc('order')]
   if (publishedOnly) queries.push(Query.equal('published', true))

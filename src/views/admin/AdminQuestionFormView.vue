@@ -4,13 +4,18 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAdminQuizQuestions } from '../../composables/useAdminQuizQuestions'
 import { useToast } from '../../composables/useToast'
 
+// ADMIN: create or edit one quiz question (question text, 2–4 answers,
+// which answer is correct, and its position in the quiz).
+
 const route = useRoute()
 const router = useRouter()
 const { fetchOne, loadingOne, loadError, save, saving, error } = useAdminQuizQuestions()
 const toast = useToast()
 
+// Same page for "new" and "edit": an ID in the URL means editing.
 const isEditing = computed(() => !!route.params.questionId)
 
+// The form fields: empty for a new item, filled in by loadRow() when editing.
 const form = ref({
   quizId: route.params.id,
   questionText: '',
@@ -25,6 +30,7 @@ async function loadRow() {
   if (existing) form.value = { ...existing }
 }
 
+// When the page opens: load what it needs.
 onMounted(async () => {
   if (isEditing.value) {
     await loadRow()
@@ -43,6 +49,7 @@ function removeOption(index) {
   }
 }
 
+// Save button: the composable checks and saves; on success, show a message and go back.
 async function handleSubmit() {
   const wasEditing = isEditing.value
   const savedQuestion = await save(wasEditing ? route.params.questionId : null, form.value)
@@ -91,6 +98,7 @@ async function handleSubmit() {
 
       </div>
 
+      <!-- The form -->
       <form v-else @submit.prevent="handleSubmit">
         <div class="grid grid-cols-[1fr_100px] gap-4 mb-4">
           <div>
@@ -152,6 +160,7 @@ async function handleSubmit() {
         <div v-else class="mb-5"></div>
 
         <button
+          <!-- Save button (disabled while saving) -->
           type="submit"
           :disabled="saving"
           class="px-5 py-2.5 bg-olive text-white rounded-md text-sm font-medium disabled:opacity-60"

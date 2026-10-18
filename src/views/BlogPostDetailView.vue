@@ -15,6 +15,9 @@ import { usePageMeta } from '../composables/usePageMeta'
 import { toDescription } from '../utils/pageMeta'
 import { sanitizeHtml } from '../utils/sanitizeHtml'
 
+// BLOG POST PAGE (/blog/:id): one article with its cover, intro, text, Share
+// and Save buttons, then "Browse more" posts (same category first).
+
 const route = useRoute()
 const toast = useToast()
 

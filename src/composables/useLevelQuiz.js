@@ -18,6 +18,7 @@ export const LEVELS = [
   { min: 0, name: 'Beginner', text: 'Every historian starts somewhere — great time to dive in.' },
 ]
 
+// Returns a shuffled copy of a list (Fisher–Yates).
 function shuffle(list) {
   const copy = [...list]
   for (let i = copy.length - 1; i > 0; i--) {
@@ -100,6 +101,7 @@ export function useLevelQuiz() {
     phase.value === 'results' ? scoreLevelQuiz(questions.value, answers.value, pool.value.courses, statusById.value) : null
   )
 
+  // Load all published courses, quizzes and questions, then pick the questions.
   async function load(userId) {
     if (loading.value) return
     loading.value = true
@@ -118,6 +120,7 @@ export function useLevelQuiz() {
     }
   }
 
+  // Start (or restart) the quiz from question 1.
   function start() {
     phase.value = 'question'
     currentIndex.value = 0
@@ -126,16 +129,19 @@ export function useLevelQuiz() {
     answers.value = []
   }
 
+  // Remember the clicked answer (until it has been submitted).
   function selectOption(index) {
     if (!answered.value) selectedIndex.value = index
   }
 
+  // Lock in the chosen answer, so the right/wrong feedback shows.
   function submitAnswer() {
     if (selectedIndex.value === null || answered.value) return // no double-scoring
     answered.value = true
     answers.value[currentIndex.value] = selectedIndex.value
   }
 
+  // Go to the next question, or to the results after the last one.
   function nextQuestion() {
     if (!answered.value || phase.value !== 'question') return // must answer first; ignore double-clicks
     if (isLastQuestion.value) {

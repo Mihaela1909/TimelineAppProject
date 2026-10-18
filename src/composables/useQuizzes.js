@@ -9,6 +9,7 @@ export function useQuizzes() {
   const loading = ref(true)
   const error = ref(null)
 
+  // Load all published quizzes (quizzes page, home page).
   async function fetchPublished() {
     loading.value = true
     error.value = null

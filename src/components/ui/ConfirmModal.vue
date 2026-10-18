@@ -1,6 +1,9 @@
 <script setup>
 import { ref, watch, nextTick, onBeforeUnmount, useId } from 'vue'
 
+// Reusable "Are you sure?" pop-up, used before anything destructive (deleting,
+// deactivating…). The parent decides what happens on confirm / cancel.
+
 const props = defineProps({
   open: { type: Boolean, default: false },
   title: { type: String, required: true },

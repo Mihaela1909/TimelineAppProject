@@ -8,6 +8,9 @@ import HistoryCard from '../ui/HistoryCard.vue'
 import AppIcon from '../ui/AppIcon.vue'
 import { splitTitle, lessonsText } from '../../utils/text'
 
+// Home page section "Most Popular Courses": a carousel of published courses.
+// (There's no popularity data, so it shows the first SHOWN published courses.)
+
 const SHOWN = 8
 const { courses, loading, error, fetchPublished } = useCourses()
 

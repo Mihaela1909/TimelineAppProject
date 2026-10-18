@@ -47,6 +47,7 @@ function clearImage() {
       {{ label }} <sup v-if="required" class="text-bark/60">*</sup>
     </label>
 
+    <!-- No image yet: a drop zone (drag a file onto it, click it, or press Enter) -->
     <div v-if="!modelValue">
       <div
         class="border bg-white cursor-pointer transition-colors flex flex-col items-center justify-center gap-1.5 text-center"
@@ -72,10 +73,12 @@ function clearImage() {
             Drag or <span class="text-olive font-semibold">browse</span>
           </span>
         </template>
+        <!-- The real file picker is hidden; the box above opens it -->
         <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="onFileInputChange" />
       </div>
     </div>
 
+    <!-- Image chosen: preview, × to remove it, and "Change" to pick another -->
     <div v-else class="relative inline-block">
       <img
         :src="previewUrl"
@@ -101,6 +104,7 @@ function clearImage() {
       <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="onFileInputChange" />
     </div>
 
+    <!-- Upload failed, or the form needs an image -->
     <p v-if="error" class="text-sm text-red-600 mt-1.5">{{ error }}</p>
     <p v-else-if="invalid && !modelValue" class="text-sm text-red-600 mt-1.5">Please add an image.</p>
   </div>

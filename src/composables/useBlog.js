@@ -11,6 +11,7 @@ export function useBlog() {
   const loading = ref(true)
   const error = ref(null)
 
+  // Load all published posts (blog page, home page).
   async function fetchPublished() {
     loading.value = true
     error.value = null

@@ -34,6 +34,7 @@ export function useImageApprovals() {
     )
   }
 
+  // Load all waiting photo requests, with the name of who sent each one.
   async function fetchAll() {
     loading.value = true
     error.value = null

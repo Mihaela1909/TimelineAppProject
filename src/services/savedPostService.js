@@ -6,11 +6,13 @@ import { listAllRows, deleteAllRows } from './rowHelpers'
 // Row Security is ON: each row grants read + delete to its owner only (set at
 // creation), so a user can only see and remove their own saved posts.
 
+// The IDs of the posts this user saved.
 export async function getSavedPostIds(userId) {
   const rows = await listAllRows(TABLES.SAVED_POSTS, [Query.equal('userId', userId)])
   return rows.map((row) => row.postId)
 }
 
+// Save a post for this user (skips it if it's already saved).
 export async function savePost({ userId, postId }) {
   // Avoid duplicate rows (e.g. a double-click before the button disables).
   const existing = await tablesDB.listRows({
@@ -29,6 +31,7 @@ export async function savePost({ userId, postId }) {
   })
 }
 
+// Remove a post from this user's saved posts.
 export async function unsavePost({ userId, postId }) {
   return deleteAllRows(TABLES.SAVED_POSTS, [Query.equal('userId', userId), Query.equal('postId', postId)])
 }

@@ -15,6 +15,7 @@ export function useAdminLessons() {
   const saving = ref(false)
   const deleting = ref(false) // separate from saving: a delete from the list isn't a form save
 
+  // Load all of one course's lessons (drafts too), in order.
   async function fetchForCourse(courseId) {
     loading.value = true
     error.value = null
@@ -44,6 +45,7 @@ export function useAdminLessons() {
     }
   }
 
+  // Create a new lesson (no id) or update an existing one. Returns true/false.
   async function save(id, data) {
     if (saving.value) return null // already saving — ignore double-clicks
     error.value = missingFieldsMessage(data, REQUIRED_IMAGES)

@@ -10,6 +10,7 @@ import { tablesDB, DB_ID } from './appwrite'
 const PAGE_SIZE = 500
 const MAX_PAGES = 20 // hard stop so a huge table can't hang the page
 
+// Keeps asking for the next 500 rows until it has them all (Appwrite sends 25 by default).
 export async function listAllRows(tableId, queries = []) {
   const rows = []
   let cursor = null

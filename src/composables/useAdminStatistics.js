@@ -12,6 +12,7 @@ const ACTIVE_WINDOW_DAYS = 30
 const average = (values) => (values.length ? values.reduce((s, v) => s + v, 0) / values.length : 0)
 const monthKey = (date) => `${date.getFullYear()}-${date.getMonth()}`
 
+// New accounts per month for the last MONTHS_SHOWN months (for the bar chart).
 function signupsByMonth(profiles) {
   const now = new Date()
   const months = Array.from({ length: MONTHS_SHOWN }, (_, i) => {
@@ -31,6 +32,7 @@ function signupsByMonth(profiles) {
   return months
 }
 
+// Per course: how many people started it and how many finished every lesson.
 function courseEngagement(courses, lessons, progress) {
   const lessonCount = {}
   const publishedLessonIds = new Set()
@@ -62,6 +64,7 @@ function courseEngagement(courses, lessons, progress) {
     .sort((a, b) => b.learners - a.learners)
 }
 
+// Per quiz: number of attempts, average score and pass rate.
 function quizPerformance(quizzes, attempts) {
   const byQuiz = {}
   attempts.forEach((a) => (byQuiz[a.quizId] ??= []).push(a))
@@ -81,6 +84,7 @@ function quizPerformance(quizzes, attempts) {
     .sort((a, b) => b.attempts - a.attempts)
 }
 
+// Turns the raw rows into every number on the statistics page (no loading here).
 export function buildStatistics({ profiles, courses, lessons, quizzes, progress, attempts }) {
   const months = signupsByMonth(profiles)
   const since = Date.now() - ACTIVE_WINDOW_DAYS * 86400000
@@ -121,6 +125,7 @@ export function useAdminStatistics() {
   const loading = ref(false)
   const error = ref(null)
 
+  // Load all the data and calculate the statistics.
   async function fetchAll() {
     loading.value = true
     error.value = null

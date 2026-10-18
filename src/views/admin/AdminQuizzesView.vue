@@ -5,11 +5,14 @@ import { useAdminCourses } from '../../composables/useAdminCourses'
 import ConfirmModal from '../../components/ui/ConfirmModal.vue'
 import { useToast } from '../../composables/useToast'
 
+// ADMIN: list of all quizzes (published and drafts) with edit and delete.
+
 const { quizzes, loading, error, deleting, fetchAll, remove } = useAdminQuizzes()
 const { courses, fetchAll: fetchCourses } = useAdminCourses()
 const pendingDelete = ref(null)
 const toast = useToast()
 
+// When the page opens: load what it needs.
 onMounted(() => {
   fetchAll()
   fetchCourses()
@@ -24,6 +27,7 @@ const courseTitleById = computed(() => {
   return map
 })
 
+// Runs when the user confirms the delete pop-up.
 async function confirmDelete() {
   const target = pendingDelete.value
   pendingDelete.value = null // close the modal first so it can't be confirmed twice
@@ -44,21 +48,25 @@ async function confirmDelete() {
       </RouterLink>
     </div>
 
+    <!-- Loading: grey placeholders while the data arrives -->
     <div v-if="loading" class="bg-white rounded-xl p-4 md:p-6 space-y-3" aria-live="polite">
       <div v-for="n in 3" :key="n" class="h-8 bg-olive-light rounded animate-pulse"></div>
     </div>
 
+    <!-- Error loading: message + Retry button -->
     <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center text-sm" role="alert">
       <p class="mb-3">{{ error }}</p>
       <button class="px-4 py-2 rounded-md border border-red-400" @click="fetchAll">Retry</button>
     </div>
 
+    <!-- Empty: nothing created yet -->
     <div v-else-if="quizzes.length === 0" class="bg-white rounded-xl p-12 text-center text-sm text-bark/60">
       No quizzes yet.
       <RouterLink to="/admin/quizzes/new" class="text-olive font-medium">Create your first one</RouterLink>.
     </div>
 
     <div v-else class="bg-white rounded-xl overflow-hidden">
+      <!-- The list (secondary columns are hidden on phones) -->
       <table class="w-full text-sm">
         <thead>
           <tr class="text-left text-bark/50 border-b border-black/5">
@@ -91,6 +99,7 @@ async function confirmDelete() {
       </table>
     </div>
 
+    <!-- "Are you sure?" pop-up before deleting -->
     <ConfirmModal
       :open="!!pendingDelete"
       title="Delete this quiz?"

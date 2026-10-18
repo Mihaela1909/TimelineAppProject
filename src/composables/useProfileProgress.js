@@ -44,6 +44,7 @@ export function useProfileProgress() {
       })
   }
 
+  // Load everything the profile's course and quiz tabs need, in parallel.
   async function fetchFor(userId) {
     if (!userId) return
     loading.value = true

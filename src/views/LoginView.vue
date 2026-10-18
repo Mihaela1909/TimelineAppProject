@@ -5,6 +5,9 @@ import { useAuth } from '../composables/useAuth'
 import AuthScene from '../components/auth/AuthScene.vue'
 import AuthField from '../components/auth/AuthField.vue'
 
+// LOGIN PAGE (/login). After logging in it goes back to the page the user
+// came from (?redirect=…), or to the home page.
+
 const email = ref('')
 const password = ref('')
 const { login, loading, error } = useAuth()

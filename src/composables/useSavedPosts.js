@@ -11,6 +11,7 @@ const error = ref(null)
 const busy = ref(false)
 
 export function useSavedPosts() {
+  // Load the IDs of the posts this user saved (empty for guests).
   async function fetchFor(userId) {
     if (!userId) {
       savedIds.value = []

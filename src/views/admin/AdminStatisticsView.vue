@@ -2,8 +2,13 @@
 import { computed, onMounted } from 'vue'
 import { useAdminStatistics } from '../../composables/useAdminStatistics'
 
+// ADMIN ONLY: statistics — sign-ups per month, active learners, course
+// engagement, quiz performance and the user breakdown. Calculated in
+// useAdminStatistics from the raw data.
+
 const { stats, loading, error, fetchAll } = useAdminStatistics()
 
+// When the page opens: load what it needs.
 onMounted(fetchAll)
 
 const tiles = computed(() => {
@@ -159,6 +164,7 @@ const learnerMax = computed(() => Math.max(1, ...(stats.value?.courses.map((c) =
 
         <div v-if="stats.quizzes.length === 0" class="text-sm text-bark/60">No quizzes yet.</div>
         <div v-else class="overflow-x-auto -mx-1 px-1">
+        <!-- Quiz performance table (scrolls sideways on narrow phones) -->
         <table class="w-full min-w-[28rem] text-sm">
           <thead>
             <tr class="text-left text-bark/50 border-b border-black/10">

@@ -105,6 +105,7 @@ async function handleSignOut() {
         <span class="text-white truncate">{{ currentUser?.name }}</span>
       </RouterLink>
 
+      <!-- Menu: content pages for all staff -->
       <nav class="flex flex-col gap-1 flex-1">
         <RouterLink
           v-for="item in navItems"
@@ -118,6 +119,7 @@ async function handleSignOut() {
           {{ item.label }}
         </RouterLink>
 
+        <!-- "Users" group: admins only (hidden for editors) -->
         <template v-if="isAdmin">
           <button
             type="button"
@@ -155,6 +157,7 @@ async function handleSignOut() {
         </button>
       </div>
     </aside>
+    <!-- The current admin page -->
     <main id="main" tabindex="-1" class="flex-1 bg-cream p-4 sm:p-6 md:p-8 min-w-0 min-h-[calc(100vh-4rem)] md:min-h-0 focus:outline-none">
       <RouterView />
     </main>

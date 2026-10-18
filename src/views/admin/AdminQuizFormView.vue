@@ -12,6 +12,9 @@ import QuizQuestionList from '../../components/admin/QuizQuestionList.vue'
 import { useToast } from '../../composables/useToast'
 import { DEFAULT_PASSING_SCORE } from '../../utils/quizScore'
 
+// ADMIN: create or edit a quiz. Two tabs: "Details" (title, course, pass mark,
+// pictures) and "Questions" (list with add / edit / delete / reorder).
+
 const route = useRoute()
 const router = useRouter()
 const { fetchOne, loadingOne, loadError, save, saving, error } = useAdminQuizzes()
@@ -26,10 +29,12 @@ const {
 const { courses, fetchAll: fetchCourses } = useAdminCourses()
 const toast = useToast()
 
+// Same page for "new" and "edit": an ID in the URL means editing.
 const isEditing = computed(() => !!route.params.id)
 const activeTab = ref(route.query.tab === 'questions' ? 'questions' : 'details')
 const pendingDeleteQuestion = ref(null)
 
+// The form fields: empty for a new item, filled in by loadRow() when editing.
 const form = ref({
   title: '',
   courseId: '',
@@ -44,6 +49,7 @@ async function loadRow() {
   if (existing) form.value = { ...existing }
 }
 
+// When the page opens: load what it needs.
 onMounted(async () => {
   fetchCourses()
   if (isEditing.value) {
@@ -61,6 +67,7 @@ const submitted = ref(false)
 const isRequired = (field) => field in REQUIRED_IMAGES
 const isMissing = (field) => submitted.value && isRequired(field) && !form.value[field]
 
+// Save button: the composable checks and saves; on success, show a message and go back.
 async function handleSubmit() {
   submitted.value = true
   const ok = await save(isEditing.value ? route.params.id : null, form.value)
@@ -74,6 +81,7 @@ async function moveQuestion(from, to) {
   if (!(await reorder(from, to))) toast.error('Could not save the new order. Please try again.')
 }
 
+// Runs when the user confirms the delete pop-up.
 async function confirmDeleteQuestion() {
   const target = pendingDeleteQuestion.value
   pendingDeleteQuestion.value = null // close the modal first so it can't be confirmed twice
@@ -111,6 +119,7 @@ async function confirmDeleteQuestion() {
       </button>
     </div>
 
+    <!-- Tab: Details -->
     <div v-if="activeTab === 'details'" class="bg-white rounded-xl p-4 md:p-6">
       <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2 mb-4" role="alert">
         {{ error }}
@@ -136,6 +145,7 @@ async function confirmDeleteQuestion() {
 
       </div>
 
+      <!-- The form -->
       <form v-else @submit.prevent="handleSubmit">
         <label class="text-xs text-bark/70 block mb-1">Quiz title *</label>
         <input
@@ -176,10 +186,12 @@ async function confirmDeleteQuestion() {
         </div>
 
         <div class="mb-5">
+          <!-- Published / draft switch -->
           <PublishToggle v-model="form.published" />
         </div>
 
         <button
+          <!-- Save button (disabled while saving) -->
           type="submit"
           :disabled="saving"
           class="px-5 py-2.5 bg-olive text-white rounded-md text-sm font-medium disabled:opacity-60"
@@ -189,6 +201,7 @@ async function confirmDeleteQuestion() {
       </form>
     </div>
 
+    <!-- Tab: Questions -->
     <div v-else-if="activeTab === 'questions'" class="bg-white rounded-xl p-4 md:p-6">
       <div class="flex justify-between items-center gap-4 mb-4">
         <span class="text-base text-sand-dark">
@@ -203,10 +216,12 @@ async function confirmDeleteQuestion() {
         </RouterLink>
       </div>
 
+      <!-- Loading: grey placeholders while the data arrives -->
       <div v-if="questionsLoading" class="space-y-3">
         <div v-for="n in 3" :key="n" class="h-20 bg-olive-light rounded-md animate-pulse"></div>
       </div>
 
+      <!-- Empty: nothing created yet -->
       <div v-else-if="questions.length === 0" class="text-center text-sm text-bark/60 py-10">
         No questions yet. Add your first one to get started.
       </div>
@@ -220,6 +235,7 @@ async function confirmDeleteQuestion() {
         @delete="pendingDeleteQuestion = $event"
       />
 
+      <!-- "Are you sure?" pop-up before deleting -->
       <ConfirmModal
         :open="!!pendingDeleteQuestion"
         title="Delete this question?"

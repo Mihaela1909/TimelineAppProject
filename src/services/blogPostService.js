@@ -2,6 +2,9 @@ import { Query } from 'appwrite'
 import { tablesDB, DB_ID, TABLES } from './appwrite'
 import { listAllRows } from './rowHelpers'
 
+// DATA ACCESS for the `blog_posts` table: read published posts (public site),
+// read all posts (admin), and create / update / delete.
+
 export async function getAllBlogPosts() {
   return listAllRows(TABLES.BLOG_POSTS, [Query.orderDesc('$createdAt')])
 }

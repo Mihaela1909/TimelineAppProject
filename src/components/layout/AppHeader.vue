@@ -7,6 +7,10 @@ import { STAFF_ROLES } from '../../constants/roles'
 import AppLogo from './AppLogo.vue'
 import AppIcon from '../ui/AppIcon.vue'
 
+// Site header on every public page: logo, main menu, and the round profile
+// button (log in, or the account menu when logged in). On phones the menu
+// becomes a hamburger panel.
+
 const navLinks = [
   { label: 'Courses', to: '/courses' },
   { label: 'Quizzes', to: '/quizzes' },

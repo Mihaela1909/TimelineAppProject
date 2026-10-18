@@ -11,6 +11,9 @@ import ListControls from '../components/ui/ListControls.vue'
 import { useListControls, byNewest, byTitle } from '../composables/useListControls'
 import { splitTitle, lessonsText } from '../utils/text'
 
+// COURSES LIST PAGE (/courses): hero, search / category / sort controls, and
+// the course cards (with "In progress" / "Completed" badges when logged in).
+
 const PAGE_SIZE = 6
 
 const { courses, loading, error, fetchPublished } = useCourses()

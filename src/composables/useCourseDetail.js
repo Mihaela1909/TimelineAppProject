@@ -3,6 +3,9 @@ import { getCourseById } from '../services/courseService'
 import { getLessonsForCourse } from '../services/lessonService'
 import { getQuizForCourse } from '../services/quizService'
 
+// APPLICATION LOGIC for the course overview and lesson pages: loads one course,
+// its published lessons (in order) and its quiz, all at the same time.
+
 export function useCourseDetail() {
   const course = ref(null)
   const lessons = ref([])
@@ -10,6 +13,7 @@ export function useCourseDetail() {
   const loading = ref(false)
   const error = ref(null)
 
+  // Load the course, its published lessons and its quiz in parallel.
   async function fetchCourseAndLessons(courseId) {
     loading.value = true
     error.value = null
