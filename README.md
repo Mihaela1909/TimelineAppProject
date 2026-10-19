@@ -248,6 +248,7 @@ These would need a separate server program (an Appwrite Function), which is beyo
 - **Drafts are "unlisted", not secret.** The site hides unpublished courses, lessons, quizzes and posts from visitors (staff can preview them), but the content tables are readable by anyone, so a draft can still be read through the database directly.
 - **A photo waiting for approval** is hidden on the site, but its file can be opened by anyone who has its exact link.
 - **Switching off an account is checked by the site, not the database:** the person is signed out the next time they open the site, but could still send requests to the database directly. Blocking them fully is done in the Appwrite console (Auth → the user → Block).
+- **A user could create extra rows in `profiles`** through the database directly, because `userId` is a long text column and can't have a unique index. The site always uses the oldest row (the one made at registration), and roles come from Appwrite labels, so extra rows can't change anyone's access or photo. The proper fix would be a short `userId` column with a unique index, or using the user's ID as the profile row's own ID.
 - **"Delete account" only signs you out;** fully deleting an account needs server code.
 - **Rejected or replaced photos are not deleted** from storage.
 - **The statistics are calculated in the browser** by loading all the data, which is fine for a site this size.

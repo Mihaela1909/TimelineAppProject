@@ -24,7 +24,8 @@ export async function getSettingsByUserId(userId) {
   const res = await tablesDB.listRows({
     databaseId: DB_ID,
     tableId: TABLES.PROFILE_SETTINGS,
-    queries: [Query.equal('userId', userId), Query.limit(1)],
+    // Oldest first, so the same row is always used (see getProfileByUserId).
+    queries: [Query.equal('userId', userId), Query.orderAsc('$createdAt'), Query.limit(1)],
   })
   return res.rows[0] || null
 }

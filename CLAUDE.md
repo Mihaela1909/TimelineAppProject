@@ -26,7 +26,7 @@ A user's upload does NOT go live until an admin approves it.
 - `profiles`: columns `avatarImageId`, `headerImageId` (String, optional). Table-level `Read` + `Update` for label `admin`. Users must have NO update permission.
 - `profile_settings`: columns `pendingAvatarImageId`, `pendingHeaderImageId` (String, optional). Table-level `Read` + `Update` for label `admin` (otherwise the approvals page only sees the admin's own row).
 - Staff accounts need the Appwrite user label `admin` or `editor` (Auth → user → Labels). **The app's role comes from these labels** (`useAuth` → `roleFromLabels(account.labels)`), the same thing the table permissions check, so UI and database never disagree. `profiles.role` is only a record shown on the Users page. `useAuth().isStaff` = admin or editor.
-- `profiles` should have a **unique index on `userId`**, so a user can't create a second profile row.
+- `profiles.userId` is a long Text column, so it can't have a unique index. A user could create extra profile rows via the API; `getProfileByUserId` (and `getSettingsByUserId`) always use the oldest row (`orderAsc('$createdAt')`), and roles come from labels, so extra rows change nothing. Proper fix (next step): a 36-char String `userId` with a unique index, or the user's ID as the row ID.
 - The old `profile_settings.avatarImageId` / `headerImageId` columns are no longer read and can be deleted once any existing photos have been copied into `profiles`.
 
 ## Admin dashboard

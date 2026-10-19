@@ -12,7 +12,9 @@ export async function getProfileByUserId(userId) {
   const res = await tablesDB.listRows({
     databaseId: DB_ID,
     tableId: TABLES.PROFILES,
-    queries: [Query.equal('userId', userId), Query.limit(1)],
+    // Oldest first: if extra rows were ever created for this user, the one made
+    // at registration is always the one used.
+    queries: [Query.equal('userId', userId), Query.orderAsc('$createdAt'), Query.limit(1)],
   })
   return res.rows[0] || null
 }
