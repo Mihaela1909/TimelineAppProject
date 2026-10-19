@@ -25,7 +25,8 @@ A user's upload does NOT go live until an admin approves it.
 ### Required Appwrite console setup
 - `profiles`: columns `avatarImageId`, `headerImageId` (String, optional). Table-level `Read` + `Update` for label `admin`. Users must have NO update permission.
 - `profile_settings`: columns `pendingAvatarImageId`, `pendingHeaderImageId` (String, optional). Table-level `Read` + `Update` for label `admin` (otherwise the approvals page only sees the admin's own row).
-- Admin accounts need the Appwrite user label `admin` (Auth → user → Labels) in addition to `role: admin` in `profiles`.
+- Staff accounts need the Appwrite user label `admin` or `editor` (Auth → user → Labels). **The app's role comes from these labels** (`useAuth` → `roleFromLabels(account.labels)`), the same thing the table permissions check, so UI and database never disagree. `profiles.role` is only a record shown on the Users page. `useAuth().isStaff` = admin or editor.
+- `profiles` should have a **unique index on `userId`**, so a user can't create a second profile row.
 - The old `profile_settings.avatarImageId` / `headerImageId` columns are no longer read and can be deleted once any existing photos have been copied into `profiles`.
 
 ## Admin dashboard
@@ -41,7 +42,7 @@ A user's upload does NOT go live until an admin approves it.
 - `profiles` columns used: `name`, `email` (copied at registration; NOT synced if the user later changes email), `role`, `active` (Boolean, default true; `null` = active), `avatarImageId`.
 - The ••• menu changes `role` or sets `active`. It's disabled on the admin's own row so they can't lock themselves out.
 - Deactivation is enforced in `useAuth.refreshCurrentUser`: `active === false` → session deleted, and login shows "account deactivated". This is client-side only: an open session lasts until the next page load, and the API still accepts the user's session. For a hard block use Appwrite console → Auth → user → Block (needs server SDK to automate).
-- Changing `role` to admin in the app does NOT add the Appwrite `admin` label (labels need the server SDK). A newly promoted admin can open admin pages but their writes fail until the label is added in the console.
+- Changing `role` on the Users page only updates the `profiles.role` record (the page says so, and the toast reminds to add the label). Access changes only when the Appwrite label is added in the console (labels need the server SDK to automate).
 - Icons: `components/ui/AppIcon.vue` (inline SVG). No icon library is installed.
 
 ## Admin Statistics page
@@ -52,8 +53,12 @@ A user's upload does NOT go live until an admin approves it.
 
 ## Listing & deleting rows
 - Appwrite `listRows` returns only 25 rows by default. Any "get all" read must use `listAllRows()` from `services/rowHelpers.js` (cursor pagination). Only use raw `listRows` with an explicit `Query.limit`.
-- Deletes cascade in the services: `deleteCourse` → its lessons (+ their progress), quizzes (+ questions, attempts), remaining progress; `deleteQuiz` → questions + attempts; `deleteLesson` → its progress. Children are deleted first, so a failure leaves the parent in place to retry.
+- Deletes cascade in the services: `deleteCourse` → its lessons (+ their progress), quizzes (+ questions, attempts), remaining progress; `deleteQuiz` → questions + attempts; `deleteLesson` → its progress. Children are deleted first and **one at a time** (`for … await`, also in `deleteAllRows`), so a failure stops cleanly and leaves the parent in place to retry.
 - Cascades need table-level `Delete` for labels `admin` AND `editor` on lessons, quizzes, quiz_questions, quiz_attempts, progress (editors can delete courses/quizzes too).
+
+## Drafts
+- Course, lesson, quiz and blog-post pages hide unpublished items from non-staff: `useCourseDetail`, `useBlog().fetchPost`, `useQuizTaking` set error "This … isn't available." when `!published && !isStaff`. Staff can preview drafts. Lessons were already loaded `publishedOnly`.
+- At the database level drafts are only "unlisted": content tables are Read → Any. Documented in the README's known limitations.
 
 ## Categories
 - Course and blog post categories are plain strings on each row. There's no categories table, so a new category exists once a row is saved with it.

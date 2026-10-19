@@ -81,7 +81,7 @@ See the data model diagram under [How the data is stored](#data-model).
 - **Quiz results** are saved, and each quiz shows Passed, Failed or Not attempted.
 - **Saved posts:** keep blog posts to read later.
 - **Profile page:** statistics (courses started and finished, quizzes taken, average score), course progress, quiz history, saved posts, and settings (name, email, password).
-- **Profile picture and banner photo.** Every new photo, or removal, is **checked by an admin** before anyone sees it.
+- **Profile picture and banner photo.** Every new photo, or removal, is **checked by an admin** before it appears on the site.
 
 **Staff only (admin panel)**
 - An overview page with totals and recent activity.
@@ -139,7 +139,7 @@ The live site is published from this code with Appwrite Sites.
 ## How the data is stored
 
 ### Roles
-Staff accounts get a **label** in Appwrite, either `admin` (can do everything) or `editor` (can only manage content). The database checks these labels before allowing any change. Each user's role is also saved in their profile, so the site knows which pages to show them.
+Staff accounts get a **label** in Appwrite, either `admin` (can do everything) or `editor` (can only manage content). The database checks these labels before allowing any change, and the site reads the **same labels** to decide which pages to show. So the site and the database always agree on who is staff. The role saved in each profile is only a record shown on the admin Users page.
 
 ### Data model
 
@@ -211,7 +211,7 @@ src/
 - **The photo check can't be skipped:** the photo people see is in a table only admins can change. Users can only *suggest* a new photo, which is stored in a separate table.
 - **Personal data stays personal:** progress, quiz scores and saved posts can only be seen by their owner. Scores can't be edited after the quiz, only deleted.
 - **Harmful code in articles is blocked:** lesson and blog text is cleaned before it's shown, so even if someone sneaked a script into the database, it wouldn't run in visitors' browsers (`utils/sanitizeHtml.js`).
-- **Other websites can't use the database:** Appwrite only accepts requests from this site. It also slows down repeated wrong passwords: after 10 tries, logging in is blocked for a while.
+- **Other websites can't use the database from a visitor's browser:** browsers only send requests that Appwrite accepts from this site. (Tools outside a browser can still read what is public, which is why the real protection is the permissions above.) Appwrite also slows down repeated wrong passwords: after 10 tries, logging in is blocked for a while.
 - **No passwords or secret keys are in the code.** The connection details in the `.env` file are not secret (every website needs them to talk to its database), and that file isn't uploaded to GitHub anyway.
 
 ---
@@ -224,7 +224,7 @@ src/
 - **Works on phones** as well as computers; on phones, the staff menu slides in from the side.
 - **Accessibility** (for people using a keyboard, a screen reader, or other aids):
   - a "Skip to main content" link
-  - every field has a label, and every icon button has a spoken name
+  - every form field has a label, and every icon button has a spoken name (e.g. "Edit Ancient China")
   - every image has a description, or is marked as decoration
   - pop-up messages and errors are read out by screen readers
   - the "Are you sure?" box works fully with the keyboard
@@ -243,9 +243,11 @@ src/
 
 These would need a separate server program (an Appwrite Function), which is beyond this website-only project:
 
-- **Changing someone's role in the site doesn't add their staff label in Appwrite;** that still has to be done by hand in Appwrite.
-- **Switching off an account** signs the person out the next time they open the site. Blocking them immediately has to be done in Appwrite.
-- **Quiz answers are checked in the browser,** so a skilled user could fake a score by talking to the database directly.
+- **Giving someone a staff role** is done by adding the Appwrite label by hand in the console. The role on the admin Users page is only a record; the site and the database both go by the label.
+- **Quiz answers are checked in the browser.** The correct answers are stored with the questions, which anyone can read, so a skilled user could look them up or fake a score by talking to the database directly.
+- **Drafts are "unlisted", not secret.** The site hides unpublished courses, lessons, quizzes and posts from visitors (staff can preview them), but the content tables are readable by anyone, so a draft can still be read through the database directly.
+- **A photo waiting for approval** is hidden on the site, but its file can be opened by anyone who has its exact link.
+- **Switching off an account is checked by the site, not the database:** the person is signed out the next time they open the site, but could still send requests to the database directly. Blocking them fully is done in the Appwrite console (Auth → the user → Block).
 - **"Delete account" only signs you out;** fully deleting an account needs server code.
 - **Rejected or replaced photos are not deleted** from storage.
 - **The statistics are calculated in the browser** by loading all the data, which is fine for a site this size.

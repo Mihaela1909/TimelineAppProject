@@ -1,7 +1,8 @@
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import * as authService from '../services/authService'
 import { getProfileByUserId } from '../services/profileService'
 import { getSettingsByUserId } from '../services/profileSettingsService'
+import { ROLES, STAFF_ROLES } from '../constants/roles'
 
 // This state is intentionally declared OUTSIDE the function, at module
 // scope. That makes it a singleton — every component that calls useAuth()
@@ -11,6 +12,8 @@ import { getSettingsByUserId } from '../services/profileSettingsService'
 const currentUser = ref(null)
 const authChecked = ref(false)
 let pendingCheck = null // the 'who is logged in?' request while it's running
+// true for admins and editors — used to let staff preview drafts and open the admin panel
+const isStaff = computed(() => STAFF_ROLES.includes(currentUser.value?.role))
 
 // Friendly login messages per Appwrite error type — so a correct password
 // that's refused for another reason doesn't show "Incorrect password".
@@ -21,8 +24,6 @@ const LOGIN_ERRORS = {
   user_session_already_exists: 'You are already logged in. Please refresh the page.',
 }
 
-// Appwrite's own minimum — checked here first so the user gets a clear
-// message instead of a raw API error.
 // Turns an Appwrite login error into the message shown to the user.
 function loginErrorMessage(err) {
   if (LOGIN_ERRORS[err.type]) return LOGIN_ERRORS[err.type]
@@ -31,6 +32,17 @@ function loginErrorMessage(err) {
   return 'Could not log in. Please try again.'
 }
 
+// The role the app uses = the Appwrite label on the account. That is the same thing
+// the database permissions check, so the app and the database always agree.
+// (profiles.role is only a record shown on the admin Users page.)
+function roleFromLabels(labels = []) {
+  if (labels.includes(ROLES.ADMIN)) return ROLES.ADMIN
+  if (labels.includes(ROLES.EDITOR)) return ROLES.EDITOR
+  return ROLES.USER
+}
+
+// Appwrite's own minimum — checked here first so the user gets a clear
+// message instead of a raw API error.
 const MIN_PASSWORD_LENGTH = 8
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -185,8 +197,9 @@ export function useAuth() {
       // authenticated — currentUser correctly becomes null.
       const account = await authService.getCurrentUser()
 
-      // Role and photos come from our own tables (live photos on `profiles`,
-      // pending ones on `profile_settings`), loaded in parallel. A problem with
+      // Photos come from our own tables (live photos on `profiles`, pending ones
+      // on `profile_settings`), loaded in parallel. The role comes from the
+      // account's Appwrite labels (roleFromLabels above). A problem with
       // either should NOT undo a successful login, so each falls back to null.
       const [profile, settings] = await Promise.all([
         getProfileByUserId(account.$id).catch((err) => {
@@ -208,7 +221,7 @@ export function useAuth() {
 
       currentUser.value = {
         ...account,
-        role: profile?.role || null,
+        role: roleFromLabels(account.labels),
         avatarImageId: profile?.avatarImageId || null,
         headerImageId: profile?.headerImageId || null,
         pendingAvatarImageId: settings?.pendingAvatarImageId || null,
@@ -224,6 +237,7 @@ export function useAuth() {
   return {
     currentUser,
     authChecked,
+    isStaff,
     loading,
     error,
     register,

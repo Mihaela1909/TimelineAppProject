@@ -102,16 +102,16 @@ async function handleSubmit() {
       <form v-else @submit.prevent="handleSubmit">
         <div class="grid grid-cols-[1fr_100px] gap-4 mb-4">
           <div>
-            <label class="text-xs text-bark/70 block mb-1">Question *</label>
-            <input
+            <label for="question-text" class="text-xs text-bark/70 block mb-1">Question *</label>
+            <input id="question-text"
               v-model="form.questionText"
               required
               class="w-full px-3 py-2 border border-black/10 rounded-md text-sm"
             />
           </div>
           <div>
-            <label class="text-xs text-bark/70 block mb-1">Order</label>
-            <input
+            <label for="question-order" class="text-xs text-bark/70 block mb-1">Order</label>
+            <input id="question-order"
               v-model.number="form.order"
               type="number"
               min="1"
@@ -120,10 +120,10 @@ async function handleSubmit() {
           </div>
         </div>
 
-        <label class="text-xs text-bark/70 block mb-2">
+        <p id="answer-options-label" class="text-xs text-bark/70 block mb-2">
           Answer options * <span class="text-bark/40">(select the correct one)</span>
-        </label>
-        <div class="space-y-2 mb-2">
+        </p>
+        <div class="space-y-2 mb-2" role="group" aria-labelledby="answer-options-label">
           <div v-for="(option, index) in form.options" :key="index" class="flex items-center gap-2">
             <input
               type="radio"

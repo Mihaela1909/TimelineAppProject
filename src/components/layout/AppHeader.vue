@@ -1,9 +1,8 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useAuth } from '../../composables/useAuth'
 import { getImagePreviewUrl } from '../../services/mediaService'
-import { STAFF_ROLES } from '../../constants/roles'
 import AppLogo from './AppLogo.vue'
 import AppIcon from '../ui/AppIcon.vue'
 
@@ -19,14 +18,13 @@ const navLinks = [
   { label: 'Blog', to: '/blog' },
 ]
 
-const { currentUser, logout } = useAuth()
+const { currentUser, isStaff, logout } = useAuth()
 const route = useRoute()
 const router = useRouter()
 
 const mobileOpen = ref(false) // hamburger panel (small screens)
 const accountOpen = ref(false) // profile-circle dropdown (logged in)
 
-const isStaff = computed(() => STAFF_ROLES.includes(currentUser.value?.role))
 
 // RESET: close any open menu after navigating.
 watch(

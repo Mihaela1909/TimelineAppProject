@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useAdminCourses, REQUIRED_IMAGES } from '../../composables/useAdminCourses'
+import { useAdminCourses, REQUIRED_IMAGES, MIN_DESCRIPTION_LENGTH } from '../../composables/useAdminCourses'
 import { useAdminLessons } from '../../composables/useAdminLessons'
 import ConfirmModal from '../../components/ui/ConfirmModal.vue'
 import ImageUpload from '../../components/ui/ImageUpload.vue'
@@ -53,8 +53,9 @@ const form = ref({
   published: false,
 })
 
+// Live hint while typing; the rule itself is checked in useAdminCourses().save.
 const descriptionTooShort = computed(
-  () => form.value.description.length > 0 && form.value.description.length < 100
+  () => form.value.description.length > 0 && form.value.description.length < MIN_DESCRIPTION_LENGTH
 )
 
 async function loadRow() {
@@ -79,7 +80,6 @@ const isMissing = (field) => submitted.value && isRequired(field) && !form.value
 // Save button: the composable checks and saves; on success, show a message and go back.
 async function handleSubmit() {
   submitted.value = true
-  if (descriptionTooShort.value) return
   const ok = await save(isEditing.value ? route.params.id : null, form.value)
   if (ok) {
     toast.success('Course saved')
@@ -95,8 +95,11 @@ async function handleSubmit() {
     </RouterLink>
     <h1 class="font-voice text-3xl text-bark mb-4">{{ form.title || 'New Course' }}</h1>
 
-    <div class="flex gap-4 border-b border-black/10 mb-5 text-sm">
+    <div class="flex gap-4 border-b border-black/10 mb-5 text-sm" role="tablist" aria-label="Course sections">
       <button
+        type="button"
+        role="tab"
+        :aria-selected="activeTab === 'details'"
         class="pb-2 border-b-2"
         :class="activeTab === 'details' ? 'border-olive text-olive font-semibold' : 'border-transparent text-bark/50'"
         @click="activeTab = 'details'"
@@ -104,6 +107,9 @@ async function handleSubmit() {
         Details
       </button>
       <button
+        type="button"
+        role="tab"
+        :aria-selected="activeTab === 'lessons'"
         class="pb-2 border-b-2"
         :class="[
           activeTab === 'lessons' ? 'border-olive text-olive font-semibold' : 'border-transparent text-bark/50',
@@ -147,15 +153,15 @@ async function handleSubmit() {
 
       <!-- The form -->
       <form v-else @submit.prevent="handleSubmit">
-        <label class="text-xs text-bark/70 block mb-1">Title *</label>
-        <input
+        <label for="course-title" class="text-xs text-bark/70 block mb-1">Title *</label>
+        <input id="course-title"
           v-model="form.title"
           required
           class="w-full px-3 py-2 border border-black/10 rounded-md text-sm mb-4"
         />
 
-        <label class="text-xs text-bark/70 block mb-1">Description *</label>
-        <textarea
+        <label for="course-description" class="text-xs text-bark/70 block mb-1">Description *</label>
+        <textarea id="course-description"
           v-model="form.description"
           required
           rows="3"
@@ -163,7 +169,7 @@ async function handleSubmit() {
           :class="descriptionTooShort ? 'border-red-400' : 'border-black/10'"
         ></textarea>
         <p v-if="descriptionTooShort" class="text-xs text-red-500 mb-3">
-          Description must be at least 100 characters
+          Description must be at least {{ MIN_DESCRIPTION_LENGTH }} characters
         </p>
         <div v-else class="mb-4"></div>
 
@@ -233,10 +239,11 @@ async function handleSubmit() {
           <RouterLink
             :to="`/admin/courses/${route.params.id}/lessons/${lesson.$id}/edit`"
             class="text-bark/60 hover:text-bark"
+          :aria-label="`Edit ${lesson.title}`"
           >
-            ✎
+            <span aria-hidden="true">✎</span>
           </RouterLink>
-          <button class="text-red-500 hover:text-red-700 disabled:opacity-40" :disabled="deletingLesson" @click="pendingDeleteLesson = lesson">🗑</button>
+          <button class="text-red-500 hover:text-red-700 disabled:opacity-40" :disabled="deletingLesson" :aria-label="`Delete ${lesson.title}`" @click="pendingDeleteLesson = lesson"><span aria-hidden="true">🗑</span></button>
         </div>
       </div>
 

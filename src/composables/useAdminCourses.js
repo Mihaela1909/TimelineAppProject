@@ -5,6 +5,8 @@ import { missingFieldsMessage } from '../utils/formChecks'
 // Required in Appwrite — checked here first so the user gets a clear
 // message instead of a generic "could not save".
 export const REQUIRED_IMAGES = { coverImageId: 'cover image', headerImageId: 'header image' }
+// A course description needs at least this many characters (checked in save, shown live in the form).
+export const MIN_DESCRIPTION_LENGTH = 100
 
 // APPLICATION LOGIC for the admin Courses screens. Separate from
 // useCourses.js (which is the public-facing, read-only homepage version)
@@ -51,6 +53,11 @@ export function useAdminCourses() {
   // Create a new course (no id) or update an existing one. Returns true/false.
   async function save(id, data) {
     if (saving.value) return false // already saving — ignore double-clicks
+    // CHECK: all form rules live here, so the form can't save something invalid.
+    if ((data.description || '').trim().length < MIN_DESCRIPTION_LENGTH) {
+      error.value = `The description needs at least ${MIN_DESCRIPTION_LENGTH} characters.`
+      return false
+    }
     error.value = missingFieldsMessage(data, REQUIRED_IMAGES)
     if (error.value) return false
     saving.value = true

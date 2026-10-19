@@ -56,10 +56,12 @@ export async function updateCourse(id, data) {
 // remaining progress rows — so nothing is left orphaned. Children go
 // first: if a step fails, the course still exists and delete can be retried.
 export async function deleteCourse(id) {
+  // Children first, one at a time: if anything fails, the course itself is still
+  // there, so the admin can simply try the delete again.
   const lessons = await listAllRows(TABLES.LESSONS, [Query.equal('courseId', id)])
-  await Promise.all(lessons.map((lesson) => deleteLesson(lesson.$id)))
+  for (const lesson of lessons) await deleteLesson(lesson.$id)
   const quizzes = await listAllRows(TABLES.QUIZZES, [Query.equal('courseId', id)])
-  await Promise.all(quizzes.map((quiz) => deleteQuiz(quiz.$id)))
+  for (const quiz of quizzes) await deleteQuiz(quiz.$id)
   await deleteAllRows(TABLES.PROGRESS, [Query.equal('courseId', id)])
   return tablesDB.deleteRow({
     databaseId: DB_ID,

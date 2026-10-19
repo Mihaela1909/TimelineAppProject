@@ -5,6 +5,7 @@ import { createAttempt, getAttemptsForUserAndQuiz } from '../services/quizAttemp
 import { getCourseById } from '../services/courseService'
 import { getLessonsForCourse } from '../services/lessonService'
 import { useToast } from './useToast'
+import { useAuth } from './useAuth'
 
 // APPLICATION LOGIC for taking a quiz: loads the quiz + questions, then steps
 // through the phases start → question → results, counts correct answers,
@@ -26,6 +27,7 @@ export function useQuizTaking() {
   const answered = ref(false)
   const correctCount = ref(0)
   const toast = useToast()
+  const { isStaff } = useAuth()
 
   const currentQuestion = computed(() => questions.value[currentIndex.value])
   const isLastQuestion = computed(() => currentIndex.value === questions.value.length - 1)
@@ -36,6 +38,11 @@ export function useQuizTaking() {
     error.value = null
     try {
       const quizData = await getQuizById(quizId)
+      // A draft quiz is only shown to staff, so they can preview it.
+      if (!quizData.published && !isStaff.value) {
+        error.value = "This quiz isn't available."
+        return
+      }
       quiz.value = quizData
       questions.value = await getQuestionsForQuiz(quizId)
       if (quizData.courseId) {

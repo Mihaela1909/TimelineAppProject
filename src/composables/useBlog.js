@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import * as blogPostService from '../services/blogPostService'
+import { useAuth } from './useAuth'
 
 // APPLICATION LOGIC for the public blog (list + single post). Read-only and
 // published posts only — the admin side uses useAdminBlogPosts instead.
@@ -10,6 +11,7 @@ export function useBlog() {
   // flash the "nothing here" empty state for a frame first.
   const loading = ref(true)
   const error = ref(null)
+  const { isStaff } = useAuth()
 
   // Load all published posts (blog page, home page).
   async function fetchPublished() {
@@ -35,8 +37,13 @@ export function useBlog() {
         blogPostService.getBlogPostById(id),
         blogPostService.getPublishedBlogPosts(),
       ])
-      post.value = postData
       posts.value = published
+      // A draft post is only shown to staff, so they can preview it.
+      if (!postData.published && !isStaff.value) {
+        error.value = "This post isn't available."
+        return
+      }
+      post.value = postData
     } catch (err) {
       error.value = 'Could not load this post.'
       console.error(err)

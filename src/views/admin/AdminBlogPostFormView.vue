@@ -93,8 +93,8 @@ async function handleSubmit() {
 
       <!-- The form -->
       <form v-else @submit.prevent="handleSubmit">
-        <label class="text-xs text-bark/70 block mb-1">Title *</label>
-        <input
+        <label for="post-title" class="text-xs text-bark/70 block mb-1">Title *</label>
+        <input id="post-title"
           v-model="form.title"
           required
           class="w-full px-3 py-2 border border-black/10 rounded-md text-sm mb-4"
@@ -106,8 +106,8 @@ async function handleSubmit() {
             <CategoryPicker id="post-category" v-model="form.category" :options="categories" required />
           </div>
           <div>
-            <label class="text-xs text-bark/70 block mb-1">Read Time</label>
-            <input
+            <label for="post-read-time" class="text-xs text-bark/70 block mb-1">Read Time</label>
+            <input id="post-read-time"
               v-model="form.readTime"
               placeholder="5 mins"
               class="w-full px-3 py-2 border border-black/10 rounded-md text-sm"
@@ -115,16 +115,16 @@ async function handleSubmit() {
           </div>
         </div>
 
-        <label class="text-xs text-bark/70 block mb-1">Introduction *</label>
-        <input
+        <label for="post-introduction" class="text-xs text-bark/70 block mb-1">Introduction *</label>
+        <input id="post-introduction"
           v-model="form.introduction"
           required
           placeholder="A one-line hook shown on the blog preview card"
           class="w-full px-3 py-2 border border-black/10 rounded-md text-sm mb-4"
         />
 
-        <label class="text-xs text-bark/70 block mb-1">Content *</label>
-        <div class="mb-4">
+        <p id="post-content-label" class="text-xs text-bark/70 block mb-1">Content *</p>
+        <div class="mb-4" role="group" aria-labelledby="post-content-label">
           <RichTextEditor v-model="form.content" />
         </div>
 

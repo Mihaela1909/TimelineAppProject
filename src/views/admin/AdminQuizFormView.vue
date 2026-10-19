@@ -97,8 +97,11 @@ async function confirmDeleteQuestion() {
     </RouterLink>
     <h1 class="font-voice text-3xl text-bark mb-4">{{ form.title || 'New Quiz' }}</h1>
 
-    <div class="flex gap-4 border-b border-black/10 mb-5 text-sm">
+    <div class="flex gap-4 border-b border-black/10 mb-5 text-sm" role="tablist" aria-label="Quiz sections">
       <button
+        type="button"
+        role="tab"
+        :aria-selected="activeTab === 'details'"
         class="pb-2 border-b-2"
         :class="activeTab === 'details' ? 'border-olive text-olive font-semibold' : 'border-transparent text-bark/50'"
         @click="activeTab = 'details'"
@@ -106,6 +109,9 @@ async function confirmDeleteQuestion() {
         Details
       </button>
       <button
+        type="button"
+        role="tab"
+        :aria-selected="activeTab === 'questions'"
         class="pb-2 border-b-2"
         :class="[
           activeTab === 'questions' ? 'border-olive text-olive font-semibold' : 'border-transparent text-bark/50',
@@ -147,8 +153,8 @@ async function confirmDeleteQuestion() {
 
       <!-- The form -->
       <form v-else @submit.prevent="handleSubmit">
-        <label class="text-xs text-bark/70 block mb-1">Quiz title *</label>
-        <input
+        <label for="quiz-title" class="text-xs text-bark/70 block mb-1">Quiz title *</label>
+        <input id="quiz-title"
           v-model="form.title"
           required
           class="w-full px-3 py-2 border border-black/10 rounded-md text-sm mb-4"
@@ -156,8 +162,8 @@ async function confirmDeleteQuestion() {
 
         <div class="grid sm:grid-cols-2 gap-4 mb-5">
           <div>
-            <label class="text-xs text-bark/70 block mb-1">Linked course *</label>
-            <select
+            <label for="quiz-course" class="text-xs text-bark/70 block mb-1">Linked course *</label>
+            <select id="quiz-course"
               v-model="form.courseId"
               required
               class="w-full px-3 py-2 border border-black/10 rounded-md text-sm bg-white"
@@ -169,8 +175,8 @@ async function confirmDeleteQuestion() {
             </select>
           </div>
           <div>
-            <label class="text-xs text-bark/70 block mb-1">Passing score (%)</label>
-            <input
+            <label for="quiz-passing-score" class="text-xs text-bark/70 block mb-1">Passing score (%)</label>
+            <input id="quiz-passing-score"
               v-model.number="form.passingScore"
               type="number"
               min="0"

@@ -84,10 +84,10 @@ async function confirmDelete() {
               </span>
             </td>
             <td class="py-3 px-3 md:px-5 text-right whitespace-nowrap">
-              <RouterLink :to="`/admin/blog-posts/${post.$id}/edit`" class="mr-3 text-bark/60 hover:text-bark">
-                ✎
+              <RouterLink :to="`/admin/blog-posts/${post.$id}/edit`" class="mr-3 text-bark/60 hover:text-bark" :aria-label="`Edit ${post.title}`">
+                <span aria-hidden="true">✎</span>
               </RouterLink>
-              <button class="text-red-500 hover:text-red-700 disabled:opacity-40" :disabled="deleting" @click="pendingDelete = post">🗑</button>
+              <button class="text-red-500 hover:text-red-700 disabled:opacity-40" :disabled="deleting" :aria-label="`Delete ${post.title}`" @click="pendingDelete = post"><span aria-hidden="true">🗑</span></button>
             </td>
           </tr>
         </tbody>

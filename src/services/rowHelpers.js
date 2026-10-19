@@ -31,6 +31,10 @@ export async function listAllRows(tableId, queries = []) {
 // (lessons, questions, progress, attempts) before deleting their parent.
 export async function deleteAllRows(tableId, queries) {
   const rows = await listAllRows(tableId, queries)
-  await Promise.all(rows.map((row) => tablesDB.deleteRow({ databaseId: DB_ID, tableId, rowId: row.$id })))
+  // One after another (not all at once): if one delete fails, the loop stops there
+  // and throws, instead of leaving a random mix of deleted and kept rows.
+  for (const row of rows) {
+    await tablesDB.deleteRow({ databaseId: DB_ID, tableId, rowId: row.$id })
+  }
   return rows.length
 }

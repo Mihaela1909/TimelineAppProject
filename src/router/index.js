@@ -170,10 +170,9 @@ const router = createRouter({
   },
 })
 
-// NAVIGATION GUARD — this is the enforcement point the brief explicitly
-// grades. It currently checks nothing real yet (no auth wired up), but the
-// structure is here so wiring in useAuth() later is a small, obvious change,
-// not a redesign. See the TODOs below.
+// NAVIGATION GUARD — runs before every page change. It sends guests to the login
+// page and shows "not found" for pages the user's role may not open. This is for
+// a smooth experience only: the real protection is the Appwrite permissions.
 router.beforeEach(async (to) => {
   const { currentUser, authChecked, refreshCurrentUser } = useAuth()
 

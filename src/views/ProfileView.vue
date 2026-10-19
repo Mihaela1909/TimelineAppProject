@@ -6,7 +6,6 @@ import { useProfileProgress } from '../composables/useProfileProgress'
 import { useProfileImages } from '../composables/useProfileImages'
 import ConfirmModal from '../components/ui/ConfirmModal.vue'
 import { useToast } from '../composables/useToast'
-import { STAFF_ROLES } from '../constants/roles'
 import { useSavedPosts } from '../composables/useSavedPosts'
 import { useBlog } from '../composables/useBlog'
 import SavedPostsTab from '../components/profile/SavedPostsTab.vue'
@@ -25,7 +24,7 @@ import ProfilePhotosCard from '../components/profile/ProfilePhotosCard.vue'
 // password, photos, delete account). Each tab is its own component.
 
 const router = useRouter()
-const { currentUser, updateName, updateEmail, updatePassword, logout, loading: authLoading, error: authError } = useAuth()
+const { currentUser, isStaff, updateName, updateEmail, updatePassword, logout, loading: authLoading, error: authError } = useAuth()
 const {
   attempts,
   courseProgress,
@@ -82,7 +81,7 @@ onMounted(() => {
 
 // Staff (admins + editors) get a shortcut into the admin panel. UX only —
 // the router guard and Appwrite permissions still decide what they can do.
-const canOpenAdmin = computed(() => STAFF_ROLES.includes(currentUser.value?.role))
+const canOpenAdmin = isStaff
 
 // '–' while loading, so the boxes don't flash 0 first
 const stats = computed(() => {

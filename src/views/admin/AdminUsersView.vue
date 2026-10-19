@@ -59,7 +59,8 @@ async function changeRole(user, role) {
   openMenuId.value = null
   if (user.role === role) return
   if (await setRole(user, role)) {
-    toast.success(`${user.name || 'User'} is now ${role === ROLES.USER ? 'a' : 'an'} ${role}`)
+    // Access comes from the Appwrite label, so remind the admin to set it there too.
+    toast.success(`Role saved. Add the "${role}" label in Appwrite to change ${user.name || 'their'} access.`)
   } else {
     toast.error('Could not change role — check admin permissions on profiles.')
   }
@@ -86,7 +87,12 @@ async function reactivate(user) {
 
 <template>
   <div>
-    <h1 class="font-voice text-3xl md:text-4xl text-bark mb-8">{{ inactiveOnly ? 'Inactive Users' : 'Users' }}</h1>
+    <h1 class="font-voice text-3xl md:text-4xl text-bark mb-2">{{ inactiveOnly ? 'Inactive Users' : 'Users' }}</h1>
+    <!-- Access rights come from Appwrite labels (the same thing the database checks), not from this list -->
+    <p class="text-sm text-bark/70 mb-8 max-w-3xl">
+      The role here is a record. What someone can actually do comes from their Appwrite label
+      (Appwrite console → Auth → the user → Labels: <code>admin</code> or <code>editor</code>).
+    </p>
 
     <!-- Loading: grey placeholders while the data arrives -->
     <div v-if="loading" class="bg-white rounded-xl p-4 md:p-6 space-y-3" aria-live="polite">
